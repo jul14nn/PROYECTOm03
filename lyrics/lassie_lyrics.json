@@ -1,0 +1,74 @@
+{
+  "song": "Lassie",
+  "artist": "Kid Roken",
+  "audio_duration_sec": 191.36,
+  "note": "Timing estimado a partir del analisis de energia (RMS) del audio, no de transcripcion automatica (ASR bloqueado en este entorno). Ajustar start/end por linea segun feedback al ver el video.",
+  "sections": [
+    {
+      "name": "INTRO",
+      "start": 0.0,
+      "end": 8.0,
+      "lines": []
+    },
+    {
+      "name": "VERSO 1",
+      "start": 8.0,
+      "end": 26.0,
+      "lines": [
+        "Era verdad lo que un día leí",
+        "Que el hilo rojo a veces se tensa",
+        "y da igual que intentemos huir",
+        "el destino siempre tiene más fuerza"
+      ]
+    },
+    {
+      "name": "PRE-ESTRIBILLO",
+      "start": 26.0,
+      "end": 36.0,
+      "lines": [
+        "tres de la mañana",
+        "la hora que siempre llegan tus llamadas",
+        "saliste de la disco acalorada",
+        "hoy te lo voy a dar como el otro no te lo daba"
+      ]
+    },
+    {
+      "name": "ESTRIBILLO",
+      "start": 36.0,
+      "end": 60.0,
+      "lines": [
+        "es que yo",
+        "quiero pa mi",
+        "una perrita",
+        "pero no lassie",
+        "dime la verdad si tú eres así o no bb",
+        "aunque no lo pongas fácil te robaré"
+      ]
+    },
+    {
+      "name": "GAP",
+      "start": 60.0,
+      "end": 64.0,
+      "lines": []
+    },
+    {
+      "name": "VERSO 2",
+      "start": 64.0,
+      "end": 96.0,
+      "lines": [
+        "Universitaria desde que tenía veinte",
+        "sale por la noche",
+        "Y eso lo hace desde siempre",
+        "Pero nada le llena",
+        "Hace tiempo le puede la pena",
+        "Mmm"
+      ]
+    },
+    {
+      "name": "RESTO (sin letra proporcionada)",
+      "start": 96.0,
+      "end": 191.36,
+      "lines": []
+    }
+  ]
+}
