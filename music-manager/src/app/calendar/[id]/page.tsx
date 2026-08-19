@@ -29,7 +29,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{event.title}</h1>
           <div className="text-sm text-neutral-400 mt-1 space-y-1">

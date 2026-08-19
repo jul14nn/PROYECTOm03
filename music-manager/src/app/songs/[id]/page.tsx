@@ -55,7 +55,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="space-y-8 pb-16">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-3">
           <ColorDot color={song.color} />
           <div>

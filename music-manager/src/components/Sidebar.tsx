@@ -2,32 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Music4,
-  CalendarDays,
-  Users,
-  Truck,
-  Megaphone,
-  Coins,
-} from "lucide-react";
+import { NAV } from "@/lib/nav";
 import clsx from "clsx";
-
-const NAV = [
-  { href: "/", label: "Resumen", icon: LayoutDashboard },
-  { href: "/songs", label: "Canciones", icon: Music4 },
-  { href: "/calendar", label: "Agenda", icon: CalendarDays },
-  { href: "/contacts", label: "Contactos", icon: Users },
-  { href: "/distribution", label: "Distribución", icon: Truck },
-  { href: "/marketing", label: "Marketing", icon: Megaphone },
-  { href: "/royalties", label: "Royalties", icon: Coins },
-];
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-60 shrink-0 border-r border-neutral-800 min-h-screen flex flex-col">
+    <aside className="hidden md:flex w-60 shrink-0 border-r border-neutral-800 min-h-screen flex-col">
       <div className="px-5 py-6">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-indigo-500 flex items-center justify-center font-bold">
