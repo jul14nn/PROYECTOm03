@@ -3,6 +3,7 @@ import type { Forecast } from '../types'
 import { CATEGORY_LABELS } from '../types'
 import { news } from '../data/news'
 import { Badge } from './Badge'
+import { ConsensusBadge } from './ConsensusBadge'
 import { ExpertOpinionCard } from './ExpertOpinionCard'
 import { ScenarioCard } from './ScenarioCard'
 
@@ -31,6 +32,10 @@ export function ForecastPanel({ forecast }: { forecast: Forecast }) {
       </div>
 
       <h2 className="mt-2 text-left text-xl font-semibold text-gray-100 sm:text-2xl">{forecast.title}</h2>
+
+      <div className="mt-3">
+        <ConsensusBadge forecast={forecast} />
+      </div>
 
       <div className="mt-3 rounded-lg bg-ink-800/60 p-4 text-left">
         <p className="text-xs font-medium tracking-wide text-gray-500 uppercase">Qué está pasando</p>
