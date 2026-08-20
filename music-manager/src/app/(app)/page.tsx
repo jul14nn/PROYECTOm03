@@ -6,8 +6,20 @@ import { buildTodayList, upcomingReleases, songsWithBrokenRoyalties } from "@/li
 import TipOfTheDay from "@/components/TipOfTheDay";
 import { TodayPanel, ReleaseCountdown } from "@/components/TodayPanel";
 import { ArrowRight, CalendarClock } from "lucide-react";
+import Editorial from "@/components/dashboards/Editorial";
+import Registro from "@/components/dashboards/Registro";
+import Linea from "@/components/dashboards/Linea";
+import type { DashboardData } from "@/components/dashboards/types";
 
-export default async function DashboardPage() {
+// Prototipos de estructura para elegir dirección; se quedará solo la elegida.
+const ALT = { editorial: Editorial, registro: Registro, linea: Linea } as const;
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ vista?: string }>;
+}) {
+  const { vista } = await searchParams;
   const userId = await requireUserId();
   const [songs, upcomingEvents, budgets] = await Promise.all([
     prisma.song.findMany({
@@ -42,6 +54,27 @@ export default async function DashboardPage() {
   const brokenRoyalties = songsWithBrokenRoyalties(songs);
   const totalPlanned = budgets.reduce((a, b) => a + b.plannedAmount, 0);
   const totalActual = budgets.reduce((a, b) => a + b.actualAmount, 0);
+
+  const Alt = vista && vista in ALT ? ALT[vista as keyof typeof ALT] : null;
+  if (Alt) {
+    const data: DashboardData = {
+      todo,
+      releases,
+      byStage,
+      totalSongs: songs.length,
+      brokenRoyalties,
+      missingCover: songs.filter((s) => s.needsCover).length,
+      totalPlanned,
+      totalActual,
+      events: upcomingEvents.map((e) => ({
+        id: e.id,
+        title: e.title,
+        startDate: e.startDate,
+        songTitle: e.song?.title ?? null,
+      })),
+    };
+    return <Alt data={data} />;
+  }
 
   return (
     <div className="space-y-8">
