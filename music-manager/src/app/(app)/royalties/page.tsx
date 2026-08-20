@@ -3,6 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
 import { formatMoney } from "@/lib/constants";
 import { ColorDot } from "@/components/Badges";
+import { AlertTriangle, Download, CheckCircle2 } from "lucide-react";
+
+/* Cada persona del reparto recibe un color estable por posición: la barra
+   se lee de un vistazo sin leyenda aparte. */
+const SPLIT_COLORS = ["#9333ea", "#e0299e", "#f6a723", "#10b981", "#38bdf8", "#f87171"];
 
 export default async function RoyaltiesPage() {
   const userId = await requireUserId();
@@ -17,15 +22,43 @@ export default async function RoyaltiesPage() {
     .flatMap((r) => r.payments)
     .reduce((a, p) => a + p.amount, 0);
 
+  const broken = songs.filter(
+    (s) => s.royalties.reduce((a, r) => a + r.percentage, 0) !== 100
+  );
+
   return (
     <div className="space-y-6">
-      <div>
-        <div className="eyebrow mb-2">Reparto</div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="eyebrow mb-2">Reparto</div>
           <h1 className="display-title text-5xl sm:text-6xl">Royalties</h1>
-        <p className="text-neutral-400 text-sm mt-1">
-          Splits por canción y pagos registrados. Total pagado: {formatMoney(totalPaid)}.
-        </p>
+          <p className="text-neutral-400 text-sm mt-1">
+            Splits por canción y pagos registrados. Total pagado: {formatMoney(totalPaid)}.
+          </p>
+        </div>
+        {songs.length > 0 && (
+          <a href="/api/export/royalties" className="btn btn-secondary shrink-0" download>
+            <Download size={14} /> Exportar CSV
+          </a>
+        )}
       </div>
+
+      {broken.length > 0 && (
+        <div className="card p-4 border-amber-500/30 flex items-start gap-3 text-sm">
+          <AlertTriangle size={17} className="text-amber-400 shrink-0 mt-0.5" />
+          <div>
+            <span className="text-amber-200 font-medium">
+              {broken.length === 1
+                ? "Hay una canción cuyo reparto no suma 100%."
+                : `Hay ${broken.length} canciones cuyo reparto no suma 100%.`}
+            </span>{" "}
+            <span className="text-neutral-400">
+              Un split mal cerrado es una discusión el día que llegue el primer
+              ingreso. Están marcadas abajo.
+            </span>
+          </div>
+        </div>
+      )}
 
       {songs.length === 0 && (
         <div className="card p-10 text-center text-neutral-500">
@@ -41,23 +74,55 @@ export default async function RoyaltiesPage() {
         {songs.map((song) => {
           const total = song.royalties.reduce((a, r) => a + r.percentage, 0);
           const paid = song.royalties.flatMap((r) => r.payments).reduce((a, p) => a + p.amount, 0);
+          const ok = total === 100;
           return (
-            <div key={song.id} className="card p-5">
-              <div className="flex items-center justify-between mb-3">
-                <Link href={`/songs/${song.id}#royalties`} className="flex items-center gap-2 font-medium hover:underline">
+            <div key={song.id} className={`card p-5 ${ok ? "" : "border-amber-500/30"}`}>
+              <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                <Link href={`/songs/${song.id}?tab=royalties`} className="flex items-center gap-2 font-medium hover:underline">
                   <ColorDot color={song.color} /> {song.title}
                 </Link>
-                <div className="text-xs text-neutral-500">
-                  {total}% repartido · {formatMoney(paid)} pagado
+                <div className="flex items-center gap-3 text-xs">
+                  {ok ? (
+                    <span className="flex items-center gap-1 text-emerald-300">
+                      <CheckCircle2 size={13} /> 100% cerrado
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-amber-300 font-medium">
+                      <AlertTriangle size={13} />
+                      {total < 100 ? `Faltan ${100 - total}%` : `Sobran ${total - 100}%`}
+                    </span>
+                  )}
+                  <span className="text-neutral-500">{formatMoney(paid)} pagado</span>
                 </div>
               </div>
-              <div className="space-y-1">
-                {song.royalties.map((r) => (
-                  <div key={r.id} className="flex items-center justify-between text-sm">
-                    <span>
-                      {r.name} {r.role && <span className="text-neutral-500">· {r.role}</span>}
+
+              {/* La barra: el reparto entero de un vistazo. El hueco gris al
+                  final es literalmente el porcentaje sin asignar. */}
+              <div className="meter flex mb-3">
+                {song.royalties.map((r, i) => (
+                  <div
+                    key={r.id}
+                    style={{
+                      width: `${Math.min(r.percentage, 100)}%`,
+                      background: SPLIT_COLORS[i % SPLIT_COLORS.length],
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
+                {song.royalties.map((r, i) => (
+                  <div key={r.id} className="flex items-center justify-between text-sm gap-2">
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="h-2 w-2 rounded-full shrink-0"
+                        style={{ background: SPLIT_COLORS[i % SPLIT_COLORS.length] }}
+                      />
+                      <span className="truncate">
+                        {r.name} {r.role && <span className="text-neutral-500">· {r.role}</span>}
+                      </span>
                     </span>
-                    <span className="text-neutral-400">{r.percentage}%</span>
+                    <span className="text-neutral-400 numeral shrink-0">{r.percentage}%</span>
                   </div>
                 ))}
               </div>

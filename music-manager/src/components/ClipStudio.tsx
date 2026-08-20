@@ -49,6 +49,7 @@ export default function ClipStudio({
   defaultSubtitleStyle,
   subtitlePosPct,
   subtitleScale,
+  initialLyrics,
 }: {
   songId: string;
   songTitle: string;
@@ -59,6 +60,7 @@ export default function ClipStudio({
   defaultSubtitleStyle: SubtitleStyleId;
   subtitlePosPct: number;
   subtitleScale: number;
+  initialLyrics?: string | null;
 }) {
   const [support, setSupport] = useState<VideoSupport | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -68,7 +70,7 @@ export default function ClipStudio({
   const [start, setStart] = useState(0);
   const [length, setLength] = useState(10);
 
-  const [rawLines, setRawLines] = useState("");
+  const [rawLines, setRawLines] = useState(initialLyrics ?? "");
   const [lines, setLines] = useState<SubtitleLine[]>([]);
   const [subStyle, setSubStyle] = useState<SubtitleStyleId>(defaultSubtitleStyle);
   const [fontId, setFontId] = useState<string>(BUILTIN_FONTS[0].id);

@@ -4,9 +4,14 @@ import { prisma } from "@/lib/prisma";
 import SubmitButton, { IconSubmit } from "@/components/SubmitButton";
 import { requireUserId } from "@/lib/auth";
 import { formatDateTime } from "@/lib/constants";
-import { addInvite, removeInvite, deleteEvent } from "@/lib/actions/calendar";
+import { addInvite, removeInvite, deleteEvent, updateEvent } from "@/lib/actions/calendar";
 import { SendInviteButton, SendAllButton } from "@/components/InviteActions";
-import { MapPin, Trash2, Mail } from "lucide-react";
+import { MapPin, Trash2, Mail, Pencil, ChevronDown } from "lucide-react";
+
+function toDatetimeLocal(d: Date) {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 
 const INVITE_STATUS_STYLE: Record<string, string> = {
   PENDIENTE: "bg-neutral-500/15 text-neutral-300",
@@ -18,12 +23,13 @@ const INVITE_STATUS_STYLE: Record<string, string> = {
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const userId = await requireUserId();
-  const [event, contacts] = await Promise.all([
+  const [event, contacts, songs] = await Promise.all([
     prisma.calendarEvent.findFirst({
       where: { id, userId },
       include: { song: true, invites: { include: { contact: true }, orderBy: { createdAt: "asc" } } },
     }),
     prisma.contact.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+    prisma.song.findMany({ where: { userId }, orderBy: { title: "asc" }, select: { id: true, title: true } }),
   ]);
 
   if (!event) notFound();
@@ -60,6 +66,55 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
       </div>
 
       {event.description && <p className="text-sm text-neutral-300">{event.description}</p>}
+
+      <details className="card overflow-hidden group">
+        <summary className="flex items-center gap-2 px-6 py-4 cursor-pointer select-none font-semibold text-sm list-none [&::-webkit-details-marker]:hidden">
+          <Pencil size={15} /> Editar evento
+          <ChevronDown size={15} className="ml-auto text-neutral-500 transition-transform group-open:rotate-180" />
+        </summary>
+        <form action={updateEvent.bind(null, event.id)} className="px-6 pb-6 space-y-4">
+          <div>
+            <label className="label" htmlFor="ev-title">Título *</label>
+            <input id="ev-title" name="title" defaultValue={event.title} className="input" required />
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label" htmlFor="ev-start">Inicio *</label>
+              <input id="ev-start" name="startDate" type="datetime-local" defaultValue={toDatetimeLocal(event.startDate)} className="input" required />
+            </div>
+            <div>
+              <label className="label" htmlFor="ev-end">Fin</label>
+              <input id="ev-end" name="endDate" type="datetime-local" defaultValue={event.endDate ? toDatetimeLocal(event.endDate) : ""} className="input" />
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label" htmlFor="ev-location">Ubicación</label>
+              <input id="ev-location" name="location" defaultValue={event.location ?? ""} className="input" />
+            </div>
+            <div>
+              <label className="label" htmlFor="ev-song">Canción relacionada</label>
+              <select id="ev-song" name="songId" defaultValue={event.songId ?? ""} className="input">
+                <option value="">Ninguna</option>
+                {songs.map((s) => (
+                  <option key={s.id} value={s.id}>{s.title}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="label" htmlFor="ev-desc">Descripción</label>
+            <textarea id="ev-desc" name="description" rows={2} defaultValue={event.description ?? ""} className="input" />
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <SubmitButton pendingLabel="Guardando…">Guardar cambios</SubmitButton>
+            <p className="text-xs text-neutral-600">
+              Si cambias la fecha, las invitaciones ya enviadas vuelven a
+              Pendiente para que puedas reenviar la versión nueva.
+            </p>
+          </div>
+        </form>
+      </details>
 
       <section className="card p-6 space-y-4">
         <div className="flex items-center justify-between">

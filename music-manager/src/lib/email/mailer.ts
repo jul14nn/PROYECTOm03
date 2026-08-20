@@ -26,6 +26,7 @@ export async function sendAppEmail(opts: {
   to: string;
   subject: string;
   html: string;
+  attachments?: { filename: string; content: string; contentType: string }[];
 }) {
   const t = getTransporter();
   if (!t) {
@@ -38,5 +39,6 @@ export async function sendAppEmail(opts: {
     to: opts.to,
     subject: opts.subject,
     html: opts.html,
+    attachments: opts.attachments,
   });
 }

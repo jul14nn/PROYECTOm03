@@ -64,6 +64,14 @@ export async function updateSong(songId: string, formData: FormData) {
   revalidatePath(`/songs/${songId}`);
 }
 
+export async function updateSongLyrics(songId: string, formData: FormData) {
+  const userId = await requireUserId();
+  const raw = formData.get("lyrics");
+  const lyrics = typeof raw === "string" && raw.trim() !== "" ? raw.trim() : null;
+  await prisma.song.updateMany({ where: { id: songId, userId }, data: { lyrics } });
+  revalidatePath(`/songs/${songId}`);
+}
+
 export async function updateSongStage(songId: string, stage: string) {
   const userId = await requireUserId();
   await prisma.song.updateMany({ where: { id: songId, userId }, data: { stage: stage as never } });

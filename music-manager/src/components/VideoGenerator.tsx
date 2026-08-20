@@ -219,12 +219,14 @@ export default function VideoGenerator({
   songColor,
   images,
   brand,
+  initialLyrics,
 }: {
   songId: string;
   songTitle: string;
   songColor: string;
   images: { url: string }[];
   brand: BrandKitValues;
+  initialLyrics?: string | null;
 }) {
   const [styleId, setStyleId] = useState<VideoStyleId>(
     (VIDEO_STYLES.some((s) => s.id === brand.defaultVideoStyle)
@@ -393,6 +395,7 @@ export default function VideoGenerator({
       </div>
 
       <SubtitleEditor
+        initialText={initialLyrics}
         duration={duration}
         lines={lines}
         setLines={setLines}

@@ -28,6 +28,7 @@ import {
   addVideoIdea,
   toggleVideoIdea,
   removeVideoIdea,
+  updateSongLyrics,
 } from "@/lib/actions/songs";
 import { addTask, cycleTaskStatus, removeTask, addDistributionStep, cycleDistributionStatus, removeDistributionStep } from "@/lib/actions/tasks";
 import { addBudgetItem, removeBudgetItem, addMarketingIdea, toggleMarketingIdea, removeMarketingIdea, generateMarketingPlan } from "@/lib/actions/marketing";
@@ -53,10 +54,18 @@ import {
   Wand2,
   CalendarDays,
   Scissors,
+  MicVocal,
 } from "lucide-react";
 
-export default async function SongDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function SongDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const { id } = await params;
+  const { tab } = await searchParams;
   const userId = await requireUserId();
 
   const [song, contacts, brandKit, fonts] = await Promise.all([
@@ -223,6 +232,29 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
         <>
           <div className="card p-6 space-y-3">
             <h2 className="font-semibold flex items-center gap-2">
+              <MicVocal size={18} /> Letra
+            </h2>
+            <p className="text-sm text-neutral-500">
+              Guárdala una vez y el estudio de clips y el generador de vídeo la
+              precargan: no hace falta reescribirla en cada montaje.
+            </p>
+            <form action={updateSongLyrics.bind(null, song.id)} className="space-y-3">
+              <textarea
+                name="lyrics"
+                rows={6}
+                defaultValue={song.lyrics ?? ""}
+                placeholder={"Una línea por verso, tal y como quieres que salga en pantalla."}
+                className="input font-mono text-sm"
+                aria-label="Letra de la canción"
+              />
+              <SubmitButton className="btn btn-secondary" pendingLabel="Guardando…">
+                Guardar letra
+              </SubmitButton>
+            </form>
+          </div>
+
+          <div className="card p-6 space-y-3">
+            <h2 className="font-semibold flex items-center gap-2">
               <Wand2 size={18} /> Vídeo automático
             </h2>
             <VideoGenerator
@@ -231,6 +263,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               songColor={song.color}
               images={song.references.map((r) => ({ url: r.url }))}
               brand={brand}
+              initialLyrics={song.lyrics}
             />
           </div>
 
@@ -272,6 +305,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               defaultSubtitleStyle={brand.subtitleStyle}
               subtitlePosPct={brand.subtitlePosPct}
               subtitleScale={brand.subtitleScale}
+              initialLyrics={song.lyrics}
             />
           </div>
 
@@ -725,7 +759,15 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
         </form>
       </div>
 
-      <SongWorkspace tabs={tabs} nextStep={nextStep} />
+      <SongWorkspace tabs={tabs} nextStep={nextStep} initialTab={resolveTab(tab, tabs)} />
     </div>
   );
+}
+
+/* "distribucion" y "royalties" llegan de las páginas globales; la primera
+   vive dentro de la pestaña de Producción. */
+function resolveTab(tab: string | undefined, tabs: { id: string }[]) {
+  if (!tab) return undefined;
+  const target = tab === "distribucion" ? "produccion" : tab;
+  return tabs.some((t) => t.id === target) ? target : undefined;
 }

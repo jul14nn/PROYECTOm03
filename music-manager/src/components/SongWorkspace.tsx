@@ -12,8 +12,18 @@ export type SongTab = {
   content: ReactNode;
 };
 
-export default function SongWorkspace({ tabs, nextStep }: { tabs: SongTab[]; nextStep: NextStep }) {
-  const [active, setActive] = useState(nextStep.tabId);
+export default function SongWorkspace({
+  tabs,
+  nextStep,
+  initialTab,
+}: {
+  tabs: SongTab[];
+  nextStep: NextStep;
+  // Los enlaces de fuera (Agenda, Royalties, Distribución) piden pestaña con
+  // ?tab=; el servidor la valida y la pasa aquí ya resuelta.
+  initialTab?: string;
+}) {
+  const [active, setActive] = useState(initialTab ?? nextStep.tabId);
 
   return (
     <div className="space-y-6">

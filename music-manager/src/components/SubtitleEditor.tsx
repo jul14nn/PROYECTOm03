@@ -23,6 +23,7 @@ export default function SubtitleEditor({
   style,
   setStyle,
   defaultOpen = false,
+  initialText,
 }: {
   duration: number;
   lines: SubtitleLine[];
@@ -30,9 +31,10 @@ export default function SubtitleEditor({
   style: SubtitleStyleId;
   setStyle: (s: SubtitleStyleId) => void;
   defaultOpen?: boolean;
+  initialText?: string | null;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const [raw, setRaw] = useState("");
+  const [raw, setRaw] = useState(initialText ?? "");
   const [syncing, setSyncing] = useState(false);
   const [syncIndex, setSyncIndex] = useState(0);
   const syncStart = useRef(0);

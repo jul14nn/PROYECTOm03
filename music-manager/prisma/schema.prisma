@@ -128,6 +128,7 @@ model Song {
   bpm           Int?
   key           String?
   notes         String?
+  lyrics        String? // la letra vive en la canción: el estudio y los vídeos la precargan
   releaseDate   DateTime? // fecha aproximada de lanzamiento, no un compromiso exacto
   lastReminderThreshold Int? // último umbral de días ya avisado por email (30/14/7/3/1)
   createdAt     DateTime  @default(now())

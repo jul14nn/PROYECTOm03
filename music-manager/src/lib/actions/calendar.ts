@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
 import { sendAppEmail, isEmailConfigured } from "@/lib/email/mailer";
+import { buildEventIcs } from "@/lib/email/ics";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -55,6 +56,50 @@ export async function deleteEvent(id: string) {
   redirect("/calendar");
 }
 
+export async function updateEvent(id: string, formData: FormData) {
+  const userId = await requireUserId();
+  const title = str(formData, "title");
+  const startDate = str(formData, "startDate");
+  if (!title || !startDate) throw new Error("Título y fecha de inicio son obligatorios");
+
+  const existing = await prisma.calendarEvent.findFirst({
+    where: { id, userId },
+    select: { startDate: true },
+  });
+  if (!existing) throw new Error("Evento no encontrado");
+
+  const songId = str(formData, "songId");
+  if (songId) {
+    const song = await prisma.song.findFirst({ where: { id: songId, userId }, select: { id: true } });
+    if (!song) throw new Error("Canción no encontrada");
+  }
+
+  const newStart = new Date(startDate);
+  await prisma.calendarEvent.update({
+    where: { id },
+    data: {
+      title,
+      description: str(formData, "description"),
+      location: str(formData, "location"),
+      startDate: newStart,
+      endDate: str(formData, "endDate") ? new Date(str(formData, "endDate")!) : null,
+      songId,
+    },
+  });
+
+  // Si la cita se mueve, las invitaciones ya enviadas dejan de ser verdad:
+  // vuelven a Pendiente para que "Enviar todas" reparta la versión nueva.
+  if (existing.startDate.getTime() !== newStart.getTime()) {
+    await prisma.eventInvite.updateMany({
+      where: { eventId: id, status: "ENVIADA" },
+      data: { status: "PENDIENTE" },
+    });
+  }
+
+  revalidatePath("/calendar");
+  revalidatePath(`/calendar/${id}`);
+}
+
 export async function addInvite(eventId: string, formData: FormData) {
   const userId = await requireUserId();
   const email = str(formData, "email");
@@ -91,6 +136,13 @@ export async function sendInvite(eventId: string, inviteId: string) {
     await sendAppEmail({
       to: invite.email,
       subject: `Invitación: ${event.title}`,
+      attachments: [
+        {
+          filename: "invitacion.ics",
+          content: buildEventIcs(event),
+          contentType: "text/calendar; method=PUBLISH; charset=UTF-8",
+        },
+      ],
       html: `
         <div style="font-family: sans-serif; line-height: 1.5;">
           <h2>${event.title}</h2>

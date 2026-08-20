@@ -68,6 +68,7 @@ export async function cycleDistributionStatus(songId: string, id: string, next: 
     data: { status: next as never },
   });
   revalidatePath(`/songs/${songId}`);
+  revalidatePath("/distribution");
 }
 
 export async function removeDistributionStep(songId: string, id: string) {
