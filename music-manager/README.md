@@ -80,10 +80,44 @@ SMTP_PASS="tu_contraseña_o_api_key"
 SMTP_FROM="Tu Estudio <no-reply@tudominio.com>"
 ```
 
-Con Gmail necesitas generar una "contraseña de aplicación" (no la contraseña normal de la
-cuenta). Si no configuras estas variables, la app sigue funcionando con normalidad; el
+Si no configuras estas variables, la app sigue funcionando con normalidad; el
 enlace de acceso se imprime en consola (ver arriba) y el botón de enviar invitaciones
 mostrará un aviso indicando que falta la configuración SMTP.
+
+#### Gmail en Vercel, paso a paso
+
+Gmail no acepta la contraseña normal de la cuenta: hace falta una **contraseña de
+aplicación**.
+
+1. Activa la verificación en dos pasos en <https://myaccount.google.com/security>
+   (sin ella Google no permite crear contraseñas de aplicación).
+2. Crea una contraseña de aplicación en <https://myaccount.google.com/apppasswords>
+   (por ejemplo, llamada "Music Manager") y copia las 16 letras **sin espacios**.
+3. En Vercel → Settings → Environment Variables añade:
+
+   ```env
+   SMTP_HOST="smtp.gmail.com"
+   SMTP_PORT="465"
+   SMTP_USER="tudireccion@gmail.com"
+   SMTP_PASS="las 16 letras de la contraseña de aplicación"
+   SMTP_FROM="Music Manager <tudireccion@gmail.com>"
+   ```
+
+   El puerto 465 usa conexión segura directa (la app lo detecta sola) y es el que
+   mejor funciona desde serverless. En `SMTP_FROM`, la dirección debe ser la misma
+   cuenta de Gmail: Gmail reescribe el remitente al de la cuenta autenticada, así
+   que un `no-reply@` de otro dominio no llegaría con ese nombre; el nombre visible
+   ("Music Manager") sí se conserva.
+
+4. Redespliega (Deployments → ⋯ → Redeploy): los cambios de variables no se aplican
+   al despliegue ya publicado.
+5. Prueba pidiendo el enlace mágico desde `/login`. Con esto quedan funcionando
+   también las invitaciones de la Agenda (con su adjunto de calendario .ics) y los
+   recordatorios de lanzamiento del cron.
+
+Límite a tener en cuenta: una cuenta de Gmail personal permite unos 500 envíos al
+día. Si algún día se queda corto o quieres remitente con dominio propio, Resend o
+Brevo usan estas mismas variables con otro host.
 
 ### Variable `AUTH_SECRET`
 
