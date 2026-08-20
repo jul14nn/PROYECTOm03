@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  --color-ink-950: #0b0e14;
+  --color-ink-900: #10141d;
+  --color-ink-800: #161b26;
+  --color-ink-700: #1f2532;
+  --color-ink-600: #2a3242;
+  --color-rise-400: #34d399;
+  --color-rise-500: #10b981;
+  --color-fall-400: #f87171;
+  --color-fall-500: #ef4444;
+  --color-signal-400: #60a5fa;
+  --color-signal-500: #3b82f6;
+  --color-amber-400: #fbbf24;
+  --color-trend-500: #d95926;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-ink-950);
+  color: #e5e7eb;
+}
+
+::selection {
+  background: var(--color-signal-500);
+  color: white;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--color-ink-600);
+  border-radius: 999px;
+}
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-ticker {
+  animation: ticker-scroll 40s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
