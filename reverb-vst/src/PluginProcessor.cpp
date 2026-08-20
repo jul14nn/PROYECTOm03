@@ -4,6 +4,15 @@
 namespace diablo
 {
 
+// Presets de fábrica. El primero es el pacto; el resto son ajustes manuales.
+static const Preset factoryPresets[] = {
+    //  nombre        pacto   mix  decay  pre   dark  lowcut duck width deess sync
+    { "Modo Pacto",   true,  25.0f, 1.9f, 40.0f, 45.0f, 130.0f, 6.0f, 100.0f, 60.0f, 0 },
+    { "Capilla",      false, 18.0f, 1.1f, 20.0f, 60.0f, 150.0f, 4.0f,  90.0f, 55.0f, 0 },
+    { "Placa 80s",    false, 28.0f, 2.6f, 60.0f, 20.0f, 110.0f, 6.0f, 110.0f, 70.0f, 0 },
+    { "Estadio",      false, 32.0f, 4.8f, 90.0f, 40.0f, 140.0f, 8.0f, 120.0f, 50.0f, 0 },
+};
+
 DiabloVerbProcessor::DiabloVerbProcessor()
     : AudioProcessor (BusesProperties()
                           .withInput ("Input", juce::AudioChannelSet::stereo(), true)
@@ -56,6 +65,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout DiabloVerbProcessor::createL
         juce::NormalisableRange<float> (0.0f, 120.0f, 1.0f), 100.0f,
         juce::AudioParameterFloatAttributes().withLabel ("%")));
 
+    layout.add (std::make_unique<P> (
+        juce::ParameterID { ParamID::deess, 1 }, "Anti-eses",
+        juce::NormalisableRange<float> (0.0f, 100.0f, 0.1f), 60.0f,
+        juce::AudioParameterFloatAttributes().withLabel ("%")));
+
     layout.add (std::make_unique<juce::AudioParameterBool> (
         juce::ParameterID { ParamID::pacto, 1 }, "Modo Pacto", true));
 
@@ -68,6 +82,7 @@ void DiabloVerbProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 
     plate.prepare (sampleRate);
     ducker.prepare (sampleRate);
+    deEsser.prepare (sampleRate);
     preDelayLine.prepare ((int) std::ceil (0.3 * sampleRate));
 
     juce::dsp::ProcessSpec spec { sampleRate, (juce::uint32) samplesPerBlock, 1 };
@@ -106,8 +121,8 @@ void DiabloVerbProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     juce::ScopedNoDenormals noDenormals;
 
     double bpm = 120.0;
-    if (auto* playHead = getPlayHead())
-        if (auto position = playHead->getPosition())
+    if (auto* head = getPlayHead())
+        if (auto position = head->getPosition())
             if (auto hostBpm = position->getBpm())
                 bpm = *hostBpm;
     lastBpm.store ((float) bpm);
@@ -117,7 +132,7 @@ void DiabloVerbProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     const float mixPct   = apvts.getRawParameterValue (ParamID::mix)->load();
     const float widthPct = apvts.getRawParameterValue (ParamID::width)->load();
 
-    float decaySeconds, preMs, darkPct, lowcutHz, duckDb;
+    float decaySeconds, preMs, darkPct, lowcutHz, duckDb, deessPct;
     if (pacto)
     {
         // La "receta del reverb perfecto", ligada al tempo del proyecto:
@@ -130,6 +145,7 @@ void DiabloVerbProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
         darkPct      = 45.0f;
         lowcutHz     = 130.0f;
         duckDb       = 6.0f;
+        deessPct     = 60.0f;
     }
     else
     {
@@ -140,11 +156,13 @@ void DiabloVerbProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
         darkPct  = apvts.getRawParameterValue (ParamID::dark)->load();
         lowcutHz = apvts.getRawParameterValue (ParamID::lowcut)->load();
         duckDb   = apvts.getRawParameterValue (ParamID::duck)->load();
+        deessPct = apvts.getRawParameterValue (ParamID::deess)->load();
     }
 
     plate.setDecaySeconds (decaySeconds);
     plate.setDamping (0.05f + 0.60f * darkPct / 100.0f);
     ducker.setAmountDb (duckDb);
+    deEsser.setAmount (deessPct / 100.0f);
     sendHighpass.setCutoffFrequency (lowcutHz);
     sendLowpass.setCutoffFrequency (12000.0f * std::pow (2200.0f / 12000.0f, darkPct / 100.0f));
 
@@ -169,6 +187,7 @@ void DiabloVerbProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
 
         float send = sendHighpass.processSample (0, mono);
         send = sendLowpass.processSample (0, send);
+        send = deEsser.process (send);
 
         const float delayed = preDelayLine.readFrac (preDelaySamples.getNextValue());
         preDelayLine.write (send);
@@ -191,6 +210,43 @@ void DiabloVerbProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
         if (right != nullptr)
             right[i] = inR * dry + wetR * wet;
     }
+}
+
+int DiabloVerbProcessor::getNumPrograms()
+{
+    return (int) (sizeof (factoryPresets) / sizeof (factoryPresets[0]));
+}
+
+const juce::String DiabloVerbProcessor::getProgramName (int index)
+{
+    if (index < 0 || index >= getNumPrograms())
+        return {};
+    return factoryPresets[index].name;
+}
+
+void DiabloVerbProcessor::setCurrentProgram (int index)
+{
+    if (index < 0 || index >= getNumPrograms())
+        return;
+    currentProgram = index;
+    const auto& preset = factoryPresets[index];
+
+    auto apply = [this] (const char* id, float value)
+    {
+        if (auto* param = apvts.getParameter (id))
+            param->setValueNotifyingHost (param->convertTo0to1 (value));
+    };
+
+    apply (ParamID::pacto, preset.pacto ? 1.0f : 0.0f);
+    apply (ParamID::mix, preset.mix);
+    apply (ParamID::decay, preset.decay);
+    apply (ParamID::predelay, preset.predelayMs);
+    apply (ParamID::sync, (float) preset.sync);
+    apply (ParamID::dark, preset.dark);
+    apply (ParamID::lowcut, preset.lowcut);
+    apply (ParamID::duck, preset.duck);
+    apply (ParamID::width, preset.width);
+    apply (ParamID::deess, preset.deess);
 }
 
 void DiabloVerbProcessor::getStateInformation (juce::MemoryBlock& destData)

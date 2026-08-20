@@ -5,6 +5,7 @@
 
 #include "dsp/PlateReverb.h"
 #include "dsp/Ducker.h"
+#include "dsp/DeEsser.h"
 
 namespace diablo
 {
@@ -19,8 +20,18 @@ namespace ParamID
     inline constexpr const char* lowcut   = "lowcut";
     inline constexpr const char* duck     = "duck";
     inline constexpr const char* width    = "width";
+    inline constexpr const char* deess    = "deess";
     inline constexpr const char* pacto    = "pacto";
 }
+
+/** Preset de fábrica: un ajuste completo de todos los mandos. */
+struct Preset
+{
+    const char* name;
+    bool pacto;
+    float mix, decay, predelayMs, dark, lowcut, duck, width, deess;
+    int sync;
+};
 
 class DiabloVerbProcessor : public juce::AudioProcessor
 {
@@ -30,6 +41,7 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override {}
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
+    using juce::AudioProcessor::processBlock;
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     juce::AudioProcessorEditor* createEditor() override;
@@ -40,10 +52,10 @@ public:
     bool producesMidi() const override { return false; }
     double getTailLengthSeconds() const override { return 8.0; }
 
-    int getNumPrograms() override { return 1; }
-    int getCurrentProgram() override { return 0; }
-    void setCurrentProgram (int) override {}
-    const juce::String getProgramName (int) override { return {}; }
+    int getNumPrograms() override;
+    int getCurrentProgram() override { return currentProgram; }
+    void setCurrentProgram (int index) override;
+    const juce::String getProgramName (int index) override;
     void changeProgramName (int, const juce::String&) override {}
 
     void getStateInformation (juce::MemoryBlock& destData) override;
@@ -62,6 +74,8 @@ private:
 
     PlateReverb plate;
     Ducker ducker;
+    DeEsser deEsser;
+    int currentProgram = 0;
     juce::dsp::StateVariableTPTFilter<float> sendHighpass, sendLowpass;
     DelayLine preDelayLine;
 

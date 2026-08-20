@@ -19,6 +19,7 @@ y la aplica sola con el **MODO PACTO** activado:
 | **Graves fuera (130 Hz)** | Filtra el aire y el cuerpo antes de entrar al plate | El reverb no ensucia la zona de los graves y el bombo |
 | **Oscuridad (damping)** | Recorta agudos de la cola progresivamente | Menos "chssss" metálico, menos eses reverberadas |
 | **Ducking automático (6 dB)** | El reverb se aparta mientras cantas y florece en los huecos | Voz grande **e** inteligible a la vez: el truco de todos los mezcladores |
+| **Anti-eses en el envío** | De-esser Linkwitz-Riley (~4.8 kHz) solo sobre lo que entra al plate | La cola no escupe "chsss" con cada sibilante; la voz seca no se toca |
 | **Mezcla equipotente** | Subir la mezcla no dispara el volumen | Decides por gusto, no engañado por el loudness |
 
 Con el pacto sellado solo quedan dos mandos a tu gusto: **MEZCLA** (cuánto reverb)
@@ -36,8 +37,18 @@ modulados y taps de salida repartidos para un estéreo denso y sin flutter.
 - **OSCURIDAD** (0–100 %) — damping del tanque + filtro de agudos del envío.
 - **GRAVES FUERA** (40–400 Hz) — paso alto del envío.
 - **DUCKING** (0–12 dB) — cuánto se aparta el reverb mientras cantas.
+- **ANTI-ESES** (0–100 %) — cuánto de-esser aplicar al envío.
 - **ANCHO** (0–120 %) — imagen estéreo de la cola.
 - **MODO PACTO** — la receta completa, automática, ligada al BPM.
+
+## Presets
+
+En el desplegable de la esquina (y como programas del propio VST3):
+
+- **Modo Pacto** — la receta automática. El punto de partida.
+- **Capilla** — corto, oscuro e íntimo. Baladas y voces susurradas.
+- **Placa 80s** — placa brillante y ancha con pre-delay generoso. Estribillos.
+- **Estadio** — cola larga y enorme con más ducking para no embarrar. Momentos épicos.
 
 ## Cómo conseguir el plugin
 
@@ -82,5 +93,6 @@ reverb-vst/
     ├── DiabloLookAndFeel.h # knobs, botones y textos con misprint
     └── dsp/
         ├── PlateReverb.h   # plate Dattorro: difusores + tanque + taps
-        └── Ducker.h        # ducking automático keyed por la voz seca
+        ├── Ducker.h        # ducking automático keyed por la voz seca
+        └── DeEsser.h       # de-esser de dos bandas para el envío
 ```

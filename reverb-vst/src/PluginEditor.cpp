@@ -21,6 +21,7 @@ DiabloVerbEditor::DiabloVerbEditor (DiabloVerbProcessor& p)
     configureKnob (lowcutKnob, lowcutLabel, "GRAVES FUERA", ParamID::lowcut);
     configureKnob (duckKnob, duckLabel, "DUCKING", ParamID::duck);
     configureKnob (widthKnob, widthLabel, "ANCHO", ParamID::width);
+    configureKnob (deessKnob, deessLabel, "ANTI-ESES", ParamID::deess);
 
     syncBox.addItemList ({ "Libre", "1/64", "1/32", "1/16", "1/8" }, 1);
     addAndMakeVisible (syncBox);
@@ -33,6 +34,17 @@ DiabloVerbEditor::DiabloVerbEditor (DiabloVerbProcessor& p)
 
     addAndMakeVisible (pactoButton);
     pactoAttachment = std::make_unique<ButtonAttachment> (processor.apvts, ParamID::pacto, pactoButton);
+
+    for (int i = 0; i < processor.getNumPrograms(); ++i)
+        presetBox.addItem (processor.getProgramName (i), i + 1);
+    presetBox.setTextWhenNothingSelected ("Presets");
+    presetBox.onChange = [this]
+    {
+        const int index = presetBox.getSelectedId() - 1;
+        if (index >= 0)
+            processor.setCurrentProgram (index);
+    };
+    addAndMakeVisible (presetBox);
 
     bpmLabel.setJustificationType (juce::Justification::centredRight);
     bpmLabel.setColour (juce::Label::textColourId, palette::bone.withAlpha (0.75f));
@@ -76,7 +88,8 @@ void DiabloVerbEditor::timerCallback()
     for (auto* c : std::initializer_list<juce::Component*> {
              &decayKnob, &decayLabel, &predelayKnob, &predelayLabel,
              &darkKnob, &darkLabel, &lowcutKnob, &lowcutLabel,
-             &duckKnob, &duckLabel, &syncBox, &syncLabel })
+             &duckKnob, &duckLabel, &deessKnob, &deessLabel,
+             &syncBox, &syncLabel })
     {
         c->setEnabled (! pacto);
         c->setAlpha (pacto ? 0.35f : 1.0f);
@@ -86,7 +99,8 @@ void DiabloVerbEditor::timerCallback()
 void DiabloVerbEditor::resized()
 {
     pactoButton.setBounds (getWidth() - 208, 26, 180, 46);
-    bpmLabel.setBounds (getWidth() - 328, 76, 300, 20);
+    presetBox.setBounds (getWidth() - 208, 82, 180, 26);
+    bpmLabel.setBounds (getWidth() - 368, 112, 340, 20);
 
     // Fila principal: cuatro knobs grandes.
     const int bigSize = 128;
@@ -101,20 +115,20 @@ void DiabloVerbEditor::resized()
         bigKnobs[i]->setBounds (x, bigTop + 20, bigSize, bigSize + 20);
     }
 
-    // Segunda fila: tres knobs pequeños + selector de sync.
-    const int smallSize = 96;
+    // Segunda fila: cuatro knobs pequeños + selector de sync.
+    const int smallSize = 92;
     const int smallTop = 356;
-    const int cell = getWidth() / 4;
-    juce::Slider* smallKnobs[] = { &lowcutKnob, &duckKnob, &widthKnob };
-    juce::Label* smallLabels[] = { &lowcutLabel, &duckLabel, &widthLabel };
-    for (int i = 0; i < 3; ++i)
+    const int cell = getWidth() / 5;
+    juce::Slider* smallKnobs[] = { &lowcutKnob, &duckKnob, &deessKnob, &widthKnob };
+    juce::Label* smallLabels[] = { &lowcutLabel, &duckLabel, &deessLabel, &widthLabel };
+    for (int i = 0; i < 4; ++i)
     {
         const int x = cell * i + (cell - smallSize) / 2;
-        smallLabels[i]->setBounds (x, smallTop, smallSize, 18);
+        smallLabels[i]->setBounds (x - 6, smallTop, smallSize + 12, 18);
         smallKnobs[i]->setBounds (x, smallTop + 20, smallSize, smallSize + 20);
     }
-    syncLabel.setBounds (cell * 3 + (cell - 110) / 2, smallTop, 110, 18);
-    syncBox.setBounds (cell * 3 + (cell - 110) / 2, smallTop + 52, 110, 30);
+    syncLabel.setBounds (cell * 4 + (cell - 110) / 2, smallTop, 110, 18);
+    syncBox.setBounds (cell * 4 + (cell - 110) / 2, smallTop + 52, 110, 30);
 }
 
 void DiabloVerbEditor::buildBackground()

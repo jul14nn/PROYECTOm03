@@ -25,9 +25,9 @@ private:
     DiabloVerbProcessor& processor;
     DiabloLookAndFeel lookAndFeel;
 
-    juce::Slider mixKnob, decayKnob, predelayKnob, darkKnob, lowcutKnob, duckKnob, widthKnob;
-    juce::Label mixLabel, decayLabel, predelayLabel, darkLabel, lowcutLabel, duckLabel, widthLabel;
-    juce::ComboBox syncBox;
+    juce::Slider mixKnob, decayKnob, predelayKnob, darkKnob, lowcutKnob, duckKnob, widthKnob, deessKnob;
+    juce::Label mixLabel, decayLabel, predelayLabel, darkLabel, lowcutLabel, duckLabel, widthLabel, deessLabel;
+    juce::ComboBox syncBox, presetBox;
     juce::Label syncLabel;
     juce::ToggleButton pactoButton { "MODO PACTO" };
     juce::Label bpmLabel;
