@@ -168,7 +168,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
             </form>
             <p className="text-xs text-neutral-600 mt-2">
               ¿No existe el contacto?{" "}
-              <Link href="/contacts" className="text-indigo-400 hover:underline">
+              <Link href="/contacts" className="text-fuchsia-400 hover:underline">
                 Créalo en Contactos
               </Link>
               .
@@ -188,7 +188,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                 <div className="font-medium">{v.title}</div>
                 {v.description && <div className="text-neutral-500 text-xs mt-0.5">{v.description}</div>}
                 {v.referenceUrl && (
-                  <a href={v.referenceUrl} target="_blank" className="text-indigo-400 text-xs flex items-center gap-1 mt-0.5">
+                  <a href={v.referenceUrl} target="_blank" className="text-fuchsia-400 text-xs flex items-center gap-1 mt-0.5">
                     <Link2 size={10} /> Referencia
                   </a>
                 )}
@@ -376,7 +376,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                 <div>
                   <span className="font-medium">{r.name}</span>
                   {r.role && <span className="text-neutral-500 text-xs ml-2">{r.role}</span>}
-                  <span className="text-indigo-300 text-xs ml-2">{r.percentage}%</span>
+                  <span className="text-fuchsia-300 text-xs ml-2">{r.percentage}%</span>
                 </div>
                 <form action={removeRoyalty.bind(null, song.id, r.id)}>
                   <button type="submit" className="text-neutral-500 hover:text-red-400">
@@ -431,7 +431,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
         {song.events.length === 0 && (
           <p className="text-neutral-500 text-sm">
             Sin eventos vinculados.{" "}
-            <Link href={`/calendar/new?songId=${song.id}`} className="text-indigo-400 hover:underline">
+            <Link href={`/calendar/new?songId=${song.id}`} className="text-fuchsia-400 hover:underline">
               Crear evento
             </Link>
             .

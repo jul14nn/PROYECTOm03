@@ -30,7 +30,7 @@ export default async function SongsPage() {
       {songs.length === 0 ? (
         <div className="card p-10 text-center text-neutral-500">
           Todavía no hay canciones.{" "}
-          <Link href="/songs/new" className="text-indigo-400 hover:underline">
+          <Link href="/songs/new" className="text-fuchsia-400 hover:underline">
             Crea la primera
           </Link>
           .

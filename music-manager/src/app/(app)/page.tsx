@@ -63,7 +63,7 @@ export default async function DashboardPage() {
                 <div className="w-32 text-sm text-neutral-400">{STAGE_LABELS[stage]}</div>
                 <div className="flex-1 h-2 rounded-full bg-neutral-900 overflow-hidden">
                   <div
-                    className="h-full bg-indigo-500"
+                    className="h-full bg-fuchsia-500"
                     style={{
                       width: songs.length ? `${(count / songs.length) * 100}%` : "0%",
                     }}
@@ -76,7 +76,7 @@ export default async function DashboardPage() {
           {songs.length === 0 && (
             <p className="text-neutral-500 text-sm mt-4">
               Aún no tienes canciones.{" "}
-              <Link href="/songs/new" className="text-indigo-400 hover:underline">
+              <Link href="/songs/new" className="text-fuchsia-400 hover:underline">
                 Crea la primera
               </Link>
               .
@@ -87,7 +87,7 @@ export default async function DashboardPage() {
         <section className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold">Próximos eventos</h2>
-            <Link href="/calendar" className="text-xs text-indigo-400 hover:underline flex items-center gap-1">
+            <Link href="/calendar" className="text-xs text-fuchsia-400 hover:underline flex items-center gap-1">
               Ver agenda <ArrowRight size={12} />
             </Link>
           </div>
@@ -98,7 +98,7 @@ export default async function DashboardPage() {
                 href={`/calendar/${ev.id}`}
                 className="flex items-start gap-3 text-sm hover:bg-neutral-900 rounded-lg p-2 -mx-2"
               >
-                <CalendarClock size={16} className="text-indigo-400 mt-0.5 shrink-0" />
+                <CalendarClock size={16} className="text-fuchsia-400 mt-0.5 shrink-0" />
                 <div>
                   <div className="font-medium">{ev.title}</div>
                   <div className="text-neutral-500 text-xs">{formatDateTime(ev.startDate)}</div>

@@ -14,8 +14,11 @@ export default function Sidebar({ userEmail }: { userEmail?: string | null }) {
     <aside className="hidden md:flex w-60 shrink-0 border-r border-neutral-800 min-h-screen flex-col">
       <div className="px-5 py-6">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-indigo-500 flex items-center justify-center font-bold">
-            M
+          <div
+            className="h-8 w-8 rounded-lg flex items-center justify-center poster text-sm text-white"
+            style={{ background: "linear-gradient(135deg, var(--accent-violet), var(--accent-magenta))" }}
+          >
+            KR
           </div>
           <span className="font-semibold text-lg">Music Manager</span>
         </div>
@@ -30,7 +33,7 @@ export default function Sidebar({ userEmail }: { userEmail?: string | null }) {
               className={clsx(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                 active
-                  ? "bg-indigo-500/15 text-indigo-300"
+                  ? "bg-fuchsia-500/15 text-fuchsia-300"
                   : "text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100"
               )}
             >
