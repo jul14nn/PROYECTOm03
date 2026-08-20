@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
 import { formatDateApprox } from "@/lib/constants";
+import { daysUntil } from "@/lib/tiktokPlan";
 import SongsBrowser, { type SongRow } from "@/components/SongsBrowser";
 import { Plus } from "lucide-react";
 
@@ -20,7 +21,9 @@ export default async function SongsPage() {
     color: song.color,
     stage: song.stage,
     needsCover: song.needsCover,
+    coverUrl: song.coverUrl,
     releaseLabel: formatDateApprox(song.releaseDate),
+    daysToRelease: song.releaseDate ? daysUntil(song.releaseDate) : null,
     featurings: song.featurings.map((f) => f.artistName),
     producers: song.producers.map((p) => p.contact.name),
   }));

@@ -5,7 +5,8 @@ import Link from "next/link";
 import clsx from "clsx";
 import { StageBadge, ColorDot } from "@/components/Badges";
 import { STAGES, STAGE_LABELS, type Stage } from "@/lib/constants";
-import { ImageOff, Users2, Search, X } from "lucide-react";
+import { ImageOff, Users2, Search, X, List, LayoutGrid } from "lucide-react";
+import Fundas, { type SleeveItem } from "@/components/catalog/Fundas";
 
 export type SongRow = {
   id: string;
@@ -14,7 +15,9 @@ export type SongRow = {
   color: string;
   stage: string;
   needsCover: boolean;
+  coverUrl: string | null;
   releaseLabel: string;
+  daysToRelease: number | null;
   featurings: string[];
   producers: string[];
 };
@@ -22,6 +25,7 @@ export type SongRow = {
 export default function SongsBrowser({ songs }: { songs: SongRow[] }) {
   const [query, setQuery] = useState("");
   const [stage, setStage] = useState<Stage | "ALL">("ALL");
+  const [view, setView] = useState<"lista" | "fundas">("lista");
 
   // Solo se ofrecen como filtro las etapas que realmente tienen canciones,
   // para no llenar la pantalla de botones que no llevan a ninguna parte.
@@ -77,20 +81,46 @@ export default function SongsBrowser({ songs }: { songs: SongRow[] }) {
         )}
       </div>
 
-      {availableStages.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-          <FilterChip active={stage === "ALL"} onClick={() => setStage("ALL")}>
-            Todas ({songs.length})
-          </FilterChip>
-          {availableStages.map((s) => (
-            <FilterChip key={s} active={stage === s} onClick={() => setStage(s)}>
-              {STAGE_LABELS[s]} ({songs.filter((song) => song.stage === s).length})
+      <div className="flex items-center gap-3">
+        {availableStages.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 flex-1 min-w-0">
+            <FilterChip active={stage === "ALL"} onClick={() => setStage("ALL")}>
+              Todas ({songs.length})
             </FilterChip>
-          ))}
+            {availableStages.map((s) => (
+              <FilterChip key={s} active={stage === s} onClick={() => setStage(s)}>
+                {STAGE_LABELS[s]} ({songs.filter((song) => song.stage === s).length})
+              </FilterChip>
+            ))}
+          </div>
+        )}
+        <div
+          className="flex shrink-0 rounded-lg overflow-hidden ml-auto"
+          style={{ border: "1px solid var(--edge)" }}
+        >
+          <ViewButton active={view === "lista"} onClick={() => setView("lista")} label="Ver en lista">
+            <List size={15} />
+          </ViewButton>
+          <ViewButton active={view === "fundas"} onClick={() => setView("fundas")} label="Ver como fundas">
+            <LayoutGrid size={15} />
+          </ViewButton>
         </div>
-      )}
+      </div>
 
-      {filtered.length === 0 ? (
+      {view === "fundas" ? (
+        <Fundas
+          items={filtered.map<SleeveItem>((song) => ({
+            id: song.id,
+            title: song.title,
+            color: song.color,
+            stageLabel: STAGE_LABELS[song.stage as Stage] ?? song.stage,
+            needsCover: song.needsCover,
+            coverUrl: song.coverUrl,
+            releaseLabel: song.releaseLabel,
+            daysToRelease: song.daysToRelease,
+          }))}
+        />
+      ) : filtered.length === 0 ? (
         <div className="card p-10 text-center text-neutral-500">
           Ninguna canción coincide con la búsqueda.
         </div>
@@ -134,6 +164,34 @@ export default function SongsBrowser({ songs }: { songs: SongRow[] }) {
         </div>
       )}
     </div>
+  );
+}
+
+function ViewButton({
+  active,
+  onClick,
+  label,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      aria-label={label}
+      title={label}
+      className={clsx(
+        "px-2.5 py-2 transition-colors",
+        active ? "text-white bg-white/[0.09]" : "text-neutral-500 hover:text-neutral-200"
+      )}
+    >
+      {children}
+    </button>
   );
 }
 

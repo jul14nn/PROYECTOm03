@@ -11,6 +11,8 @@ import {
   LAUNCH_STEPS,
 } from "@/lib/launchPlan";
 import { ColorDot } from "@/components/Badges";
+import Arreglo from "@/components/Arreglo";
+import { buildCampaigns } from "@/lib/campaignSpan";
 import { ArrowRight } from "lucide-react";
 
 export default async function MarketingPage() {
@@ -46,6 +48,7 @@ export default async function MarketingPage() {
     .flatMap((s) => s.marketingBudgets)
     .reduce((a, b) => a + b.actualAmount, 0);
   const adCost = LAUNCH_STEPS.reduce((a, s) => a + (s.cost ?? 0), 0);
+  const arrangement = buildCampaigns(songs);
 
   return (
     <div className="max-w-4xl">
@@ -152,6 +155,14 @@ export default async function MarketingPage() {
             ))}
           </p>
         )}
+      </section>
+
+      {/* ------------------------------------------------------- Calendario */}
+      <section className="mb-16">
+        <h2 className="eyebrow pb-3 border-b border-white/20 mb-6">
+          Calendario de campañas
+        </h2>
+        <Arreglo campaigns={arrangement} />
       </section>
 
       {/* ------------------------------------------------------------- Fases */}
