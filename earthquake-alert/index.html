@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alerta de Terremotos</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>🌍 Alerta de Terremotos</h1>
+    <p class="subtitle">Monitoreo en tiempo real usando datos públicos del USGS</p>
+  </header>
+
+  <main>
+    <section class="card" id="setup-card">
+      <h2>1. Tu zona</h2>
+      <div class="row">
+        <button id="btn-locate" class="btn primary">📍 Usar mi ubicación</button>
+        <span id="location-status" class="status-text">Sin ubicación configurada</span>
+      </div>
+      <div class="row manual-location">
+        <label>Lat <input type="number" id="lat" step="0.0001" placeholder="ej. 19.4326"></label>
+        <label>Lon <input type="number" id="lon" step="0.0001" placeholder="ej. -99.1332"></label>
+        <button id="btn-manual" class="btn">Guardar</button>
+      </div>
+    </section>
+
+    <section class="card" id="prefs-card">
+      <h2>2. Preferencias de alerta</h2>
+      <div class="row">
+        <label>Radio de vigilancia (km)
+          <input type="number" id="radius" min="1" max="20000" value="300">
+        </label>
+        <label>Magnitud mínima
+          <input type="number" id="min-mag" min="0" max="10" step="0.1" value="3.0">
+        </label>
+      </div>
+      <div class="row">
+        <label>Ventana de datos
+          <select id="feed-window">
+            <option value="hour">Última hora (más rápido)</option>
+            <option value="day" selected>Últimas 24 horas</option>
+            <option value="week">Última semana</option>
+          </select>
+        </label>
+        <label>Revisar cada
+          <select id="poll-interval">
+            <option value="60000">1 minuto</option>
+            <option value="120000" selected>2 minutos</option>
+            <option value="300000">5 minutos</option>
+            <option value="600000">10 minutos</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <button id="btn-notify" class="btn">🔔 Activar notificaciones del navegador</button>
+        <span id="notify-status" class="status-text">Notificaciones no activadas</span>
+      </div>
+      <div class="row">
+        <button id="btn-start" class="btn primary">▶️ Iniciar monitoreo</button>
+        <button id="btn-stop" class="btn" disabled>⏸️ Detener</button>
+        <button id="btn-check-now" class="btn">🔄 Revisar ahora</button>
+      </div>
+      <p id="monitor-status" class="status-text">Monitoreo detenido</p>
+    </section>
+
+    <section class="card" id="alert-banner-card" hidden>
+      <div id="alert-banner" class="alert-banner"></div>
+    </section>
+
+    <section class="card">
+      <h2>Sismos detectados en tu zona</h2>
+      <p class="hint">Ordenados del más reciente al más antiguo. Se actualiza automáticamente mientras el monitoreo está activo.</p>
+      <ul id="quake-list" class="quake-list">
+        <li class="empty">Aún no se ha revisado nada.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>Fuente de datos: <a href="https://earthquake.usgs.gov/earthquakes/feed/" target="_blank" rel="noopener">USGS Earthquake Hazards Program</a>. La app funciona mientras esta pestaña esté abierta.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
