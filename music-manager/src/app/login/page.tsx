@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { sendMagicLink } from "@/lib/actions/auth";
+import { isEmailConfigured } from "@/lib/email/mailer";
 
 export default async function LoginPage() {
   const session = await auth();
@@ -38,6 +39,24 @@ export default async function LoginPage() {
           <p className="text-sm text-white/50 mb-5">
             Te enviamos un enlace de acceso a tu email — sin contraseñas.
           </p>
+
+          {/* Sin SMTP el enlace no puede salir. Decirlo aquí, antes de que
+              alguien escriba su email y se quede esperando un correo que
+              nunca va a llegar. En local no aplica: sale por consola. */}
+          {process.env.NODE_ENV === "production" && !isEmailConfigured() && (
+            <p
+              className="text-sm mb-5 rounded-xl p-3"
+              style={{
+                background: "rgba(245, 158, 11, 0.1)",
+                border: "1px solid rgba(245, 158, 11, 0.3)",
+                color: "#fcd34d",
+              }}
+            >
+              El envío de correo no está configurado en este despliegue, así
+              que el enlace no llegaría. Faltan las variables SMTP_HOST,
+              SMTP_USER y SMTP_PASS.
+            </p>
+          )}
           <form action={sendMagicLink} className="space-y-4">
             <div>
               <label className="label" htmlFor="email">

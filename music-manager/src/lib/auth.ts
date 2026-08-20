@@ -43,12 +43,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             .map(([k]) => k);
 
           if (process.env.NODE_ENV === "production") {
+            // Se avisa, pero NO se lanza: Auth.js ejecuta esta función sin
+            // envoltorio de errores, así que una excepción aquí sube sin
+            // traducir y su página la etiqueta como "Configuration", que no
+            // le dice nada a nadie y además deja el login inservible.
+            // El aviso al usuario se da antes, en /login.
             console.error(
               `[music-manager] No se ha enviado el enlace de acceso a ${identifier}: ` +
                 `faltan estas variables de entorno: ${missing.join(", ")}. ` +
                 `Añádelas en el despliegue y vuelve a desplegar.`
             );
-            throw new Error("El envío de correo no está configurado en el servidor.");
+            return;
           }
 
           console.log(`\n[music-manager] Enlace de acceso para ${identifier}:\n${url}\n`);
