@@ -87,6 +87,13 @@ Cualquier otro nombre (saxofón, cuerdas, sintetizador...) cae en la pista
 `other`, que mezcla todo lo que no sea las anteriores — el aislamiento será
 peor porque Demucs no separa esos instrumentos entre sí.
 
+**Batería:** el WAV one-shot funciona muy bien (la detección de ataque es
+precisa en golpes percusivos), pero el MIDI es menos fiable porque
+basic-pitch detecta **tono**, no percusión. Un bombo o un tom tienen algo de
+tono grave y se transcriben razonablemente bien; una caja, hi-hat o platillo
+son ruido de banda ancha sin tono definido, así que el MIDI puede salir
+vacío o poco útil para esos golpes — usa el WAV en esos casos.
+
 ### Opciones útiles
 
 | Opción | Qué hace |

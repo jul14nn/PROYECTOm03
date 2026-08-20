@@ -100,6 +100,15 @@ def extract(
     )
     click.echo(f"WAV one-shot exportado: {wav_path}")
 
+    if stem_name == "drums":
+        click.echo(
+            "Aviso: basic-pitch detecta tono, no percusión. El WAV one-shot es "
+            "fiable, pero el MIDI puede salir vacío o poco preciso para golpes "
+            "sin tono definido (caja, hi-hat, platos); funciona mejor con "
+            "bombo/toms.",
+            err=True,
+        )
+
     clip_start = max(0, int((window_result.onset - pre_roll) * sr))
     clip_end = min(len(samples), int(window_result.offset * sr))
     notes = transcribe.transcribe_segment(samples[clip_start:clip_end], sr, midi_path)
