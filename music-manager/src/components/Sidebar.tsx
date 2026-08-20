@@ -7,7 +7,13 @@ import { signOutAction } from "@/lib/actions/auth";
 import { LogOut } from "lucide-react";
 import clsx from "clsx";
 
-export default function Sidebar({ userEmail }: { userEmail?: string | null }) {
+export default function Sidebar({
+  userName,
+  userEmail,
+}: {
+  userName?: string | null;
+  userEmail?: string | null;
+}) {
   const pathname = usePathname();
 
   return (
@@ -44,9 +50,14 @@ export default function Sidebar({ userEmail }: { userEmail?: string | null }) {
         })}
       </nav>
       <div className="px-3 py-4 border-t border-neutral-800">
-        {userEmail && (
-          <div className="px-2 mb-2 text-xs text-neutral-500 truncate" title={userEmail}>
-            {userEmail}
+        {(userName || userEmail) && (
+          <div className="px-2 mb-2 truncate" title={userEmail ?? undefined}>
+            {userName && <div className="text-sm text-neutral-200">{userName}</div>}
+            {userEmail && (
+              <div className={clsx("text-xs text-neutral-500", userName && "text-[0.7rem]")}>
+                {userEmail}
+              </div>
+            )}
           </div>
         )}
         <form action={signOutAction}>
