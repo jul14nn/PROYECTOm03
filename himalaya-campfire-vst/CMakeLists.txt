@@ -38,7 +38,6 @@ juce_add_binary_data(HimalayaCampfireWebUI
         WebUI/cherub.js
         WebUI/knob.js
         WebUI/app.js
-        WebUI/vendor/rough.js
         WebUI/vendor/juce-webview-interop.js)
 
 target_sources(HimalayaCampfire

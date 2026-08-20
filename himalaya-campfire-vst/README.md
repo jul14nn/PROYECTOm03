@@ -6,15 +6,19 @@ querubín de alas azules que le susurra al oído — todo arte original
 dibujado por código, en el mismo estilo grunge/boceteado del resto del
 proyecto.
 
-- **Puramente visual**: el audio pasa sin modificarse (passthrough).
-- Un único parámetro, **Intensity**, controla el susurro: el ritmo del
-  aleteo del ala, las partículas y ondas que entran al canal auditivo y el
-  resplandor pulsante. Al ser un parámetro real del plugin se puede
-  **automatizar desde FL Studio** (clip de automatización, link a un
-  controlador MIDI…), al estilo del knob de Endless Smile.
-- La interfaz es una escena web (canvas + rough.js) incrustada con el
-  WebView nativo de JUCE (WebView2 en Windows, WebKit en macOS), con
-  sincronización bidireccional knob ↔ DAW.
+- **Puramente visual**: el audio pasa sin modificarse (passthrough). El
+  plugin lo mide, pero no lo toca.
+- **Reacciona a la música**: el procesador mide el nivel RMS de lo que
+  pasa por el canal y se lo envía a la interfaz 30 veces por segundo, así
+  que el aleteo y el susurro siguen al sonido en vez de animarse solos.
+- El parámetro **Intensity** decide *cuánto* reacciona (el audio decide
+  *cuándo*). Al ser un parámetro real del plugin se puede **automatizar
+  desde FL Studio** (clip de automatización, link a un controlador MIDI…),
+  al estilo del knob de Endless Smile. Sin señal queda una animación de
+  reposo, para que el plugin nunca parezca congelado.
+- La interfaz es una escena web (canvas 2D, sin dependencias) incrustada
+  con el WebView nativo de JUCE (WebView2 en Windows, WebKit en macOS),
+  con sincronización bidireccional knob ↔ DAW.
 
 > Nota: la carpeta y el target de CMake conservan el nombre histórico
 > `himalaya-campfire-vst`/`HimalayaCampfire` (el proyecto nació como una
@@ -93,3 +97,23 @@ necesarias para compilar JUCE con WebView.
 - El arte (oreja, querubín) es original, generado por código; el concepto
   visual está inspirado en la estética collage de referencia del usuario,
   sin reutilizar la imagen.
+
+## Cómo está dibujado
+
+Todo el arte se genera por código, sin imágenes ni vídeo:
+
+- `WebUI/scene.js` — la oreja. Se pinta suave (silueta, hélix, antihélix,
+  cuenca, canal, trago, lóbulo) en un lienzo auxiliar y después se
+  **retrama**: se lee la luminancia de cada celda y se redibuja como un
+  punto de ese tamaño, que es lo que da el aspecto de serigrafía. El canal
+  se repinta en negro sólido por encima para que se lea como hueco y no
+  como sombra. Se calcula una sola vez por tamaño de ventana.
+- `WebUI/cherub.js` — el querubín. Cada capa del cuerpo (pierna trasera,
+  tronco, pierna delantera, cabeza, brazo) se dibuja como **silueta
+  fusionada**: primero todas sus piezas rellenas y perfiladas en oscuro,
+  después rellenas en claro sin perfil. Al ir por capas de atrás hacia
+  delante, el contorno de cada una recorta la anterior y los miembros se
+  distinguen. Un temblor por ruido ("boiling") imita el redibujado a mano.
+- `WebUI/app.js` — bucle de animación, mezcla de knob + nivel de audio, y
+  una textura de grano que se superpone desplazada en cada fotograma para
+  que oreja y querubín compartan el mismo ruido de impresión.

@@ -1,19 +1,25 @@
-// Módulo principal del plugin: bucle de animación + sincronización
-// bidireccional del knob con el parámetro "intensity" del DAW. Si la página
-// se abre fuera de JUCE (en un navegador normal, para desarrollo), el interop
-// instala un stub de window.__JUCE__ y el knob funciona en local sin DAW.
+// Módulo principal del plugin: bucle de animación, sincronización bidireccional
+// del knob con el parámetro "intensity" del DAW, y recepción del nivel de audio
+// que el procesador envía para que la escena reaccione a la música.
+//
+// Si la página se abre fuera de JUCE (en un navegador, para desarrollo), el
+// interop instala un stub de window.__JUCE__: el knob sigue funcionando y el
+// nivel de audio se queda a cero.
 import { getSliderState } from "./vendor/juce-webview-interop.js";
 
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
-const rc = rough.canvas(canvas);
 
 let background = null;
 let sceneLayout = null;
+let grainTile = null;
+let grainPattern = null;
 let width = 0;
 let height = 0;
 const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
+//==============================================================================
+// Parámetro "intensity" <-> knob
 const intensityState = getSliderState("intensity");
 
 Knob.attach(document.getElementById("knob"), {
@@ -29,6 +35,17 @@ intensityState.valueChangedEvent.addListener(syncFromHost);
 intensityState.propertiesChangedEvent.addListener(syncFromHost);
 syncFromHost();
 
+//==============================================================================
+// Nivel de audio enviado por el procesador (0..1, ya suavizado en C++).
+let audioLevel = 0;
+let smoothedLevel = 0;
+
+window.__JUCE__.backend.addEventListener("audioLevel", (payload) => {
+  const value = typeof payload === "number" ? payload : payload?.level;
+  if (typeof value === "number" && Number.isFinite(value)) audioLevel = value;
+});
+
+//==============================================================================
 function resize() {
   width = window.innerWidth;
   height = window.innerHeight;
@@ -40,6 +57,10 @@ function resize() {
 
   background = Scene.build(width, height);
   sceneLayout = Scene.layout(width, height);
+
+  if (grainTile === null) grainTile = Scene.buildGrainTile();
+  grainPattern = ctx.createPattern(grainTile, "repeat");
+
   Cherub.reset();
 }
 
@@ -50,19 +71,35 @@ function frame() {
   const dt = Math.min(0.05, now - lastTime);
   lastTime = now;
 
+  // El nivel sube rápido y cae despacio: así el golpe se ve y la caída
+  // acompaña al sonido en vez de parpadear con cada bloque de audio.
+  const attack = audioLevel > smoothedLevel ? 0.55 : 0.06;
+  smoothedLevel += (audioLevel - smoothedLevel) * attack;
+
+  // El knob decide cuánto reacciona la escena; el audio, cuándo. Sin señal
+  // queda una animación de reposo para que el plugin nunca parezca congelado.
+  const drive = Math.min(1, Knob.value * (0.32 + 0.85 * smoothedLevel));
+
   ctx.clearRect(0, 0, width, height);
   ctx.drawImage(background, 0, 0, width, height);
 
-  const intensity = Knob.value;
+  Cherub.update(dt, now, drive, sceneLayout.canal);
 
-  Cherub.update(dt, now, intensity);
-
-  // El querubín y el susurro se dibujan en coordenadas del design box.
   ctx.save();
   ctx.translate(sceneLayout.ox, sceneLayout.oy);
   ctx.scale(sceneLayout.scale, sceneLayout.scale);
-  Cherub.draw(ctx, rc, now, intensity, sceneLayout.canal);
+  Cherub.draw(ctx, now, drive, sceneLayout.canal);
   ctx.restore();
+
+  // Grano por encima de todo, desplazado cada fotograma, para que el
+  // querubín y la oreja compartan la misma textura de impresión.
+  if (grainPattern) {
+    ctx.save();
+    ctx.translate(-Math.floor(Math.random() * 180), -Math.floor(Math.random() * 180));
+    ctx.fillStyle = grainPattern;
+    ctx.fillRect(0, 0, width + 180, height + 180);
+    ctx.restore();
+  }
 
   requestAnimationFrame(frame);
 }

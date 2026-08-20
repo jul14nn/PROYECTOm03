@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <juce_audio_processors/juce_audio_processors.h>
 
 namespace ID
@@ -8,9 +9,10 @@ static const juce::ParameterID intensity { "intensity", 1 };
 }
 
 //==============================================================================
-// Plugin puramente visual: el audio pasa sin modificarse. El único parámetro,
-// "intensity", es automatizable desde el DAW y controla la animación de la
-// fogata en el editor (ver PluginEditor).
+// Plugin puramente visual: el audio pasa sin modificarse. El parámetro
+// "intensity" es automatizable desde el DAW y decide cuánto reacciona la
+// animación; el nivel del audio que atraviesa el plugin decide cuándo (ver
+// getCurrentLevel y PluginEditor).
 class HimalayaCampfireAudioProcessor : public juce::AudioProcessor
 {
 public:
@@ -46,8 +48,16 @@ public:
 
     juce::AudioProcessorValueTreeState state;
 
+    // Nivel del audio que atraviesa el plugin, ya mapeado a 0..1 para la
+    // interfaz. Lo escribe el hilo de audio y lo lee el editor, de ahí el
+    // atomic: nunca bloquea processBlock.
+    float getCurrentLevel() const noexcept { return currentLevel.load (std::memory_order_relaxed); }
+
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+
+    std::atomic<float> currentLevel { 0.0f };
+    float levelDecay = 0.0f;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HimalayaCampfireAudioProcessor)
 };

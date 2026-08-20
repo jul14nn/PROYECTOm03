@@ -15,7 +15,8 @@ struct SinglePageBrowser : juce::WebBrowserComponent
     bool pageAboutToLoad (const juce::String& newURL) override;
 };
 
-class HimalayaCampfireAudioProcessorEditor : public juce::AudioProcessorEditor
+class HimalayaCampfireAudioProcessorEditor : public juce::AudioProcessorEditor,
+                                             private juce::Timer
 {
 public:
     explicit HimalayaCampfireAudioProcessorEditor (HimalayaCampfireAudioProcessor&);
@@ -26,7 +27,13 @@ public:
     void resized() override;
 
 private:
+    // Empuja el nivel de audio a la interfaz web. Solo emite si el navegador
+    // está visible, así un editor cerrado no cuesta nada.
+    void timerCallback() override;
+
     HimalayaCampfireAudioProcessor& processorRef;
+
+    float lastSentLevel = -1.0f;
 
     juce::WebSliderRelay intensitySliderRelay { "intensity" };
 

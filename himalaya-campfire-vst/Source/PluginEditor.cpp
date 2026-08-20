@@ -78,6 +78,21 @@ HimalayaCampfireAudioProcessorEditor::HimalayaCampfireAudioProcessorEditor (Hima
     setResizable (true, true);
     setResizeLimits (480, 320, 3840, 2160);
     setSize (900, 560);
+
+    startTimerHz (30);
+}
+
+void HimalayaCampfireAudioProcessorEditor::timerCallback()
+{
+    const auto level = processorRef.getCurrentLevel();
+
+    // Silencio sostenido: deja de emitir en vez de repetir ceros.
+    if (level <= 0.0005f && lastSentLevel <= 0.0005f)
+        return;
+
+    lastSentLevel = level;
+    // var{float} sería ambiguo (double/int/bool): se pasa como double.
+    webComponent.emitEventIfBrowserIsVisible ("audioLevel", juce::var { (double) level });
 }
 
 void HimalayaCampfireAudioProcessorEditor::paint (juce::Graphics& g)
