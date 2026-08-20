@@ -55,6 +55,18 @@ def separate_stems(
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
+        # El fallo más habitual con diferencia es no tener Demucs instalado.
+        # Merece un mensaje que diga qué hacer, porque este error también se
+        # muestra tal cual en el panel del plugin, donde un volcado del
+        # comando no le sirve de nada a quien lo lee.
+        if "No module named" in result.stderr and "demucs" in result.stderr:
+            raise SeparationError(
+                "Demucs no está instalado, así que no se puede separar el "
+                "instrumento de la mezcla. Instálalo con 'pip install demucs', "
+                "o desmarca la separación si el canal ya trae el instrumento "
+                "aislado."
+            )
+
         raise SeparationError(
             "Demucs falló al separar las pistas.\n"
             f"Comando: {' '.join(cmd)}\n"
