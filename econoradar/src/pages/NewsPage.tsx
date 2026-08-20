@@ -1,18 +1,36 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { news } from '../data/news'
-import { CATEGORY_LABELS, type Category } from '../types'
+import { news as localNews } from '../data/news'
+import { CATEGORY_LABELS, type Category, type NewsArticle } from '../types'
 import { NewsCard } from '../components/NewsCard'
+import { fetchLiveNews, isLiveNewsConfigured } from '../services/newsApi'
 
 const categories = Object.keys(CATEGORY_LABELS) as Category[]
 
 export function NewsPage() {
   const [activeCategory, setActiveCategory] = useState<Category | 'todas'>('todas')
   const [query, setQuery] = useState('')
+  const [liveNews, setLiveNews] = useState<NewsArticle[]>([])
+  const [liveStatus, setLiveStatus] = useState<'idle' | 'loading' | 'loaded' | 'unavailable'>('idle')
   const navigate = useNavigate()
 
+  useEffect(() => {
+    if (!isLiveNewsConfigured()) return
+    setLiveStatus('loading')
+    fetchLiveNews().then((articles) => {
+      if (articles && articles.length > 0) {
+        setLiveNews(articles)
+        setLiveStatus('loaded')
+      } else {
+        setLiveStatus('unavailable')
+      }
+    })
+  }, [])
+
+  const allNews = useMemo(() => [...liveNews, ...localNews], [liveNews])
+
   const filtered = useMemo(() => {
-    const sorted = [...news].sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1))
+    const sorted = [...allNews].sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1))
     const byCategory =
       activeCategory === 'todas' ? sorted : sorted.filter((n) => n.category === activeCategory)
 
@@ -24,7 +42,7 @@ export function NewsPage() {
         field.toLowerCase().includes(q),
       ),
     )
-  }, [activeCategory, query])
+  }, [allNews, activeCategory, query])
 
   return (
     <div>
@@ -34,6 +52,14 @@ export function NewsPage() {
           Un resumen curado de lo que está moviendo la economía global hoy. Cada noticia con proyección incluye un
           análisis de hacia dónde podría derivar la situación.
         </p>
+        {liveStatus === 'loading' && (
+          <p className="mt-2 text-xs text-signal-400">Actualizando con noticias en vivo…</p>
+        )}
+        {liveStatus === 'loaded' && (
+          <p className="mt-2 text-xs text-rise-400">
+            {liveNews.length} noticias en vivo cargadas, combinadas con la cobertura curada de EconoRadar.
+          </p>
+        )}
       </div>
 
       <div className="mb-4">

@@ -403,6 +403,149 @@ export const forecasts: Forecast[] = [
     ],
     updatedAt: '2026-08-13',
   },
+  {
+    id: 'f6',
+    title: 'Crédito más barato choca con una oferta de vivienda que no reacciona',
+    category: 'vivienda',
+    situation:
+      'Las tasas hipotecarias caen ante la expectativa de recortes del banco central, pero la construcción de vivienda nueva sigue sin acelerar al ritmo necesario para cerrar el déficit habitacional.',
+    relatedNewsIds: ['n11', 'n12'],
+    autoAnalysis: {
+      summary:
+        'Cuando la demanda reacciona más rápido que la oferta —típico tras una caída de tasas—, el patrón histórico es una recuperación de precios de vivienda antes que un repunte real de construcción, que suele rezagarse 2 a 4 trimestres por restricciones de permisos y mano de obra.',
+      signals: [
+        'Las solicitudes de hipoteca ya muestran un repunte del 12% intermensual',
+        'Los permisos de construcción crecen solo 1.5% frente al 4% que requeriría cerrar el déficit',
+        'El costo de materiales de construcción se mantiene estable, sin ser el cuello de botella',
+      ],
+      generatedAt: '2026-08-19',
+    },
+    expertOpinions: [
+      {
+        analystId: 'a6',
+        opinion:
+          'Vamos hacia una nueva fase de presión sobre precios: más compradores con acceso a crédito compitiendo por una oferta que no crece. Sin una respuesta regulatoria sobre permisos, el alivio de tasas se traduce en precios, no en más viviendas.',
+        confidence: 4,
+        horizon: 'medio',
+        predictedEvents: [
+          'Repunte de precios de vivienda usada en los próximos 2 trimestres',
+          'Mayor competencia por vivienda de entrada, afectando a compradores primerizos',
+          'Presión política por reformas a permisos de construcción locales',
+        ],
+        publishedAt: '2026-08-19',
+      },
+      {
+        analystId: 'a1',
+        opinion:
+          'El repunte del sector inmobiliario es justo el tipo de señal que el banco central vigila para no recortar tasas demasiado rápido: no quiere reinflar una burbuja de precios de activos.',
+        confidence: 3,
+        horizon: 'medio',
+        predictedEvents: [
+          'El banco central menciona explícitamente el mercado de vivienda en su próxima comunicación',
+          'Posible moderación en el ritmo de futuros recortes si los precios aceleran demasiado',
+        ],
+        publishedAt: '2026-08-19',
+      },
+    ],
+    scenarios: [
+      {
+        id: 'f6-s1',
+        label: 'Precios suben mientras la oferta se ajusta con rezago',
+        probability: 0.5,
+        horizon: 'medio',
+        description: 'La demanda reactivada por el crédito más barato presiona precios antes de que la construcción responda.',
+        impacts: ['Menor accesibilidad para compradores primerizos', 'Mayor atractivo de la vivienda como inversión'],
+      },
+      {
+        id: 'f6-s2',
+        label: 'Reformas de permisos aceleran la construcción',
+        probability: 0.25,
+        horizon: 'largo',
+        description: 'Gobiernos locales responden a la presión política flexibilizando permisos y zonificación.',
+        impacts: ['Alivio gradual del déficit habitacional', 'Impulso al empleo en construcción'],
+      },
+      {
+        id: 'f6-s3',
+        label: 'El banco central modera recortes por temor a burbuja de activos',
+        probability: 0.25,
+        horizon: 'medio',
+        description: 'La aceleración de precios de vivienda lleva a una postura más cautelosa sobre el ritmo de bajadas de tasas.',
+        impacts: ['Menor alivio del que el mercado espera en el crédito hipotecario', 'Mayor volatilidad en expectativas de tasas'],
+      },
+    ],
+    updatedAt: '2026-08-19',
+  },
+  {
+    id: 'f7',
+    title: 'Cripto entre la liquidez fácil y una regulación más estricta',
+    category: 'cripto',
+    situation:
+      'Bitcoin repunta con fuerza ante expectativas de condiciones financieras más laxas, justo cuando los reguladores europeos endurecen las reglas para stablecoins, dos fuerzas que tironean en direcciones opuestas.',
+    relatedNewsIds: ['n13', 'n14'],
+    autoAnalysis: {
+      summary:
+        'Los repuntes de criptoactivos ligados a expectativas de liquidez tienden a ser más volátiles que los impulsados por adopción real. La nueva regulación de stablecoins, al reducir el riesgo sistémico percibido, podría paradójicamente atraer capital institucional a mediano plazo.',
+      signals: [
+        'La correlación entre bitcoin y los índices de renta variable de alto crecimiento se mantiene elevada',
+        'El volumen en stablecoins reguladas crece más rápido que en las no reguladas desde el anuncio',
+        'Los flujos hacia productos cotizados de criptoactivos se aceleran en las últimas dos semanas',
+      ],
+      generatedAt: '2026-08-19',
+    },
+    expertOpinions: [
+      {
+        analystId: 'a7',
+        opinion:
+          'El repunte actual está más ligado a expectativas de liquidez que a un cambio estructural de adopción, lo que lo hace vulnerable a una corrección si el banco central sorprende manteniendo tasas.',
+        confidence: 3,
+        horizon: 'corto',
+        predictedEvents: [
+          'Alta volatilidad de bitcoin alrededor de la próxima reunión del banco central',
+          'Mayor diferenciación entre criptoactivos regulados y no regulados en flujos institucionales',
+        ],
+        publishedAt: '2026-08-19',
+      },
+      {
+        analystId: 'a2',
+        opinion:
+          'La regulación de stablecoins, aunque restrictiva en lo inmediato, es el tipo de marco que los grandes inversores institucionales necesitaban para entrar con más confianza al sector.',
+        confidence: 3,
+        horizon: 'largo',
+        predictedEvents: [
+          'Entrada gradual de nuevos productos institucionales sobre stablecoins reguladas',
+          'Consolidación de emisores de stablecoins que no cumplan los nuevos requisitos',
+        ],
+        publishedAt: '2026-08-19',
+      },
+    ],
+    scenarios: [
+      {
+        id: 'f7-s1',
+        label: 'Corrección tras el exceso de optimismo sobre tasas',
+        probability: 0.4,
+        horizon: 'corto',
+        description: 'Si el banco central no confirma el recorte esperado, el repunte cripto se revierte parcialmente.',
+        impacts: ['Alta volatilidad de corto plazo', 'Liquidaciones en posiciones apalancadas'],
+      },
+      {
+        id: 'f7-s2',
+        label: 'Adopción institucional se acelera con el nuevo marco regulatorio',
+        probability: 0.35,
+        horizon: 'largo',
+        description: 'La claridad regulatoria sobre stablecoins atrae capital institucional de forma sostenida.',
+        impacts: ['Menor volatilidad estructural en el mediano plazo', 'Mayor integración con el sistema financiero tradicional'],
+      },
+      {
+        id: 'f7-s3',
+        label: 'El repunte se sostiene y se amplía a otros criptoactivos',
+        probability: 0.25,
+        horizon: 'medio',
+        description: 'La combinación de liquidez y regulación más clara sostiene el rally más allá de bitcoin.',
+        impacts: ['Mayor apetito de riesgo generalizado', 'Renovado interés minorista en el sector'],
+      },
+    ],
+    updatedAt: '2026-08-19',
+  },
 ]
 
 export function getForecast(id: string): Forecast | undefined {

@@ -51,6 +51,26 @@ export const analysts: Analyst[] = [
     bio: 'Estudia el impacto económico de la adopción de inteligencia artificial y automatización en la productividad.',
     accuracyScore: 69,
   },
+  {
+    id: 'a6',
+    name: 'Lucía Bermejo',
+    role: 'Analista de Vivienda y Crédito',
+    institution: 'Observatorio Inmobiliario Delta',
+    initials: 'LB',
+    specialty: ['vivienda', 'politica-monetaria'],
+    bio: 'Sigue la relación entre tasas hipotecarias, oferta de vivienda y accesibilidad en mercados urbanos.',
+    accuracyScore: 73,
+  },
+  {
+    id: 'a7',
+    name: 'Kenji Osawa',
+    role: 'Estratega de Activos Digitales',
+    institution: 'Ledger & Macro Partners',
+    initials: 'KO',
+    specialty: ['cripto', 'mercados'],
+    bio: 'Analiza la correlación entre criptoactivos, liquidez global y política monetaria de los principales bancos centrales.',
+    accuracyScore: 65,
+  },
 ]
 
 export function getAnalyst(id: string): Analyst | undefined {

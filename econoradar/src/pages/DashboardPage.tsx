@@ -6,6 +6,8 @@ import { CATEGORY_LABELS } from '../types'
 import { Badge } from '../components/Badge'
 import { ConsensusBadge } from '../components/ConsensusBadge'
 import { NewsCard } from '../components/NewsCard'
+import { InflationTrendChart } from '../components/charts/InflationTrendChart'
+import { CategoryBarChart } from '../components/charts/CategoryBarChart'
 
 function StatTile({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
@@ -50,7 +52,11 @@ export function DashboardPage() {
       </section>
 
       <div className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <StatTile label="Noticias activas" value={String(news.length)} hint="Cubriendo 8 categorías económicas" />
+        <StatTile
+          label="Noticias activas"
+          value={String(news.length)}
+          hint={`Cubriendo ${Object.keys(CATEGORY_LABELS).length} categorías económicas`}
+        />
         <StatTile
           label="Proyecciones abiertas"
           value={String(forecasts.length)}
@@ -62,6 +68,14 @@ export function DashboardPage() {
           hint="Especializados en distintas áreas"
         />
       </div>
+
+      <section className="mb-10">
+        <h2 className="mb-4 text-left text-lg font-semibold text-gray-100">Tendencias</h2>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <InflationTrendChart />
+          <CategoryBarChart />
+        </div>
+      </section>
 
       <section className="mb-10">
         <div className="mb-4 flex items-baseline justify-between">

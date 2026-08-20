@@ -7,6 +7,8 @@ export type Category =
   | 'energia'
   | 'tecnologia'
   | 'fiscal'
+  | 'cripto'
+  | 'vivienda'
 
 export type Sentiment = 'positivo' | 'negativo' | 'neutral'
 
@@ -81,6 +83,8 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   energia: 'Energía',
   tecnologia: 'Tecnología',
   fiscal: 'Política Fiscal',
+  cripto: 'Criptomonedas',
+  vivienda: 'Vivienda',
 }
 
 export const HORIZON_LABELS: Record<Horizon, string> = {
