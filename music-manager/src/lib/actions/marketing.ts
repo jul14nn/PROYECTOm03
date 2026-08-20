@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
 import { assertSongOwner } from "@/lib/actions/helpers";
+import { defaultMarketingPlan } from "@/lib/marketingPlan";
 import { revalidatePath } from "next/cache";
 
 function str(fd: FormData, key: string) {
@@ -62,5 +63,22 @@ export async function toggleMarketingIdea(songId: string, id: string, status: st
 export async function removeMarketingIdea(songId: string, id: string) {
   const userId = await requireUserId();
   await prisma.marketingIdea.deleteMany({ where: { id, songId, song: { userId } } });
+  revalidatePath(`/songs/${songId}`);
+}
+
+export async function generateMarketingPlan(songId: string) {
+  const userId = await requireUserId();
+  const song = await prisma.song.findFirst({ where: { id: songId, userId } });
+  if (!song) throw new Error("Canción no encontrada");
+
+  const { ideas, budgets } = defaultMarketingPlan(song.releaseDate);
+
+  await prisma.marketingIdea.createMany({
+    data: ideas.map((i) => ({ ...i, songId })),
+  });
+  await prisma.marketingBudgetItem.createMany({
+    data: budgets.map((b) => ({ ...b, songId, currency: "EUR" })),
+  });
+
   revalidatePath(`/songs/${songId}`);
 }
