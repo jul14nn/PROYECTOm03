@@ -9,14 +9,10 @@ const ctx = canvas.getContext("2d");
 const rc = rough.canvas(canvas);
 
 let background = null;
-let stars = [];
+let sceneLayout = null;
 let width = 0;
 let height = 0;
 const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-let windGust = 0;
-let windTarget = 0;
-let nextWindChange = 0;
 
 const intensityState = getSliderState("intensity");
 
@@ -43,26 +39,8 @@ function resize() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   background = Scene.build(width, height);
-  stars = Scene.buildStars(width, height);
-  Fire.reset();
-}
-
-function drawStars(time) {
-  stars.forEach((s) => {
-    const twinkle = 0.5 + 0.5 * Math.sin(time * s.speed + s.phase);
-    ctx.beginPath();
-    ctx.fillStyle = `rgba(255,255,255,${0.35 + twinkle * 0.55})`;
-    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    ctx.fill();
-  });
-}
-
-function updateWind(time, dt) {
-  if (time > nextWindChange) {
-    windTarget = (Math.random() - 0.5) * (0.4 + Knob.value * 0.6);
-    nextWindChange = time + 2 + Math.random() * 4;
-  }
-  windGust += (windTarget - windGust) * Math.min(1, dt * 1.5);
+  sceneLayout = Scene.layout(width, height);
+  Cherub.reset();
 }
 
 let lastTime = performance.now() / 1000;
@@ -74,16 +52,17 @@ function frame() {
 
   ctx.clearRect(0, 0, width, height);
   ctx.drawImage(background, 0, 0, width, height);
-  drawStars(now);
 
-  updateWind(now, dt);
-
-  const cx = width / 2;
-  const baseY = height * 0.86;
   const intensity = Knob.value;
 
-  Fire.update(dt, now, cx, baseY, intensity, windGust);
-  Fire.draw(ctx, rc, now, cx, baseY, intensity, windGust);
+  Cherub.update(dt, now, intensity);
+
+  // El querubín y el susurro se dibujan en coordenadas del design box.
+  ctx.save();
+  ctx.translate(sceneLayout.ox, sceneLayout.oy);
+  ctx.scale(sceneLayout.scale, sceneLayout.scale);
+  Cherub.draw(ctx, rc, now, intensity, sceneLayout.canal);
+  ctx.restore();
 
   requestAnimationFrame(frame);
 }

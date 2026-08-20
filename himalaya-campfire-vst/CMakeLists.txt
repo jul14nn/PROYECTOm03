@@ -19,7 +19,7 @@ juce_add_plugin(HimalayaCampfire
     PLUGIN_MANUFACTURER_CODE Hcfp
     PLUGIN_CODE Fire
     FORMATS VST3 Standalone
-    PRODUCT_NAME "Himalaya Campfire"
+    PRODUCT_NAME "Angel Whisper"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
@@ -35,7 +35,7 @@ juce_add_binary_data(HimalayaCampfireWebUI
         WebUI/style.css
         WebUI/noise.js
         WebUI/scene.js
-        WebUI/fire.js
+        WebUI/cherub.js
         WebUI/knob.js
         WebUI/app.js
         WebUI/vendor/rough.js

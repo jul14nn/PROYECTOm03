@@ -1,17 +1,24 @@
-# Himalaya Campfire — plugin VST3 para FL Studio
+# Angel Whisper — plugin VST3 para FL Studio
 
-La misma fogata ilustrada del Himalaya de `himalaya-campfire/` (la app de
-escritorio), pero como **plugin VST3** que puedes cargar en FL Studio (o en
-cualquier DAW que soporte VST3 en Windows/macOS).
+Plugin visual para FL Studio (o cualquier DAW con VST3 en Windows/macOS):
+una gran oreja roja con textura de semitono/grano sobre fondo negro y un
+querubín de alas azules que le susurra al oído — todo arte original
+dibujado por código, en el mismo estilo grunge/boceteado del resto del
+proyecto.
 
 - **Puramente visual**: el audio pasa sin modificarse (passthrough).
-- Un único parámetro, **Intensity**, controla en vivo la altura de las
-  llamas, las chispas y el viento. Al ser un parámetro real del plugin, se
-  puede **automatizar desde FL Studio** (clip de automatización, tweaking,
-  link a un controlador MIDI…) igual que el knob de Endless Smile.
-- La interfaz es la misma escena web (canvas + rough.js) incrustada con el
+- Un único parámetro, **Intensity**, controla el susurro: el ritmo del
+  aleteo del ala, las partículas y ondas que entran al canal auditivo y el
+  resplandor pulsante. Al ser un parámetro real del plugin se puede
+  **automatizar desde FL Studio** (clip de automatización, link a un
+  controlador MIDI…), al estilo del knob de Endless Smile.
+- La interfaz es una escena web (canvas + rough.js) incrustada con el
   WebView nativo de JUCE (WebView2 en Windows, WebKit en macOS), con
   sincronización bidireccional knob ↔ DAW.
+
+> Nota: la carpeta y el target de CMake conservan el nombre histórico
+> `himalaya-campfire-vst`/`HimalayaCampfire` (el proyecto nació como una
+> fogata); el plugin que ve el DAW se llama **Angel Whisper**.
 
 ## Cómo conseguir el .vst3 (GitHub Actions)
 
@@ -19,19 +26,19 @@ No hace falta instalar Visual Studio ni Xcode: el workflow
 `.github/workflows/build-vst.yml` compila automáticamente en cada push que
 toque esta carpeta y sube el plugin como artefacto:
 
-1. Ve a la pestaña **Actions** del repo → workflow "Build Himalaya Campfire VST3".
+1. Ve a la pestaña **Actions** del repo → workflow "Build Angel Whisper VST3".
 2. Abre la ejecución más reciente (o lánzala a mano con "Run workflow").
-3. Descarga el artefacto **HimalayaCampfire-Windows-VST3** (o el de macOS).
-4. Descomprime y copia `Himalaya Campfire.vst3` a la carpeta de plugins:
+3. Descarga el artefacto **AngelWhisper-Windows-VST3** (o el de macOS).
+4. Descomprime y copia `Angel Whisper.vst3` a la carpeta de plugins:
    - **Windows**: `C:\Program Files\Common Files\VST3\`
    - **macOS**: `~/Library/Audio/Plug-Ins/VST3/`
 5. En FL Studio: Options → Manage plugins → Find installed plugins.
-   Aparecerá como "Himalaya Campfire" (categoría efecto). Insértalo en
+   Aparecerá como "Angel Whisper" (categoría efecto). Insértalo en
    cualquier canal del mixer.
 
 > Nota macOS: el binario de CI no va firmado/notarizado; si macOS lo
 > bloquea, quítale la cuarentena con
-> `xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/Himalaya\ Campfire.vst3`.
+> `xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/Angel\ Whisper.vst3`.
 
 ## Compilar en local (opcional)
 
@@ -62,9 +69,13 @@ que abre el plugin como app suelta, útil para probar sin DAW.
   sirve la carpeta `WebUI/` desde recursos embebidos en el binario
   (BinaryData) y conecta el parámetro con la página vía WebSliderRelay /
   WebSliderParameterAttachment.
-- `WebUI/` — la escena (idéntica a la de la app Electron: `scene.js`,
-  `fire.js`, `noise.js`) más `knob.js`/`app.js` adaptados para hablar con
-  JUCE mediante `vendor/juce-webview-interop.js` (la librería JS oficial de
+- `WebUI/scene.js` — la oreja: silueta bezier, crestas sombreadas, canal,
+  trama de semitono y grano, horneado una vez a un canvas offscreen.
+- `WebUI/cherub.js` — el querubín: cuerpo por elipses rotadas con rough.js
+  (redibujado cada frame para que el trazo respire), ala azul que aletea, y
+  el susurro (partículas + ondas + resplandor) gobernado por la intensidad.
+- `WebUI/knob.js` / `WebUI/app.js` — el mando y el pegamento con JUCE
+  mediante `vendor/juce-webview-interop.js` (la librería JS oficial de
   JUCE, con fallback standalone: la página también funciona abierta en un
   navegador normal para desarrollo).
 
@@ -79,4 +90,6 @@ necesarias para compilar JUCE con WebView.
   para uso personal/educativo con splash screen) o AGPLv3 — ver
   `WebUI/vendor/juce-webview-interop.LICENSE.md`.
 - rough.js: MIT — ver `WebUI/vendor/rough.LICENSE.txt`.
-- El arte (escena, fuego) es original, generado por código.
+- El arte (oreja, querubín) es original, generado por código; el concepto
+  visual está inspirado en la estética collage de referencia del usuario,
+  sin reutilizar la imagen.
