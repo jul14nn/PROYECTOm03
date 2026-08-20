@@ -37,13 +37,17 @@ juce_add_binary_data(HimalayaCampfireWebUI
         WebUI/scene.js
         WebUI/cherub.js
         WebUI/knob.js
+        WebUI/extractor.js
         WebUI/app.js
         WebUI/vendor/juce-webview-interop.js)
 
 target_sources(HimalayaCampfire
     PRIVATE
         Source/PluginProcessor.cpp
-        Source/PluginEditor.cpp)
+        Source/PluginEditor.cpp
+        Source/CaptureBuffer.h
+        Source/ExtractionJob.h
+        Source/ExtractorSettings.h)
 
 target_compile_definitions(HimalayaCampfire
     PUBLIC

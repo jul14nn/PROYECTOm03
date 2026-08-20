@@ -5,12 +5,17 @@ from pathlib import Path
 import click
 
 from . import audio_io, capture, instruments, locate, render, separate, transcribe
+from .plugin_service import plugin_extract
 from .timeparse import TimestampError, parse_timestamp
 
 
 @click.group()
 def main() -> None:
     """Captura o carga una canción y extrae el MIDI + WAV one-shot de un instrumento."""
+
+
+# Entrada que usa el plugin VST3 (habla JSON por stdout, ver plugin_service).
+main.add_command(plugin_extract, name="plugin-extract")
 
 
 @main.command()

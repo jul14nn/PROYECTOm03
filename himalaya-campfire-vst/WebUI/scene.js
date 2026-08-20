@@ -40,11 +40,14 @@ const Scene = (() => {
     };
   }
 
-  function layout(width, height) {
+  // `inset` son los píxeles que ocupa el panel a la derecha: la oreja se
+  // centra en el hueco que queda libre, no en la ventana entera.
+  function layout(width, height, inset = 0) {
     // La oreja desborda ligeramente el alto: encuadre cerrado, recortada por
     // arriba y por abajo, como en un cartel.
     const scale = (height * 1.06) / DESIGN_H;
-    const ox = width * 0.47 - (DESIGN_W / 2) * scale;
+    const usable = Math.max(120, width - inset);
+    const ox = usable * 0.5 - (DESIGN_W / 2) * scale;
     const oy = (height - DESIGN_H * scale) / 2;
     return { scale, ox, oy, canal: CANAL };
   }
@@ -75,11 +78,11 @@ const Scene = (() => {
   }
 
   // Pinta la oreja "suave" (sin tramar) en el contexto dado.
-  function paintEar(ctx, width, height) {
+  function paintEar(ctx, width, height, inset) {
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, width, height);
 
-    const { scale, ox, oy } = layout(width, height);
+    const { scale, ox, oy } = layout(width, height, inset);
     ctx.save();
     ctx.translate(ox, oy);
     ctx.scale(scale, scale);
@@ -212,8 +215,8 @@ const Scene = (() => {
   // El canal se repinta en negro sólido por encima del tramado: tramado se lee
   // como sombra, no como agujero, y el canal tiene que ser un hueco real. El
   // borde se deshilacha con puntitos para que no corte como una pegatina.
-  function punchCanal(ctx, width, height) {
-    const { scale, ox, oy } = layout(width, height);
+  function punchCanal(ctx, width, height, inset) {
+    const { scale, ox, oy } = layout(width, height, inset);
     const rand = seededRandom(555);
 
     ctx.save();
@@ -242,18 +245,18 @@ const Scene = (() => {
     ctx.restore();
   }
 
-  function build(width, height) {
+  function build(width, height, inset = 0) {
     const art = document.createElement("canvas");
     art.width = width;
     art.height = height;
-    paintEar(art.getContext("2d", { willReadFrequently: true }), width, height);
+    paintEar(art.getContext("2d", { willReadFrequently: true }), width, height, inset);
 
     const out = document.createElement("canvas");
     out.width = width;
     out.height = height;
     const outCtx = out.getContext("2d");
     halftone(art.getContext("2d", { willReadFrequently: true }), outCtx, width, height);
-    punchCanal(outCtx, width, height);
+    punchCanal(outCtx, width, height, inset);
 
     return out;
   }

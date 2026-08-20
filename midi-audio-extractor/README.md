@@ -141,3 +141,18 @@ ML pesados:
 pip install pytest
 pytest tests/
 ```
+
+## Uso desde el plugin VST3
+
+La carpeta `himalaya-campfire-vst/` contiene un plugin que usa este mismo
+extractor desde dentro del DAW: captura el audio que lo atraviesa y llama a
+
+```bash
+python -m extractor plugin-extract FRAGMENTO.wav --offset 12.3 \
+    --no-separate --label "1-04" --out-dir CARPETA
+```
+
+Se diferencia de `extract` en que el instante se da como offset dentro del
+fragmento capturado (no como marca de la canción), en que puede saltarse la
+separación cuando el audio ya llega aislado, y en que responde con líneas
+JSON en vez de texto, para que el plugin pueda mostrar el progreso.

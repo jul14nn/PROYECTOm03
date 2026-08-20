@@ -1,13 +1,28 @@
 # Angel Whisper — plugin VST3 para FL Studio
 
-Plugin visual para FL Studio (o cualquier DAW con VST3 en Windows/macOS):
-una gran oreja roja con textura de semitono/grano sobre fondo negro y un
-querubín de alas azules que le susurra al oído — todo arte original
-dibujado por código, en el mismo estilo grunge/boceteado del resto del
-proyecto.
+Extractor de one-shots con forma de plugin para FL Studio (o cualquier DAW
+con VST3 en Windows/macOS). Oyes una nota que te gusta mientras suena la
+canción, pulsas EXTRAER, y te deja el **MIDI exacto** de esa nota y un
+**WAV one-shot** recortado del audio real, listo para arrastrar al DAW.
 
-- **Puramente visual**: el audio pasa sin modificarse (passthrough). El
-  plugin lo mide, pero no lo toca.
+La cara del plugin es una gran oreja roja con textura de semitono sobre
+negro y un querubín que le susurra al oído — arte original dibujado por
+código.
+
+## Por qué como plugin y no como herramienta suelta
+
+Porque **el plugin ya tiene el audio**. No hay que buscar el archivo ni
+decirle el minuto: el plugin va guardando los últimos 30 segundos que lo
+atraviesan, así que cuando oyes la nota, el fragmento ya está grabado.
+
+Y hay un atajo que solo existe aquí: si insertas el plugin **en la pista
+del propio instrumento**, el audio ya llega aislado, así que se salta la
+separación de fuentes. Eso convierte una espera de minutos (Demucs) en una
+de segundos, y encima con mejor calidad, porque no hay separación que
+introduzca artefactos. Solo hace falta separar si lo pones en el máster.
+
+- **El audio pasa sin modificarse** (passthrough). El plugin lo mide y lo
+  guarda, pero no lo toca.
 - **Reacciona a la música**: el procesador mide el nivel RMS de lo que
   pasa por el canal y se lo envía a la interfaz 30 veces por segundo, así
   que el aleteo y el susurro siguen al sonido en vez de animarse solos.
@@ -98,6 +113,30 @@ necesarias para compilar JUCE con WebView.
   visual está inspirado en la estética collage de referencia del usuario,
   sin reutilizar la imagen.
 
+## Cómo se usa
+
+1. Inserta el plugin en el canal del mixer donde suena lo que quieres pillar
+   (mejor en la pista del instrumento que en el máster, ver arriba).
+2. La primera vez, abre Ajustes (⚙) e indica dónde está tu Python y la
+   carpeta `midi-audio-extractor` de este repositorio. Se guardan a nivel de
+   máquina, así que solo se hace una vez.
+3. Reproduce la canción. Cuando oigas la nota, pulsa **EXTRAER**.
+4. En "Capturar lo de hace" ajusta cuántos segundos atrás estaba la nota
+   respecto al momento en que pulsaste (por defecto medio segundo).
+5. Te deja el `.wav` y el `.mid` en la carpeta de salida, con el minuto de
+   la canción en el nombre, y te enseña las notas detectadas.
+
+### Qué hace falta instalar
+
+El trabajo pesado (separar instrumentos y transcribir) son modelos de
+aprendizaje automático que pesan cientos de megas y viven en Python, así
+que corren en un proceso aparte en vez de dentro del `.vst3`. Hay que
+instalarlos una vez, siguiendo el README de `midi-audio-extractor/`.
+
+Es también lo que evita que el DAW se quede congelado mientras trabaja: si
+la extracción tarda minutos, tarda fuera del hilo de audio y fuera del
+proceso del DAW.
+
 ## Cómo está dibujado
 
 Todo el arte se genera por código, sin imágenes ni vídeo:
@@ -117,3 +156,14 @@ Todo el arte se genera por código, sin imágenes ni vídeo:
 - `WebUI/app.js` — bucle de animación, mezcla de knob + nivel de audio, y
   una textura de grano que se superpone desplazada en cada fotograma para
   que oreja y querubín compartan el mismo ruido de impresión.
+
+## Cómo se comunican el plugin y el extractor
+
+El plugin escribe el fragmento capturado a un WAV temporal y lanza
+`extractor.plugin_service`, que le responde por stdout con una línea JSON
+por evento (`progress`, `result`, `error`). El plugin las va traduciendo a
+la interfaz según llegan, así que se ve el avance en vez de un cuelgue.
+
+Ese canal está reservado: el servicio redirige a stderr todo lo que
+impriman las librerías (basic-pitch y TensorFlow escriben en stdout por su
+cuenta), porque si no, el plugin recibiría líneas que no son JSON.

@@ -3,19 +3,30 @@
 #include <atomic>
 #include <juce_audio_processors/juce_audio_processors.h>
 
+#include "CaptureBuffer.h"
+
 namespace ID
 {
 static const juce::ParameterID intensity { "intensity", 1 };
 }
 
 //==============================================================================
-// Plugin puramente visual: el audio pasa sin modificarse. El parámetro
-// "intensity" es automatizable desde el DAW y decide cuánto reacciona la
-// animación; el nivel del audio que atraviesa el plugin decide cuándo (ver
-// getCurrentLevel y PluginEditor).
+// Extractor de one-shots con cara de plugin visual.
+//
+// El audio pasa sin modificarse, pero el plugin va guardando los últimos
+// segundos que lo atraviesan (ver CaptureBuffer): cuando oyes la nota que
+// quieres, pulsas y el fragmento ya está grabado. De ahí salen el MIDI y el
+// WAV one-shot, que genera el extractor en un proceso aparte (ExtractionJob).
+//
+// El parámetro "intensity" es automatizable y decide cuánto reacciona la
+// animación; el nivel del audio decide cuándo.
 class HimalayaCampfireAudioProcessor : public juce::AudioProcessor
 {
 public:
+    // Segundos de audio que se conservan hacia atrás. Suficiente para
+    // reaccionar sin pasarse de memoria: a 48 kHz estéreo son unos 11 MB.
+    static constexpr double captureSeconds = 30.0;
+
     HimalayaCampfireAudioProcessor();
     ~HimalayaCampfireAudioProcessor() override = default;
 
@@ -53,11 +64,22 @@ public:
     // atomic: nunca bloquea processBlock.
     float getCurrentLevel() const noexcept { return currentLevel.load (std::memory_order_relaxed); }
 
+    // Últimos segundos de audio, para extraer de ellos.
+    const CaptureBuffer& getCaptureBuffer() const noexcept { return captureBuffer; }
+
+    // Posición del cabezal en la canción, en segundos, o -1 si el host no la
+    // da (por ejemplo si está parado). Sirve para etiquetar la captura con el
+    // minuto real de la canción, no con el instante dentro del fragmento.
+    double getPlayheadSeconds() const noexcept { return playheadSeconds.load (std::memory_order_relaxed); }
+
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
     std::atomic<float> currentLevel { 0.0f };
     float levelDecay = 0.0f;
+
+    CaptureBuffer captureBuffer;
+    std::atomic<double> playheadSeconds { -1.0 };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HimalayaCampfireAudioProcessor)
 };

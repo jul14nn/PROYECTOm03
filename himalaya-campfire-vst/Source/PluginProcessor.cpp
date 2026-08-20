@@ -25,10 +25,15 @@ HimalayaCampfireAudioProcessor::HimalayaCampfireAudioProcessor()
 {
 }
 
-void HimalayaCampfireAudioProcessor::prepareToPlay (double, int)
+void HimalayaCampfireAudioProcessor::prepareToPlay (double sampleRate, int)
 {
     levelDecay = 0.0f;
     currentLevel.store (0.0f, std::memory_order_relaxed);
+    playheadSeconds.store (-1.0, std::memory_order_relaxed);
+
+    captureBuffer.prepare (sampleRate,
+                           juce::jmax (1, getTotalNumInputChannels()),
+                           captureSeconds);
 }
 
 bool HimalayaCampfireAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -76,6 +81,14 @@ void HimalayaCampfireAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     // valor se desplome entre bloques y produzca parpadeo.
     levelDecay = juce::jmax (normalised, levelDecay * 0.82f);
     currentLevel.store (levelDecay, std::memory_order_relaxed);
+
+    // Y se guarda el audio para poder extraerlo después.
+    captureBuffer.push (buffer);
+
+    if (auto* head = getPlayHead())
+        if (const auto position = head->getPosition())
+            if (const auto seconds = position->getTimeInSeconds())
+                playheadSeconds.store (*seconds, std::memory_order_relaxed);
 }
 
 void HimalayaCampfireAudioProcessor::getStateInformation (juce::MemoryBlock& destData)

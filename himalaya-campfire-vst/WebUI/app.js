@@ -5,7 +5,7 @@
 // Si la página se abre fuera de JUCE (en un navegador, para desarrollo), el
 // interop instala un stub de window.__JUCE__: el knob sigue funcionando y el
 // nivel de audio se queda a cero.
-import { getSliderState } from "./vendor/juce-webview-interop.js";
+import { getSliderState, getNativeFunction } from "./vendor/juce-webview-interop.js";
 
 const canvas = document.getElementById("scene");
 const ctx = canvas.getContext("2d");
@@ -46,6 +46,22 @@ window.__JUCE__.backend.addEventListener("audioLevel", (payload) => {
 });
 
 //==============================================================================
+// Panel del extractor. Mientras trabaja, el susurro se refuerza: la escena
+// acompaña a lo que está haciendo el plugin en vez de ir por su cuenta.
+let working = false;
+
+Extractor.attach(
+  {
+    getStatus: getNativeFunction("getStatus"),
+    setSetting: getNativeFunction("setSetting"),
+    extract: getNativeFunction("extract"),
+    reveal: getNativeFunction("reveal"),
+  },
+  window.__JUCE__.backend,
+  { onBusyChange: (value) => (working = value) }
+);
+
+//==============================================================================
 function resize() {
   width = window.innerWidth;
   height = window.innerHeight;
@@ -55,8 +71,12 @@ function resize() {
   canvas.style.height = height + "px";
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  background = Scene.build(width, height);
-  sceneLayout = Scene.layout(width, height);
+  // El panel del extractor tapa la derecha: la escena se centra en lo que queda.
+  const panel = document.getElementById("panel");
+  const inset = panel ? panel.getBoundingClientRect().width : 0;
+
+  background = Scene.build(width, height, inset);
+  sceneLayout = Scene.layout(width, height, inset);
 
   if (grainTile === null) grainTile = Scene.buildGrainTile();
   grainPattern = ctx.createPattern(grainTile, "repeat");
@@ -78,7 +98,10 @@ function frame() {
 
   // El knob decide cuánto reacciona la escena; el audio, cuándo. Sin señal
   // queda una animación de reposo para que el plugin nunca parezca congelado.
-  const drive = Math.min(1, Knob.value * (0.32 + 0.85 * smoothedLevel));
+  // Durante una extracción el querubín se emplea a fondo, pase lo que pase
+  // con el audio: así se ve que el plugin está trabajando.
+  const base = Knob.value * (0.32 + 0.85 * smoothedLevel);
+  const drive = Math.min(1, working ? Math.max(base, 0.75) : base);
 
   ctx.clearRect(0, 0, width, height);
   ctx.drawImage(background, 0, 0, width, height);
