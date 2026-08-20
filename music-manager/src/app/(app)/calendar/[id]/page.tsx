@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import SubmitButton, { IconSubmit } from "@/components/SubmitButton";
 import { requireUserId } from "@/lib/auth";
 import { formatDateTime } from "@/lib/constants";
 import { addInvite, removeInvite, deleteEvent } from "@/lib/actions/calendar";
@@ -52,9 +53,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
           </div>
         </div>
         <form action={deleteEvent.bind(null, event.id)}>
-          <button type="submit" className="btn btn-danger">
+          <SubmitButton className="btn btn-danger" pendingLabel="Eliminando…" confirm="¿Eliminar este evento? Se borrarán también sus invitaciones.">
             <Trash2 size={15} /> Eliminar
-          </button>
+          </SubmitButton>
         </form>
       </div>
 
@@ -79,9 +80,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                 <span className={`badge ${INVITE_STATUS_STYLE[inv.status] ?? ""}`}>{inv.status}</span>
                 {inv.status === "PENDIENTE" && <SendInviteButton eventId={event.id} inviteId={inv.id} />}
                 <form action={removeInvite.bind(null, event.id, inv.id)}>
-                  <button type="submit" className="text-neutral-500 hover:text-red-400">
+                  <IconSubmit label="Quitar invitado" className="text-neutral-500 hover:text-red-400">
                     <Trash2 size={14} />
-                  </button>
+                  </IconSubmit>
                 </form>
               </div>
             </div>
@@ -97,7 +98,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
             ))}
           </select>
           <input name="email" type="email" placeholder="Email del invitado" className="input flex-1 min-w-[10rem]" required />
-          <button type="submit" className="btn btn-secondary">Añadir invitado</button>
+          <SubmitButton className="btn btn-secondary" pendingLabel="Añadiendo…">Añadir invitado</SubmitButton>
         </form>
       </section>
     </div>

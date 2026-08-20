@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import SubmitButton from "@/components/SubmitButton";
 import { requireUserId } from "@/lib/auth";
 import { saveBrandKit } from "@/lib/actions/brandKit";
 import { SUBTITLE_STYLES } from "@/lib/subtitleStyles";
@@ -159,9 +160,7 @@ export default async function AjustesPage() {
         </section>
 
         <div className="border-t border-white/20 pt-6">
-          <button type="submit" className="btn btn-primary">
-            Guardar preferencias
-          </button>
+          <SubmitButton pendingLabel="Guardando…">Guardar preferencias</SubmitButton>
         </div>
       </form>
     </div>

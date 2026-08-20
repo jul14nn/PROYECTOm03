@@ -63,10 +63,15 @@ export default async function MarketingPage() {
       <section className="mb-16">
         <h2 className="eyebrow pb-3 border-b border-white/20">Campañas en marcha</h2>
         {campaigns.length === 0 ? (
-          <p className="text-neutral-500 text-sm py-6">
-            Ninguna canción tiene plan todavía. Abre una canción, ve a Marketing y
-            pulsa «Crear el plan».
-          </p>
+          <div className="py-6">
+            <p className="text-neutral-400 text-sm max-w-md">
+              Ninguna canción tiene plan todavía. El plan se crea desde la canción,
+              porque las fechas de cada paso salen de su fecha de lanzamiento.
+            </p>
+            <Link href="/songs" className="btn btn-secondary mt-4">
+              Elegir una canción
+            </Link>
+          </div>
         ) : (
           <ul>
             {campaigns.map((c) => {

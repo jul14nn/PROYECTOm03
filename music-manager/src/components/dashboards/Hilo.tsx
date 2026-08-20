@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/constants";
 import { daysUntil } from "@/lib/tiktokPlan";
+import { Plus } from "lucide-react";
 import type { DashboardData } from "./types";
 
 type Entry = {
@@ -89,6 +90,58 @@ export default function Hilo({ data }: { data: DashboardData }) {
     month: "long",
   }).format(new Date());
 
+  // Primera vez: sin ninguna canción no hay hilo que enseñar, y un panel a
+  // ceros sin nada que pulsar deja al recién llegado en un callejón sin salida.
+  if (data.totalSongs === 0) {
+    return (
+      <div className="max-w-2xl">
+        <header className="pb-8">
+          <div className="eyebrow mb-3">Empecemos</div>
+          <h1 className="display-title text-6xl sm:text-7xl">Tu primera canción</h1>
+          <p className="text-neutral-400 mt-5 text-lg leading-relaxed">
+            Esta pantalla se convierte en tu hilo del día: pendientes,
+            lanzamientos y agenda ordenados por lo que toca antes. Para que
+            tenga algo que contarte, empieza por dar de alta una canción.
+          </p>
+        </header>
+
+        <Link href="/songs/new" className="btn btn-primary">
+          <Plus size={16} /> Crear mi primera canción
+        </Link>
+
+        <ol className="mt-14">
+          {[
+            {
+              t: "Dale una fecha aproximada",
+              d: "No hace falta que sea firme. Desbloquea el plan de contenido y los avisos.",
+            },
+            {
+              t: "Genera su plan de lanzamiento",
+              d: "31 pasos con fecha, desde aprobar el máster hasta el balance del mes siguiente.",
+            },
+            {
+              t: "Vuelve aquí cada mañana",
+              d: "Te dirá qué toca hoy sin que tengas que revisar canción por canción.",
+            },
+          ].map((step, i) => (
+            <li
+              key={step.t}
+              className="grid grid-cols-[2.5rem_1fr] gap-x-4 items-baseline border-t border-white/[0.09] py-5"
+            >
+              <span className="numeral text-2xl text-neutral-700">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span>
+                <span className="block text-lg">{step.t}</span>
+                <span className="block text-sm text-neutral-500 mt-1">{step.d}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl">
       <header className="pb-12">
@@ -97,9 +150,14 @@ export default function Hilo({ data }: { data: DashboardData }) {
       </header>
 
       {groups.length === 0 ? (
-        <p className="text-lg text-neutral-400 border-t border-white/[0.09] pt-8">
-          Nada en el horizonte. Buen momento para escribir algo nuevo.
-        </p>
+        <div className="border-t border-white/[0.09] pt-8">
+          <p className="text-lg text-neutral-400">
+            Nada en el horizonte. Buen momento para escribir algo nuevo.
+          </p>
+          <Link href="/songs/new" className="btn btn-secondary mt-5">
+            <Plus size={15} /> Nueva canción
+          </Link>
+        </div>
       ) : (
         groups.map((g) => (
           <section key={g.id} className="mb-14">

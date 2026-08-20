@@ -29,7 +29,11 @@ export default async function RoyaltiesPage() {
 
       {songs.length === 0 && (
         <div className="card p-10 text-center text-neutral-500">
-          Todavía no hay royalties registrados. Añádelos desde la ficha de cada canción.
+          Todavía no hay royalties registrados.{" "}
+          <Link href="/songs" className="text-fuchsia-400 hover:underline">
+            Abre una canción
+          </Link>{" "}
+          y reparte los porcentajes en su pestaña de Royalties.
         </div>
       )}
 

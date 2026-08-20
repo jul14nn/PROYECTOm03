@@ -31,6 +31,7 @@ import { addBudgetItem, removeBudgetItem, addMarketingIdea, toggleMarketingIdea,
 import { addRoyalty, removeRoyalty, addRoyaltyPayment, removeRoyaltyPayment } from "@/lib/actions/royalties";
 import { generateLaunchPlan, resyncLaunchPlan } from "@/lib/actions/launch";
 import LaunchPlan from "@/components/LaunchPlan";
+import SubmitButton, { IconSubmit } from "@/components/SubmitButton";
 import { LAUNCH_STEPS, PHASES } from "@/lib/launchPlan";
 import { addSongReference, removeSongReference } from "@/lib/actions/references";
 import { isBlobConfigured } from "@/lib/blob";
@@ -132,9 +133,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                       {f.confirmed && <span className="badge bg-emerald-500/15 text-emerald-300 ml-2">Confirmado</span>}
                     </div>
                     <form action={removeFeaturing.bind(null, song.id, f.id)}>
-                      <button type="submit" className="text-neutral-500 hover:text-red-400">
+                      <IconSubmit label="Quitar" className="text-neutral-500 hover:text-red-400">
                         <Trash2 size={14} />
-                      </button>
+                      </IconSubmit>
                     </form>
                   </div>
                 ))}
@@ -152,7 +153,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                 <label className="flex items-center gap-1 text-xs text-neutral-400">
                   <input type="checkbox" name="confirmed" /> Confirmado
                 </label>
-                <button type="submit" className="btn btn-secondary">Añadir</button>
+                <SubmitButton className="btn btn-secondary" pendingLabel="Añadiendo…">Añadir</SubmitButton>
               </form>
             </div>
 
@@ -166,9 +167,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                       {p.role && <span className="text-neutral-500"> · {p.role}</span>}
                     </div>
                     <form action={removeProducer.bind(null, song.id, p.id)}>
-                      <button type="submit" className="text-neutral-500 hover:text-red-400">
+                      <IconSubmit label="Quitar" className="text-neutral-500 hover:text-red-400">
                         <Trash2 size={14} />
-                      </button>
+                      </IconSubmit>
                     </form>
                   </div>
                 ))}
@@ -182,7 +183,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                   ))}
                 </select>
                 <input name="role" placeholder="Rol (mezcla, máster...)" className="input flex-1 min-w-[8rem]" />
-                <button type="submit" className="btn btn-secondary">Añadir</button>
+                <SubmitButton className="btn btn-secondary" pendingLabel="Añadiendo…">Añadir</SubmitButton>
               </form>
               <p className="text-xs text-neutral-600 mt-2">
                 ¿No existe el contacto?{" "}
@@ -236,9 +237,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                       <button type="submit"><TaskStatusBadge status={v.status} /></button>
                     </form>
                     <form action={removeVideoIdea.bind(null, song.id, v.id)}>
-                      <button type="submit" className="text-neutral-500 hover:text-red-400">
+                      <IconSubmit label="Quitar" className="text-neutral-500 hover:text-red-400">
                         <Trash2 size={14} />
-                      </button>
+                      </IconSubmit>
                     </form>
                   </div>
                 </div>
@@ -249,7 +250,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               <input name="title" placeholder="Idea de vídeo" className="input flex-1 min-w-[10rem]" required />
               <input name="description" placeholder="Descripción" className="input flex-1 min-w-[10rem]" />
               <input name="referenceUrl" placeholder="URL de referencia" className="input flex-1 min-w-[10rem]" />
-              <button type="submit" className="btn btn-secondary">Añadir</button>
+              <SubmitButton className="btn btn-secondary" pendingLabel="Añadiendo…">Añadir</SubmitButton>
             </form>
           </div>
 
@@ -298,7 +299,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                   className="input flex-1 min-w-[10rem] file:mr-3 file:rounded-md file:border-0 file:bg-neutral-800 file:text-neutral-200 file:px-3 file:py-1.5 file:text-xs"
                 />
                 <input name="caption" placeholder="Descripción breve (opcional)" className="input flex-1 min-w-[10rem]" />
-                <button type="submit" className="btn btn-secondary">Subir imagen</button>
+                <SubmitButton className="btn btn-secondary" pendingLabel="Subiendo…">Subir imagen</SubmitButton>
               </form>
             ) : (
               <p className="text-xs text-neutral-600">
@@ -334,9 +335,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                       <button type="submit"><TaskStatusBadge status={t.status} /></button>
                     </form>
                     <form action={removeTask.bind(null, song.id, t.id)}>
-                      <button type="submit" className="text-neutral-500 hover:text-red-400">
+                      <IconSubmit label="Quitar" className="text-neutral-500 hover:text-red-400">
                         <Trash2 size={14} />
-                      </button>
+                      </IconSubmit>
                     </form>
                   </div>
                 </div>
@@ -347,7 +348,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               <input name="title" placeholder="Tarea (registrar SGAE, reservar estudio...)" className="input flex-1 min-w-[12rem]" required />
               <input name="assignee" placeholder="Responsable" className="input flex-1 min-w-[8rem]" />
               <input name="dueDate" type="date" className="input flex-1 min-w-[8rem]" />
-              <button type="submit" className="btn btn-secondary">Añadir</button>
+              <SubmitButton className="btn btn-secondary" pendingLabel="Añadiendo…">Añadir</SubmitButton>
             </form>
           </div>
 
@@ -371,9 +372,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                       <button type="submit"><TaskStatusBadge status={d.status} /></button>
                     </form>
                     <form action={removeDistributionStep.bind(null, song.id, d.id)}>
-                      <button type="submit" className="text-neutral-500 hover:text-red-400">
+                      <IconSubmit label="Quitar" className="text-neutral-500 hover:text-red-400">
                         <Trash2 size={14} />
-                      </button>
+                      </IconSubmit>
                     </form>
                   </div>
                 </div>
@@ -385,7 +386,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               <input name="step" placeholder="Paso (subir metadata...)" className="input flex-1 min-w-[10rem]" required />
               <input name="dueDate" type="date" className="input flex-1 min-w-[8rem]" />
               <input name="notes" placeholder="Notas" className="input flex-1 min-w-[8rem]" />
-              <button type="submit" className="btn btn-secondary">Añadir</button>
+              <SubmitButton className="btn btn-secondary" pendingLabel="Añadiendo…">Añadir</SubmitButton>
             </form>
           </div>
         </>
@@ -425,9 +426,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                   fecha calculada a partir de la fecha aproximada de la canción.
                 </p>
                 <form action={generateLaunchPlanWithId}>
-                  <button type="submit" className="btn btn-primary">
-                    <Wand2 size={15} /> Crear el plan
-                  </button>
+                  <SubmitButton icon={<Wand2 size={15} />} pendingLabel="Creando el plan…">
+                    Crear el plan
+                  </SubmitButton>
                 </form>
                 {!song.releaseDate && (
                   <p className="text-xs text-amber-300/80 mt-4">
@@ -452,14 +453,14 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                 )}
                 <div className="flex flex-wrap gap-2 mt-6 pt-5 border-t border-white/[0.09]">
                   <form action={resyncLaunchPlanWithId}>
-                    <button type="submit" className="btn btn-secondary">
+                    <SubmitButton className="btn btn-secondary" pendingLabel="Recalculando…">
                       Recalcular fechas
-                    </button>
+                    </SubmitButton>
                   </form>
                   <form action={generateLaunchPlanWithId}>
-                    <button type="submit" className="btn btn-secondary">
+                    <SubmitButton className="btn btn-secondary" pendingLabel="Añadiendo…">
                       Añadir pasos que falten
-                    </button>
+                    </SubmitButton>
                   </form>
                 </div>
               </>
@@ -472,9 +473,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                 <Megaphone size={18} /> Marketing
               </h2>
               <form action={generateMarketingPlanWithId}>
-                <button type="submit" className="btn btn-secondary">
-                  <Wand2 size={14} /> Generar plan automático
-                </button>
+                <SubmitButton className="btn btn-secondary" icon={<Wand2 size={14} />} pendingLabel="Generando…">
+                  Generar plan automático
+                </SubmitButton>
               </form>
             </div>
 
@@ -496,9 +497,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                       {b.notes && <div className="text-neutral-600 text-xs">{b.notes}</div>}
                     </div>
                     <form action={removeBudgetItem.bind(null, song.id, b.id)}>
-                      <button type="submit" className="text-neutral-500 hover:text-red-400">
+                      <IconSubmit label="Quitar" className="text-neutral-500 hover:text-red-400">
                         <Trash2 size={14} />
-                      </button>
+                      </IconSubmit>
                     </form>
                   </div>
                 ))}
@@ -509,7 +510,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                 <input name="plannedAmount" type="number" step="0.01" placeholder="Planificado" className="input flex-1 min-w-[6rem]" />
                 <input name="actualAmount" type="number" step="0.01" placeholder="Gastado" className="input flex-1 min-w-[6rem]" />
                 <input name="currency" placeholder="EUR" className="input w-20" defaultValue="EUR" />
-                <button type="submit" className="btn btn-secondary">Añadir</button>
+                <SubmitButton className="btn btn-secondary" pendingLabel="Añadiendo…">Añadir</SubmitButton>
               </form>
             </div>
 
@@ -528,9 +529,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                         <button type="submit"><TaskStatusBadge status={m.status} /></button>
                       </form>
                       <form action={removeMarketingIdea.bind(null, song.id, m.id)}>
-                        <button type="submit" className="text-neutral-500 hover:text-red-400">
+                        <IconSubmit label="Quitar" className="text-neutral-500 hover:text-red-400">
                           <Trash2 size={14} />
-                        </button>
+                        </IconSubmit>
                       </form>
                     </div>
                   </div>
@@ -541,7 +542,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                 <input name="title" placeholder="Idea de marketing" className="input flex-1 min-w-[10rem]" required />
                 <input name="channel" placeholder="Canal (TikTok...)" className="input flex-1 min-w-[8rem]" />
                 <input name="description" placeholder="Descripción" className="input flex-1 min-w-[10rem]" />
-                <button type="submit" className="btn btn-secondary">Añadir</button>
+                <SubmitButton className="btn btn-secondary" pendingLabel="Añadiendo…">Añadir</SubmitButton>
               </form>
             </div>
           </div>
@@ -570,9 +571,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                     <span className="text-fuchsia-300 text-xs ml-2">{r.percentage}%</span>
                   </div>
                   <form action={removeRoyalty.bind(null, song.id, r.id)}>
-                    <button type="submit" className="text-neutral-500 hover:text-red-400">
+                    <IconSubmit label="Quitar" className="text-neutral-500 hover:text-red-400">
                       <Trash2 size={14} />
-                    </button>
+                    </IconSubmit>
                   </form>
                 </div>
                 <div className="mt-2 pl-3 border-l border-white/[0.07] space-y-1">
@@ -580,9 +581,9 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                     <div key={p.id} className="flex items-center justify-between text-xs text-neutral-400">
                       <span>{formatMoney(p.amount, p.currency)} · {formatDate(p.date)} {p.notes && `· ${p.notes}`}</span>
                       <form action={removeRoyaltyPayment.bind(null, song.id, p.id)}>
-                        <button type="submit" className="text-neutral-600 hover:text-red-400">
+                        <IconSubmit label="Quitar" className="text-neutral-600 hover:text-red-400">
                           <Trash2 size={12} />
-                        </button>
+                        </IconSubmit>
                       </form>
                     </div>
                   ))}
@@ -607,7 +608,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               ))}
             </select>
             <input name="percentage" type="number" step="0.01" placeholder="%" className="input w-24" required />
-            <button type="submit" className="btn btn-secondary">Añadir</button>
+            <SubmitButton className="btn btn-secondary" pendingLabel="Añadiendo…">Añadir</SubmitButton>
           </form>
         </div>
       ),
@@ -654,9 +655,14 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
           </div>
         </div>
         <form action={deleteSongWithId}>
-          <button type="submit" className="btn btn-danger">
-            <Trash2 size={15} /> Eliminar canción
-          </button>
+          <SubmitButton
+            className="btn btn-danger"
+            icon={<Trash2 size={15} />}
+            pendingLabel="Eliminando…"
+            confirm={`¿Eliminar «${song.title}»? Se borrarán también su plan de lanzamiento, sus royalties, sus referencias y sus eventos. No se puede deshacer.`}
+          >
+            Eliminar canción
+          </SubmitButton>
         </form>
       </div>
 

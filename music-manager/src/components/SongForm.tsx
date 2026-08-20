@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { STAGES, STAGE_LABELS, SUGGESTED_COLORS, formatDateInput } from "@/lib/constants";
 import DatePicker from "@/components/DatePicker";
+import SubmitButton from "@/components/SubmitButton";
 
 type SongLike = {
   id?: string;
@@ -162,9 +163,7 @@ export default function SongForm({
         />
       </div>
 
-      <button type="submit" className="btn btn-primary">
-        {submitLabel}
-      </button>
+      <SubmitButton>{submitLabel}</SubmitButton>
     </form>
   );
 }

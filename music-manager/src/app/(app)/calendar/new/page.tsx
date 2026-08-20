@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import SubmitButton from "@/components/SubmitButton";
 import { requireUserId } from "@/lib/auth";
 import { createEvent } from "@/lib/actions/calendar";
 
@@ -62,7 +63,7 @@ export default async function NewEventPage({
             />
           </div>
 
-          <button type="submit" className="btn btn-primary">Crear evento</button>
+          <SubmitButton pendingLabel="Creando…">Crear evento</SubmitButton>
         </form>
       </div>
     </div>

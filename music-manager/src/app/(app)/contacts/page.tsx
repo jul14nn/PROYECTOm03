@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import SubmitButton, { IconSubmit } from "@/components/SubmitButton";
 import { requireUserId } from "@/lib/auth";
 import { createContact, deleteContact } from "@/lib/actions/contacts";
 import { Trash2, Mail, Phone, Plus } from "lucide-react";
@@ -49,7 +50,7 @@ export default async function ContactsPage() {
             <textarea name="notes" className="input" rows={2} />
           </div>
           <div className="sm:col-span-2">
-            <button type="submit" className="btn btn-primary">Añadir contacto</button>
+            <SubmitButton pendingLabel="Añadiendo…">Añadir contacto</SubmitButton>
           </div>
         </form>
       </div>
@@ -80,9 +81,9 @@ export default async function ContactsPage() {
               {c.notes && <div className="text-xs text-neutral-600 mt-1">{c.notes}</div>}
             </div>
             <form action={deleteContact.bind(null, c.id)}>
-              <button type="submit" className="text-neutral-500 hover:text-red-400">
+              <IconSubmit label="Eliminar contacto" confirm="¿Eliminar este contacto?" className="text-neutral-500 hover:text-red-400">
                 <Trash2 size={16} />
-              </button>
+              </IconSubmit>
             </form>
           </div>
         ))}
