@@ -70,13 +70,21 @@ export default async function RoyaltiesPage() {
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-4 stagger">
         {songs.map((song) => {
           const total = song.royalties.reduce((a, r) => a + r.percentage, 0);
           const paid = song.royalties.flatMap((r) => r.payments).reduce((a, p) => a + p.amount, 0);
           const ok = total === 100;
           return (
-            <div key={song.id} className={`card p-5 ${ok ? "" : "border-amber-500/30"}`}>
+            <div
+              key={song.id}
+              className="card song-tint p-5"
+              /* El ámbar de aviso debe ganar al tinte: va en línea. */
+              style={{
+                "--song": song.color,
+                ...(ok ? {} : { borderColor: "rgba(245, 158, 11, 0.35)" }),
+              } as React.CSSProperties}
+            >
               <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
                 <Link href={`/songs/${song.id}?tab=royalties`} className="flex items-center gap-2 font-medium hover:underline">
                   <ColorDot color={song.color} /> {song.title}

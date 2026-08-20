@@ -159,7 +159,8 @@ export default function Hilo({ data }: { data: DashboardData }) {
           </Link>
         </div>
       ) : (
-        groups.map((g) => (
+        <div className="stagger">
+        {groups.map((g) => (
           <section key={g.id} className="mb-14">
             <h2 className="eyebrow pb-3 border-b border-white/20">{g.label}</h2>
             <ul>
@@ -199,7 +200,8 @@ export default function Hilo({ data }: { data: DashboardData }) {
               ))}
             </ul>
           </section>
-        ))
+        ))}
+        </div>
       )}
 
       <section className="border-t border-white/20 pt-8 flex flex-wrap gap-x-12 gap-y-6">

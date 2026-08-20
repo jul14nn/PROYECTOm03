@@ -57,7 +57,7 @@ export default async function ContactsPage() {
         </form>
       </details>
 
-      <div className="card divide-y divide-white/[0.06] overflow-hidden">
+      <div className="card divide-y divide-white/[0.06] overflow-hidden stagger">
         {contacts.map((c) => (
           <details key={c.id} className="group/row">
             <summary className="flex items-center gap-4 px-5 py-4 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden row-hover">

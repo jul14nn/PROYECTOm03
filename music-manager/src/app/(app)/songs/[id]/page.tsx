@@ -39,6 +39,7 @@ import SubmitButton, { IconSubmit } from "@/components/SubmitButton";
 import { LAUNCH_STEPS, PHASES } from "@/lib/launchPlan";
 import { addSongReference, removeSongReference } from "@/lib/actions/references";
 import { isBlobConfigured } from "@/lib/blob";
+import Waveform from "@/components/Waveform";
 import {
   Trash2,
   Link2,
@@ -734,9 +735,22 @@ export default async function SongDetailPage({
   ];
 
   return (
-    <div className="space-y-6 pb-16">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
+    <div
+      className="space-y-6 pb-16"
+      style={{ "--song": song.color } as React.CSSProperties}
+    >
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        {/* El bloom de cabecera respira en el color de la canción: cada
+            ficha tiene su propia luz, no la genérica de la marca. */}
+        <div
+          aria-hidden
+          className="absolute -inset-x-8 -top-10 h-44 pointer-events-none -z-10"
+          style={{
+            background: `radial-gradient(60% 100% at 18% 0%, color-mix(in srgb, ${song.color} 20%, transparent), transparent 70%)`,
+            filter: "blur(22px)",
+          }}
+        />
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-2">
             <ColorDot color={song.color} />
             <span className="eyebrow">Ficha de canción</span>
@@ -746,6 +760,12 @@ export default async function SongDetailPage({
             <StageBadge stage={song.stage} />
             {song.genre && <span className="text-sm text-neutral-500">{song.genre}</span>}
           </div>
+          <Waveform
+            seed={song.id}
+            color={song.color}
+            className="h-8 w-full max-w-md mt-4"
+            opacity={0.4}
+          />
         </div>
         <form action={deleteSongWithId}>
           <SubmitButton

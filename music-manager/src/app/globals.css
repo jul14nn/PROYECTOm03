@@ -334,6 +334,91 @@ input[type="checkbox"] {
 }
 
 /* ---------------------------------------------------------------------
+   Orgánico I: el color de cada canción tiñe su entorno.
+   La tarjeta/fila define `--song` en línea y estas clases hacen el resto.
+   El punto de 8px se queda; esto es la luz que irradia la funda.
+   --------------------------------------------------------------------- */
+
+.song-tint {
+  --song: var(--accent);
+  border-color: color-mix(in srgb, var(--song) 26%, var(--edge));
+  background:
+    radial-gradient(120% 90% at 8% 0%, color-mix(in srgb, var(--song) 13%, transparent), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012) 42%, rgba(255, 255, 255, 0) 100%),
+    var(--surface-1);
+}
+
+/* Filas de lista: en reposo neutras; al pasar, la canción responde. */
+.song-row {
+  --song: var(--accent);
+  transition: background-color 0.2s ease;
+}
+.song-row:hover {
+  background: color-mix(in srgb, var(--song) 7%, transparent);
+}
+
+/* ---------------------------------------------------------------------
+   Orgánico II: entrada escalonada. La interfaz llega, no se imprime.
+   Solo anima los primeros 14 hijos; a partir de ahí entran con el último
+   retardo (listas largas no deben hacerse esperar).
+   El bloque global de prefers-reduced-motion ya la anula.
+   --------------------------------------------------------------------- */
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.stagger > * {
+  animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.42s;
+}
+.stagger > *:nth-child(1) { animation-delay: 0s; }
+.stagger > *:nth-child(2) { animation-delay: 0.035s; }
+.stagger > *:nth-child(3) { animation-delay: 0.07s; }
+.stagger > *:nth-child(4) { animation-delay: 0.105s; }
+.stagger > *:nth-child(5) { animation-delay: 0.14s; }
+.stagger > *:nth-child(6) { animation-delay: 0.175s; }
+.stagger > *:nth-child(7) { animation-delay: 0.21s; }
+.stagger > *:nth-child(8) { animation-delay: 0.245s; }
+.stagger > *:nth-child(9) { animation-delay: 0.28s; }
+.stagger > *:nth-child(10) { animation-delay: 0.315s; }
+.stagger > *:nth-child(11) { animation-delay: 0.35s; }
+.stagger > *:nth-child(12) { animation-delay: 0.385s; }
+.stagger > *:nth-child(13) { animation-delay: 0.42s; }
+
+/* ---------------------------------------------------------------------
+   Orgánico III: medidor VU. Segmentos que se encienden, como la mesa.
+   Hereda --song si la tarjeta lo define; si no, el acento de la marca.
+   --------------------------------------------------------------------- */
+
+.vu {
+  display: flex;
+  gap: 3px;
+  height: 0.55rem;
+}
+.vu > span {
+  flex: 1;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+.vu > span[data-on] {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--song, var(--accent)) 55%, white),
+    var(--song, var(--accent))
+  );
+  box-shadow: 0 0 8px -2px var(--song, var(--accent));
+}
+
+/* ---------------------------------------------------------------------
    Cartel / cinemático — splash screen y login
    --------------------------------------------------------------------- */
 
@@ -503,6 +588,14 @@ input[type="checkbox"] {
 }
 
 /* Medidor a segmentos, como una barra de vida */
+[data-skin="bits"] .stagger > * {
+  animation-timing-function: steps(4, end);
+}
+
+[data-skin="bits"] .vu > span {
+  border-radius: 0;
+}
+
 [data-skin="bits"] .meter {
   height: 0.85rem;
   background: #0a0818;

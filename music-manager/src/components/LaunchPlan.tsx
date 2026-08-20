@@ -1,3 +1,4 @@
+import Vu from "@/components/Vu";
 import { PHASES, type PhaseId, currentPhase } from "@/lib/launchPlan";
 import { cycleLaunchTask } from "@/lib/actions/launch";
 import { formatDate, formatMoney } from "@/lib/constants";
@@ -48,9 +49,8 @@ export default function LaunchPlan({
           <span className="text-neutral-600"> / {tasks.length}</span> pasos · {pct}%
         </span>
       </div>
-      <div className="meter mt-3">
-        <div className="meter-fill" style={{ width: `${pct}%` }} />
-      </div>
+      {/* Hereda --song de la ficha: el VU se enciende en el color de la canción. */}
+      <Vu value={pct / 100} segments={31} className="mt-3" label="Progreso del plan" />
 
       <div className="mt-8 space-y-3">
         {PHASES.map((phase) => {

@@ -12,6 +12,7 @@ import {
 } from "@/lib/launchPlan";
 import { ColorDot } from "@/components/Badges";
 import Arreglo from "@/components/Arreglo";
+import Vu from "@/components/Vu";
 import { buildCampaigns } from "@/lib/campaignSpan";
 import { ArrowRight } from "lucide-react";
 
@@ -76,7 +77,7 @@ export default async function MarketingPage() {
             </Link>
           </div>
         ) : (
-          <ul>
+          <ul className="stagger">
             {campaigns.map((c) => {
               const pct = Math.round((c.done / c.total) * 100);
               return (
@@ -84,6 +85,7 @@ export default async function MarketingPage() {
                   <Link
                     href={`/songs/${c.song.id}`}
                     className="group block border-b border-white/[0.07] py-6 hover:border-white/25 transition-colors"
+                    style={{ "--song": c.song.color } as React.CSSProperties}
                   >
                     <div className="flex items-baseline justify-between gap-4">
                       <span className="flex items-baseline gap-2.5 min-w-0">
@@ -120,9 +122,7 @@ export default async function MarketingPage() {
                       )}
                     </div>
 
-                    <div className="meter mt-3 max-w-sm">
-                      <div className="meter-fill" style={{ width: `${pct}%` }} />
-                    </div>
+                    <Vu value={pct / 100} segments={24} className="mt-3 max-w-sm" label="Progreso de la campaña" />
 
                     {c.next && (
                       <p className="text-sm text-neutral-400 mt-3 flex items-start gap-2">

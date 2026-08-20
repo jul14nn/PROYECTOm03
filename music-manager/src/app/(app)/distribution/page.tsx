@@ -76,9 +76,13 @@ function StepList({
       </div>
     );
   return (
-    <div className="card divide-y divide-white/[0.06] overflow-hidden">
+    <div className="card divide-y divide-white/[0.06] overflow-hidden stagger">
       {steps.map((d) => (
-        <div key={d.id} className="flex items-center gap-4 px-5 py-4 row-hover">
+        <div
+          key={d.id}
+          className="song-row flex items-center gap-4 px-5 py-4"
+          style={{ "--song": d.song.color } as React.CSSProperties}
+        >
           <ColorDot color={d.song.color} />
           <Link href={`/songs/${d.songId}?tab=distribucion`} className="flex-1 min-w-0 group/link">
             <div className="font-medium group-hover/link:underline">{d.step}</div>

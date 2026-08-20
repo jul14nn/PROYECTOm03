@@ -7,6 +7,7 @@ import { StageBadge, ColorDot } from "@/components/Badges";
 import { STAGES, STAGE_LABELS, type Stage } from "@/lib/constants";
 import { ImageOff, Users2, Search, X, List, LayoutGrid } from "lucide-react";
 import Fundas, { type SleeveItem } from "@/components/catalog/Fundas";
+import Waveform from "@/components/Waveform";
 
 export type SongRow = {
   id: string;
@@ -50,6 +51,19 @@ export default function SongsBrowser({ songs }: { songs: SongRow[] }) {
       return haystack.includes(q);
     });
   }, [songs, query, stage]);
+
+  /* La canción que manda ahora: la del lanzamiento más cercano por delante.
+     Rompe la rejilla uniforme — una grande con su color y su onda, el resto
+     en lista. Solo sin filtros: al buscar, la lista plana es más útil. */
+  const featured = useMemo(() => {
+    if (query.trim() !== "" || stage !== "ALL" || songs.length < 2) return null;
+    const upcoming = songs
+      .filter((s) => s.daysToRelease !== null && s.daysToRelease >= 0)
+      .sort((a, b) => a.daysToRelease! - b.daysToRelease!);
+    return upcoming[0] ?? null;
+  }, [songs, query, stage]);
+
+  const listed = featured ? filtered.filter((s) => s.id !== featured.id) : filtered;
 
   return (
     <div className="space-y-4">
@@ -125,12 +139,15 @@ export default function SongsBrowser({ songs }: { songs: SongRow[] }) {
           Ninguna canción coincide con la búsqueda.
         </div>
       ) : (
-        <div className="card divide-y divide-white/[0.06] overflow-hidden">
-          {filtered.map((song) => (
+        <div className="space-y-4 stagger">
+          {featured && <FeaturedSong song={featured} />}
+          <div className="card divide-y divide-white/[0.06] overflow-hidden">
+          {listed.map((song) => (
             <Link
               key={song.id}
               href={`/songs/${song.id}`}
-              className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.035] transition-colors"
+              className="song-row flex items-center gap-4 px-5 py-4"
+              style={{ "--song": song.color } as React.CSSProperties}
             >
               <ColorDot color={song.color} />
               <div className="flex-1 min-w-0">
@@ -161,9 +178,58 @@ export default function SongsBrowser({ songs }: { songs: SongRow[] }) {
               <StageBadge stage={song.stage} />
             </Link>
           ))}
+          </div>
         </div>
       )}
     </div>
+  );
+}
+
+function FeaturedSong({ song }: { song: SongRow }) {
+  const days = song.daysToRelease;
+  return (
+    <Link
+      href={`/songs/${song.id}`}
+      className="card song-tint block p-6 sm:p-7 relative overflow-hidden group"
+      style={{ "--song": song.color } as React.CSSProperties}
+    >
+      {/* La onda es la firma de la canción: siempre la misma para la misma id. */}
+      <Waveform
+        seed={song.id}
+        color={song.color}
+        className="absolute inset-x-0 bottom-0 h-14 w-full pointer-events-none"
+        opacity={0.3}
+        /* Fundido hacia arriba para que el texto no pise barras a plena luz. */
+        style={{
+          maskImage: "linear-gradient(180deg, transparent, black 70%)",
+          WebkitMaskImage: "linear-gradient(180deg, transparent, black 70%)",
+        }}
+      />
+      <div className="relative flex items-start justify-between gap-4 flex-wrap pb-8">
+        <div className="min-w-0">
+          <div className="eyebrow mb-2" style={{ color: "color-mix(in srgb, var(--song) 70%, white)" }}>
+            Próximo lanzamiento
+          </div>
+          <div className="display text-4xl sm:text-5xl text-white">{song.title}</div>
+          <div className="text-sm text-neutral-400 mt-2 flex items-center gap-3 flex-wrap">
+            {song.genre && <span>{song.genre}</span>}
+            {song.featurings.length > 0 && <span>con {song.featurings.join(", ")}</span>}
+            <span>{song.releaseLabel}</span>
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          {days !== null && (
+            <>
+              <div className="numeral text-5xl text-white leading-none">{days}</div>
+              <div className="text-xs text-neutral-500 mt-1">{days === 1 ? "día" : "días"}</div>
+            </>
+          )}
+          <div className="mt-2">
+            <StageBadge stage={song.stage} />
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 }
 
