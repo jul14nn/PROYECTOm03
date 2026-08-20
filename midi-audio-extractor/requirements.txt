@@ -1,0 +1,12 @@
+# Núcleo (ligero, sin modelos de ML)
+numpy>=1.24
+scipy>=1.11
+librosa>=0.10
+soundfile>=0.12
+click>=8.1
+sounddevice>=0.4
+pretty_midi>=0.2.10
+
+# Modelos de ML (pesados: descargan pesos la primera vez que se usan)
+demucs>=4.0.1
+basic-pitch>=0.4.0
