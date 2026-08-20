@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Anton } from "next/font/google";
+import { Geist, Geist_Mono, Anton, Silkscreen, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import SplashScreen from "@/components/SplashScreen";
 
@@ -15,6 +15,19 @@ const geistMono = Geist_Mono({
 
 const anton = Anton({
   variable: "--font-poster",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+// Fuentes de los temas opcionales. Solo las usa el CSS del tema activo.
+const silkscreen = Silkscreen({
+  variable: "--font-pixel",
+  weight: ["400", "700"],
+  subsets: ["latin"],
+});
+
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-editorial",
   weight: "400",
   subsets: ["latin"],
 });
@@ -51,7 +64,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} ${silkscreen.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <SplashScreen />

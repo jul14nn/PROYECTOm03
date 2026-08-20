@@ -5,6 +5,7 @@ import { saveBrandKit } from "@/lib/actions/brandKit";
 import { SUBTITLE_STYLES } from "@/lib/subtitleStyles";
 import { VIDEO_STYLES } from "@/lib/videoStyles";
 import { SUGGESTED_COLORS } from "@/lib/constants";
+import { THEMES, SIDEBAR_MODES } from "@/lib/themes";
 
 const FONTS = [
   { value: "Anton", label: "Anton — cartel condensada" },
@@ -30,7 +31,61 @@ export default async function AjustesPage() {
 
       <form action={saveBrandKit} className="space-y-10">
         <section>
-          <h2 className="eyebrow pb-3 border-b border-white/20 mb-5">Colores</h2>
+          <h2 className="eyebrow pb-3 border-b border-white/20 mb-5">Apariencia</h2>
+          <div className="space-y-5">
+            <div>
+              <span className="label">Tema</span>
+              <div className="grid sm:grid-cols-3 gap-2">
+                {THEMES.map((t) => (
+                  <label key={t.id} className="tile p-3 flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="theme"
+                      value={t.id}
+                      defaultChecked={(kit?.theme ?? "neon") === t.id}
+                      className="mt-1"
+                    />
+                    <span>
+                      <span className="block text-sm">{t.name}</span>
+                      <span className="block text-xs text-neutral-500 mt-0.5">
+                        {t.description}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <span className="label">Menú lateral</span>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {SIDEBAR_MODES.map((m) => (
+                  <label key={m.id} className="tile p-3 flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="sidebarMode"
+                      value={m.id}
+                      defaultChecked={(kit?.sidebarMode ?? "fijo") === m.id}
+                      className="mt-1"
+                    />
+                    <span>
+                      <span className="block text-sm">{m.name}</span>
+                      <span className="block text-xs text-neutral-500 mt-0.5">
+                        {m.description}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-neutral-600 mt-2">
+                Solo afecta al ordenador. En móvil manda la barra inferior.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="eyebrow pb-3 border-b border-white/20 mb-5">Colores de marca</h2>
           <div className="grid sm:grid-cols-2 gap-5">
             <ColorField
               name="primaryColor"

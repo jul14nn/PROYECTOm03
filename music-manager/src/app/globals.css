@@ -384,3 +384,236 @@ input[type="checkbox"] {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------------
+   TEMAS OPCIONALES
+   El atributo va en el contenedor de la app, así que basta con redefinir
+   los tokens: las variables CSS heredan hacia abajo y todos los componentes
+   se recolorean solos. Solo hace falta escribir a mano lo que cambia de
+   forma, no de color.
+   --------------------------------------------------------------------- */
+
+.skin {
+  min-height: 100%;
+  background: var(--background);
+}
+
+/* ------------------------------------------------------------- 8 bits */
+
+[data-skin="bits"] {
+  --background: #0d0b1a;
+  --foreground: #e8f7ff;
+  --accent-violet: #7c3aed;
+  --accent-magenta: #ff2e88;
+  --accent-amber: #ffd23f;
+  --accent: #00e5c0;
+  --accent-ink: #0891b2;
+  --surface-1: #151230;
+  --surface-2: #1d1942;
+  --surface-3: #282155;
+  --edge: rgba(0, 229, 192, 0.28);
+  --edge-strong: #00e5c0;
+  --text-dim: #8fa8c4;
+  --text-dimmer: #5d7594;
+  /* Rejilla de barrido: textura de tubo, sin desenfoques. */
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.22) 0 2px,
+    transparent 2px 4px
+  );
+}
+
+/* El píxel es cuadrado: fuera curvas y desenfoques. */
+[data-skin="bits"] .card,
+[data-skin="bits"] .tile,
+[data-skin="bits"] .btn,
+[data-skin="bits"] .input,
+[data-skin="bits"] .badge,
+[data-skin="bits"] .meter,
+[data-skin="bits"] .meter-fill {
+  border-radius: 0;
+}
+
+[data-skin="bits"] .card {
+  border-width: 3px;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.55);
+  backdrop-filter: none;
+  background: var(--surface-1);
+}
+[data-skin="bits"] .card-featured {
+  border-color: var(--accent-magenta);
+  box-shadow: 6px 6px 0 color-mix(in srgb, var(--accent-magenta) 40%, transparent);
+}
+[data-skin="bits"] .tile {
+  border-width: 2px;
+  background: var(--surface-2);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5);
+}
+
+[data-skin="bits"] .display,
+[data-skin="bits"] .poster,
+[data-skin="bits"] .numeral,
+[data-skin="bits"] .eyebrow,
+[data-skin="bits"] .btn,
+[data-skin="bits"] .badge {
+  font-family: var(--font-pixel), monospace;
+  letter-spacing: 0.04em;
+}
+[data-skin="bits"] .display,
+[data-skin="bits"] .poster {
+  font-weight: 700;
+  line-height: 1.25;
+}
+[data-skin="bits"] .display-title {
+  font-family: var(--font-pixel), monospace;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  padding-top: 0;
+  margin-top: 0;
+  background: none;
+  -webkit-text-fill-color: var(--accent-amber);
+  color: var(--accent-amber);
+  text-shadow: 3px 3px 0 var(--accent-magenta), 6px 6px 0 rgba(0, 0, 0, 0.55);
+}
+[data-skin="bits"] .eyebrow {
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+[data-skin="bits"] .btn {
+  text-transform: uppercase;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.6);
+}
+[data-skin="bits"] .btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+[data-skin="bits"] .btn-primary {
+  background: var(--accent-magenta);
+}
+
+/* Medidor a segmentos, como una barra de vida */
+[data-skin="bits"] .meter {
+  height: 0.85rem;
+  background: #0a0818;
+  border: 2px solid var(--edge);
+  box-shadow: none;
+}
+[data-skin="bits"] .meter-fill {
+  background: var(--accent);
+  box-shadow: none;
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 11px);
+  mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 11px);
+}
+
+/* Cursor de consola en el título de la pantalla */
+@keyframes bits-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+[data-skin="bits"] h1.display-title::after {
+  content: "_";
+  margin-left: 0.15em;
+  color: var(--accent);
+  animation: bits-blink 1s steps(1, end) infinite;
+}
+
+/* Las filas entran a saltos: un píxel no interpola. */
+@keyframes bits-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+[data-skin="bits"] main section li {
+  animation: bits-in 0.18s steps(3, end) both;
+}
+[data-skin="bits"] main section li:nth-child(2) { animation-delay: 0.06s; }
+[data-skin="bits"] main section li:nth-child(3) { animation-delay: 0.12s; }
+[data-skin="bits"] main section li:nth-child(4) { animation-delay: 0.18s; }
+[data-skin="bits"] main section li:nth-child(5) { animation-delay: 0.24s; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-skin="bits"] h1.display-title::after,
+  [data-skin="bits"] main section li {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------- Vinilo */
+
+[data-skin="vinilo"] {
+  --background: #12100d;
+  --foreground: #f4ede1;
+  --accent-violet: #b45309;
+  --accent-magenta: #ea7317;
+  --accent-amber: #eab308;
+  --accent: #e0913f;
+  --accent-ink: #92400e;
+  --surface-1: #1a1713;
+  --surface-2: #232019;
+  --surface-3: #2c2820;
+  --edge: rgba(255, 238, 214, 0.1);
+  --edge-strong: rgba(255, 238, 214, 0.19);
+  --text-dim: #b0a189;
+  --text-dimmer: #7d7263;
+}
+[data-skin="vinilo"] .display,
+[data-skin="vinilo"] .poster,
+[data-skin="vinilo"] .numeral {
+  font-family: var(--font-editorial), Georgia, serif;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1.02;
+  font-weight: 400;
+}
+[data-skin="vinilo"] .display-title {
+  font-family: var(--font-editorial), Georgia, serif;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  line-height: 1.02;
+  background: linear-gradient(175deg, #fdf6e9 30%, #c6b294 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+[data-skin="vinilo"] .eyebrow {
+  letter-spacing: 0.22em;
+  font-weight: 500;
+}
+[data-skin="vinilo"] .card { border-radius: 0.4rem; }
+[data-skin="vinilo"] .tile,
+[data-skin="vinilo"] .btn,
+[data-skin="vinilo"] .input { border-radius: 0.35rem; }
+[data-skin="vinilo"] .badge { border-radius: 0.2rem; }
+
+/* ---------------------------------------------------------------------
+   Sidebar en modo raíl: se encoge a iconos y se abre al acercarse.
+   --------------------------------------------------------------------- */
+
+.rail {
+  width: 4.5rem;
+  transition: width 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+  z-index: 50;
+}
+.rail:hover,
+.rail:focus-within {
+  width: 16rem;
+  box-shadow: 24px 0 60px -20px rgba(0, 0, 0, 0.85);
+}
+/* Las etiquetas se desvanecen; si se recortaran, saltarían al abrir. */
+.rail .rail-label {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  white-space: nowrap;
+}
+.rail:hover .rail-label,
+.rail:focus-within .rail-label {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail,
+  .rail .rail-label {
+    transition: none;
+  }
+}

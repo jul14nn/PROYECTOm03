@@ -10,22 +10,28 @@ import clsx from "clsx";
 export default function Sidebar({
   userName,
   userEmail,
+  rail = false,
 }: {
   userName?: string | null;
   userEmail?: string | null;
+  /** Modo raíl: solo iconos, se despliega al acercarse. */
+  rail?: boolean;
 }) {
   const pathname = usePathname();
 
   return (
     <aside
-      className="hidden md:flex w-64 shrink-0 min-h-screen flex-col sticky top-0"
+      className={clsx(
+        "hidden md:flex shrink-0 min-h-screen flex-col sticky top-0",
+        rail ? "rail" : "w-64"
+      )}
       style={{
         background: "linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.008))",
         borderRight: "1px solid var(--edge)",
         backdropFilter: "blur(16px)",
       }}
     >
-      <div className="px-5 py-7">
+      <div className={clsx("py-7", rail ? "px-[1.15rem]" : "px-5")}>
         <Link href="/" className="flex items-center gap-2.5 group">
           <div
             className="h-9 w-9 rounded-xl flex items-center justify-center poster text-sm text-white transition-transform group-hover:scale-105"
@@ -37,8 +43,8 @@ export default function Sidebar({
           >
             KR
           </div>
-          <div className="leading-none">
-            <div className="display text-[1.05rem]">Music Manager</div>
+          <div className={clsx("leading-none", rail && "rail-label")}>
+            <div className="display text-[1.05rem] whitespace-nowrap">Music Manager</div>
             <div className="eyebrow mt-1 text-[0.58rem]">Estudio</div>
           </div>
         </Link>
@@ -52,7 +58,8 @@ export default function Sidebar({
               key={href}
               href={href}
               className={clsx(
-                "relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
+                "relative flex items-center rounded-lg py-2.5 text-sm transition-all duration-200",
+                rail ? "gap-3 pl-[0.85rem] pr-3" : "gap-3 px-3",
                 active
                   ? "text-white"
                   : "text-neutral-400 hover:text-neutral-100 hover:bg-white/[0.045]"
@@ -77,8 +84,10 @@ export default function Sidebar({
                   }}
                 />
               )}
-              <Icon size={17} strokeWidth={active ? 2.3 : 1.9} />
-              <span className={active ? "font-medium" : undefined}>{label}</span>
+              <Icon size={17} strokeWidth={active ? 2.3 : 1.9} className="shrink-0" />
+              <span className={clsx(active && "font-medium", rail && "rail-label")}>
+                {label}
+              </span>
             </Link>
           );
         })}
@@ -86,7 +95,10 @@ export default function Sidebar({
 
       <div className="px-3 py-4" style={{ borderTop: "1px solid var(--edge)" }}>
         {(userName || userEmail) && (
-          <div className="px-2 mb-2 truncate" title={userEmail ?? undefined}>
+          <div
+            className={clsx("px-2 mb-2 truncate", rail && "rail-label")}
+            title={userEmail ?? undefined}
+          >
             {userName && <div className="text-sm text-neutral-200">{userName}</div>}
             {userEmail && (
               <div
@@ -100,22 +112,26 @@ export default function Sidebar({
         <Link
           href="/ajustes"
           className={clsx(
-            "w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+            "w-full flex items-center gap-3 rounded-lg py-2 text-sm transition-colors",
+            rail ? "pl-[0.85rem] pr-3" : "px-3",
             pathname.startsWith("/ajustes")
               ? "text-fuchsia-300"
               : "text-neutral-500 hover:bg-white/[0.045] hover:text-neutral-100"
           )}
         >
-          <Settings2 size={16} />
-          Ajustes
+          <Settings2 size={16} className="shrink-0" />
+          <span className={rail ? "rail-label" : undefined}>Ajustes</span>
         </Link>
         <form action={signOutAction}>
           <button
             type="submit"
-            className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-neutral-500 hover:bg-white/[0.045] hover:text-neutral-100 transition-colors"
+            className={clsx(
+              "w-full flex items-center gap-3 rounded-lg py-2 text-sm text-neutral-500 hover:bg-white/[0.045] hover:text-neutral-100 transition-colors",
+              rail ? "pl-[0.85rem] pr-3" : "px-3"
+            )}
           >
-            <LogOut size={16} />
-            Cerrar sesión
+            <LogOut size={16} className="shrink-0" />
+            <span className={rail ? "rail-label" : undefined}>Cerrar sesión</span>
           </button>
         </form>
       </div>

@@ -26,6 +26,8 @@ export async function saveBrandKit(formData: FormData) {
     subtitlePosPct: num(formData, "subtitlePosPct", 78, 40, 92),
     subtitleScale: num(formData, "subtitleScale", 1, 0.7, 1.5),
     defaultVideoStyle: str(formData, "defaultVideoStyle", "neon"),
+    theme: str(formData, "theme", "neon"),
+    sidebarMode: str(formData, "sidebarMode", "fijo"),
   };
 
   await prisma.brandKit.upsert({
@@ -34,6 +36,7 @@ export async function saveBrandKit(formData: FormData) {
     update: data,
   });
 
-  revalidatePath("/ajustes");
-  revalidatePath("/songs", "layout");
+  // El tema y el menú viven en el layout de la app, así que hay que
+  // revalidar desde la raíz o el cambio no se ve hasta recargar.
+  revalidatePath("/", "layout");
 }

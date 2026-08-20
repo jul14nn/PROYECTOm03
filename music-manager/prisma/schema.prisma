@@ -330,6 +330,8 @@ model BrandKit {
   subtitlePosPct  Int      @default(78) // posición vertical, zona segura de TikTok
   subtitleScale   Float    @default(1)
   defaultVideoStyle String @default("neon")
+  theme           String   @default("neon") // neon | bits | vinilo
+  sidebarMode     String   @default("fijo") // fijo | rail
   updatedAt       DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
