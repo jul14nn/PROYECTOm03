@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
 import { formatDateTime } from "@/lib/constants";
 import { addInvite, removeInvite, deleteEvent } from "@/lib/actions/calendar";
 import { SendInviteButton, SendAllButton } from "@/components/InviteActions";
@@ -15,12 +16,13 @@ const INVITE_STATUS_STYLE: Record<string, string> = {
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const userId = await requireUserId();
   const [event, contacts] = await Promise.all([
-    prisma.calendarEvent.findUnique({
-      where: { id },
+    prisma.calendarEvent.findFirst({
+      where: { id, userId },
       include: { song: true, invites: { include: { contact: true }, orderBy: { createdAt: "asc" } } },
     }),
-    prisma.contact.findMany({ orderBy: { name: "asc" } }),
+    prisma.contact.findMany({ where: { userId }, orderBy: { name: "asc" } }),
   ]);
 
   if (!event) notFound();

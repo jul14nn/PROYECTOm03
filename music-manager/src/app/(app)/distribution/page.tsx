@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
 import { formatDate } from "@/lib/constants";
 import { TaskStatusBadge, ColorDot } from "@/components/Badges";
 
 export default async function DistributionPage() {
+  const userId = await requireUserId();
   const steps = await prisma.distributionStep.findMany({
+    where: { song: { userId } },
     include: { song: true },
     orderBy: [{ status: "asc" }, { dueDate: "asc" }],
   });

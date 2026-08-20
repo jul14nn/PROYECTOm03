@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
 import { formatDate } from "@/lib/constants";
 import { StageBadge, ColorDot } from "@/components/Badges";
 import { ImageOff, Plus, Users2 } from "lucide-react";
 
 export default async function SongsPage() {
+  const userId = await requireUserId();
   const songs = await prisma.song.findMany({
+    where: { userId },
     orderBy: { updatedAt: "desc" },
     include: { featurings: true, producers: { include: { contact: true } } },
   });

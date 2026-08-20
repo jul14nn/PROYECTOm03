@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
+import { assertSongOwner } from "@/lib/actions/helpers";
 import { revalidatePath } from "next/cache";
 
 function str(fd: FormData, key: string) {
@@ -9,8 +11,10 @@ function str(fd: FormData, key: string) {
 }
 
 export async function addRoyalty(songId: string, formData: FormData) {
+  const userId = await requireUserId();
   const name = str(formData, "name");
   if (!name) return;
+  await assertSongOwner(songId, userId);
   await prisma.royalty.create({
     data: {
       songId,
@@ -26,14 +30,23 @@ export async function addRoyalty(songId: string, formData: FormData) {
 }
 
 export async function removeRoyalty(songId: string, id: string) {
-  await prisma.royalty.delete({ where: { id } });
+  const userId = await requireUserId();
+  await prisma.royalty.deleteMany({ where: { id, songId, song: { userId } } });
   revalidatePath(`/songs/${songId}`);
   revalidatePath("/royalties");
 }
 
 export async function addRoyaltyPayment(songId: string, royaltyId: string, formData: FormData) {
+  const userId = await requireUserId();
   const amount = Number(str(formData, "amount") ?? 0);
   if (!amount) return;
+
+  const royalty = await prisma.royalty.findFirst({
+    where: { id: royaltyId, songId, song: { userId } },
+    select: { id: true },
+  });
+  if (!royalty) throw new Error("Royalty no encontrado");
+
   await prisma.royaltyPayment.create({
     data: {
       royaltyId,
@@ -48,7 +61,10 @@ export async function addRoyaltyPayment(songId: string, royaltyId: string, formD
 }
 
 export async function removeRoyaltyPayment(songId: string, id: string) {
-  await prisma.royaltyPayment.delete({ where: { id } });
+  const userId = await requireUserId();
+  await prisma.royaltyPayment.deleteMany({
+    where: { id, royalty: { songId, song: { userId } } },
+  });
   revalidatePath(`/songs/${songId}`);
   revalidatePath("/royalties");
 }

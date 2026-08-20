@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
 import { sendInviteEmail, isEmailConfigured } from "@/lib/email/mailer";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -11,9 +12,16 @@ function str(fd: FormData, key: string) {
 }
 
 export async function createEvent(formData: FormData) {
+  const userId = await requireUserId();
   const title = str(formData, "title");
   const startDate = str(formData, "startDate");
   if (!title || !startDate) throw new Error("Título y fecha de inicio son obligatorios");
+
+  const songId = str(formData, "songId");
+  if (songId) {
+    const song = await prisma.song.findFirst({ where: { id: songId, userId }, select: { id: true } });
+    if (!song) throw new Error("Canción no encontrada");
+  }
 
   const emailsRaw = str(formData, "inviteEmails") ?? "";
   const emails = emailsRaw
@@ -23,12 +31,13 @@ export async function createEvent(formData: FormData) {
 
   const event = await prisma.calendarEvent.create({
     data: {
+      userId,
       title,
       description: str(formData, "description"),
       location: str(formData, "location"),
       startDate: new Date(startDate),
       endDate: str(formData, "endDate") ? new Date(str(formData, "endDate")!) : null,
-      songId: str(formData, "songId"),
+      songId,
       invites: {
         create: emails.map((email) => ({ email })),
       },
@@ -40,14 +49,18 @@ export async function createEvent(formData: FormData) {
 }
 
 export async function deleteEvent(id: string) {
-  await prisma.calendarEvent.delete({ where: { id } });
+  const userId = await requireUserId();
+  await prisma.calendarEvent.deleteMany({ where: { id, userId } });
   revalidatePath("/calendar");
   redirect("/calendar");
 }
 
 export async function addInvite(eventId: string, formData: FormData) {
+  const userId = await requireUserId();
   const email = str(formData, "email");
   if (!email) return;
+  const event = await prisma.calendarEvent.findFirst({ where: { id: eventId, userId }, select: { id: true } });
+  if (!event) throw new Error("Evento no encontrado");
   await prisma.eventInvite.create({
     data: { eventId, email, contactId: str(formData, "contactId") },
   });
@@ -55,13 +68,19 @@ export async function addInvite(eventId: string, formData: FormData) {
 }
 
 export async function removeInvite(eventId: string, inviteId: string) {
-  await prisma.eventInvite.delete({ where: { id: inviteId } });
+  const userId = await requireUserId();
+  await prisma.eventInvite.deleteMany({
+    where: { id: inviteId, eventId, event: { userId } },
+  });
   revalidatePath(`/calendar/${eventId}`);
 }
 
 export async function sendInvite(eventId: string, inviteId: string) {
-  const event = await prisma.calendarEvent.findUniqueOrThrow({ where: { id: eventId } });
-  const invite = await prisma.eventInvite.findUniqueOrThrow({ where: { id: inviteId } });
+  const userId = await requireUserId();
+  const event = await prisma.calendarEvent.findFirst({ where: { id: eventId, userId } });
+  if (!event) throw new Error("Evento no encontrado");
+  const invite = await prisma.eventInvite.findFirst({ where: { id: inviteId, eventId } });
+  if (!invite) throw new Error("Invitación no encontrada");
 
   const formattedDate = new Intl.DateTimeFormat("es-ES", {
     dateStyle: "full",
@@ -95,6 +114,10 @@ export async function sendInvite(eventId: string, inviteId: string) {
 }
 
 export async function sendAllPendingInvites(eventId: string) {
+  const userId = await requireUserId();
+  const event = await prisma.calendarEvent.findFirst({ where: { id: eventId, userId }, select: { id: true } });
+  if (!event) throw new Error("Evento no encontrado");
+
   const invites = await prisma.eventInvite.findMany({
     where: { eventId, status: "PENDIENTE" },
   });

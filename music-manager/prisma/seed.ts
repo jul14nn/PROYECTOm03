@@ -5,18 +5,25 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  const owner = await prisma.user.upsert({
+    where: { email: "slazhys@gmail.com" },
+    update: {},
+    create: { email: "slazhys@gmail.com", name: "Julián" },
+  });
+
   const productor = await prisma.contact.create({
-    data: { name: "Marco Beats", role: "Productor", email: "marco@example.com" },
+    data: { userId: owner.id, name: "Marco Beats", role: "Productor", email: "marco@example.com" },
   });
   const featuring = await prisma.contact.create({
-    data: { name: "Luna MC", role: "Featuring", email: "luna@example.com" },
+    data: { userId: owner.id, name: "Luna MC", role: "Featuring", email: "luna@example.com" },
   });
   const distro = await prisma.contact.create({
-    data: { name: "DistroKid Support", role: "Distribuidora", email: "support@distrokid.com" },
+    data: { userId: owner.id, name: "DistroKid Support", role: "Distribuidora", email: "support@distrokid.com" },
   });
 
   const song = await prisma.song.create({
     data: {
+      userId: owner.id,
       title: "Noches de Neón",
       genre: "Reggaetón / Pop urbano",
       color: "#ec4899",
@@ -76,6 +83,7 @@ async function main() {
 
   await prisma.calendarEvent.create({
     data: {
+      userId: owner.id,
       title: "Sesión de mezcla - Noches de Neón",
       location: "Estudio Sonora, Madrid",
       startDate: new Date("2026-08-25T17:00:00"),

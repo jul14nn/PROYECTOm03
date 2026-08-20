@@ -1,16 +1,19 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
 import { formatMoney } from "@/lib/constants";
 import { TaskStatusBadge, ColorDot } from "@/components/Badges";
 
 export default async function MarketingPage() {
+  const userId = await requireUserId();
   const [songs, ideas] = await Promise.all([
     prisma.song.findMany({
-      where: { marketingBudgets: { some: {} } },
+      where: { userId, marketingBudgets: { some: {} } },
       include: { marketingBudgets: true },
       orderBy: { title: "asc" },
     }),
     prisma.marketingIdea.findMany({
+      where: { song: { userId } },
       include: { song: true },
       orderBy: { createdAt: "desc" },
     }),

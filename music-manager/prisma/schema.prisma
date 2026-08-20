@@ -37,11 +37,68 @@ enum InviteStatus {
 }
 
 // ---------------------------------------------------------------------------
+// Autenticación (Auth.js)
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  accounts Account[]
+  sessions Session[]
+
+  songs    Song[]
+  contacts Contact[]
+  events   CalendarEvent[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------------------------------------------------------------------------
 // Core catalog
 // ---------------------------------------------------------------------------
 
 model Contact {
   id        String   @id @default(cuid())
+  userId    String
   name      String
   email     String?
   phone     String?
@@ -50,6 +107,7 @@ model Contact {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   featurings     SongFeaturing[]
   producedSongs  SongProducer[]
   royalties      Royalty[]
@@ -58,6 +116,7 @@ model Contact {
 
 model Song {
   id            String    @id @default(cuid())
+  userId        String
   title         String
   genre         String? // tipo de canción
   color         String    @default("#6366f1")
@@ -71,6 +130,7 @@ model Song {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  user             User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   featurings       SongFeaturing[]
   producers        SongProducer[]
   videoIdeas       VideoIdea[]
@@ -196,6 +256,7 @@ model RoyaltyPayment {
 
 model CalendarEvent {
   id          String   @id @default(cuid())
+  userId      String
   title       String
   description String?
   location    String?
@@ -204,6 +265,7 @@ model CalendarEvent {
   songId      String?
   createdAt   DateTime @default(now())
 
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   song    Song?         @relation(fields: [songId], references: [id], onDelete: SetNull)
   invites EventInvite[]
 }

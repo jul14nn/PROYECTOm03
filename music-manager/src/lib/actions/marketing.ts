@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
+import { assertSongOwner } from "@/lib/actions/helpers";
 import { revalidatePath } from "next/cache";
 
 function str(fd: FormData, key: string) {
@@ -9,8 +11,10 @@ function str(fd: FormData, key: string) {
 }
 
 export async function addBudgetItem(songId: string, formData: FormData) {
+  const userId = await requireUserId();
   const category = str(formData, "category");
   if (!category) return;
+  await assertSongOwner(songId, userId);
   await prisma.marketingBudgetItem.create({
     data: {
       songId,
@@ -25,13 +29,16 @@ export async function addBudgetItem(songId: string, formData: FormData) {
 }
 
 export async function removeBudgetItem(songId: string, id: string) {
-  await prisma.marketingBudgetItem.delete({ where: { id } });
+  const userId = await requireUserId();
+  await prisma.marketingBudgetItem.deleteMany({ where: { id, songId, song: { userId } } });
   revalidatePath(`/songs/${songId}`);
 }
 
 export async function addMarketingIdea(songId: string, formData: FormData) {
+  const userId = await requireUserId();
   const title = str(formData, "title");
   if (!title) return;
+  await assertSongOwner(songId, userId);
   await prisma.marketingIdea.create({
     data: {
       songId,
@@ -44,11 +51,16 @@ export async function addMarketingIdea(songId: string, formData: FormData) {
 }
 
 export async function toggleMarketingIdea(songId: string, id: string, status: string) {
-  await prisma.marketingIdea.update({ where: { id }, data: { status: status as never } });
+  const userId = await requireUserId();
+  await prisma.marketingIdea.updateMany({
+    where: { id, songId, song: { userId } },
+    data: { status: status as never },
+  });
   revalidatePath(`/songs/${songId}`);
 }
 
 export async function removeMarketingIdea(songId: string, id: string) {
-  await prisma.marketingIdea.delete({ where: { id } });
+  const userId = await requireUserId();
+  await prisma.marketingIdea.deleteMany({ where: { id, songId, song: { userId } } });
   revalidatePath(`/songs/${songId}`);
 }

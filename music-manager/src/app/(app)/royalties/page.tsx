@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
 import { formatMoney } from "@/lib/constants";
 import { ColorDot } from "@/components/Badges";
 
 export default async function RoyaltiesPage() {
+  const userId = await requireUserId();
   const songs = await prisma.song.findMany({
-    where: { royalties: { some: {} } },
+    where: { userId, royalties: { some: {} } },
     include: { royalties: { include: { payments: true }, orderBy: { createdAt: "asc" } } },
     orderBy: { title: "asc" },
   });

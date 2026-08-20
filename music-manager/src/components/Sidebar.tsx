@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV } from "@/lib/nav";
+import { signOutAction } from "@/lib/actions/auth";
+import { LogOut } from "lucide-react";
 import clsx from "clsx";
 
-export default function Sidebar() {
+export default function Sidebar({ userEmail }: { userEmail?: string | null }) {
   const pathname = usePathname();
 
   return (
@@ -38,8 +40,21 @@ export default function Sidebar() {
           );
         })}
       </nav>
-      <div className="px-5 py-4 text-xs text-neutral-600">
-        Producción musical, de la idea al lanzamiento.
+      <div className="px-3 py-4 border-t border-neutral-800">
+        {userEmail && (
+          <div className="px-2 mb-2 text-xs text-neutral-500 truncate" title={userEmail}>
+            {userEmail}
+          </div>
+        )}
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100 transition-colors"
+          >
+            <LogOut size={16} />
+            Cerrar sesión
+          </button>
+        </form>
       </div>
     </aside>
   );

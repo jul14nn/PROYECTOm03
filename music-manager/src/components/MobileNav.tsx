@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV } from "@/lib/nav";
+import { signOutAction } from "@/lib/actions/auth";
+import { LogOut } from "lucide-react";
 import clsx from "clsx";
 
 export function MobileTopBar() {
@@ -13,7 +15,16 @@ export function MobileTopBar() {
       <div className="h-7 w-7 rounded-md bg-indigo-500 flex items-center justify-center font-bold text-sm shrink-0">
         M
       </div>
-      <span className="font-semibold text-sm">Music Manager</span>
+      <span className="font-semibold text-sm flex-1">Music Manager</span>
+      <form action={signOutAction}>
+        <button
+          type="submit"
+          aria-label="Cerrar sesión"
+          className="p-1.5 -mr-1.5 text-neutral-500"
+        >
+          <LogOut size={17} />
+        </button>
+      </form>
     </header>
   );
 }

@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
 import { createContact, deleteContact } from "@/lib/actions/contacts";
 import { Trash2, Mail, Phone, Plus } from "lucide-react";
 
 export default async function ContactsPage() {
+  const userId = await requireUserId();
   const contacts = await prisma.contact.findMany({
+    where: { userId },
     orderBy: { name: "asc" },
     include: {
       _count: { select: { producedSongs: true, featurings: true, royalties: true } },

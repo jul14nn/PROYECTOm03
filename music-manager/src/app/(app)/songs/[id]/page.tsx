@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
 import SongForm from "@/components/SongForm";
 import { StageBadge, TaskStatusBadge, ColorDot } from "@/components/Badges";
 import {
@@ -26,10 +27,11 @@ import { Trash2, Link2, Video, ListChecks, Truck, Megaphone, Coins, Users2 } fro
 
 export default async function SongDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const userId = await requireUserId();
 
   const [song, contacts] = await Promise.all([
-    prisma.song.findUnique({
-      where: { id },
+    prisma.song.findFirst({
+      where: { id, userId },
       include: {
         featurings: { include: { contact: true }, orderBy: { createdAt: "asc" } },
         producers: { include: { contact: true }, orderBy: { createdAt: "asc" } },
@@ -42,7 +44,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
         events: { orderBy: { startDate: "asc" } },
       },
     }),
-    prisma.contact.findMany({ orderBy: { name: "asc" } }),
+    prisma.contact.findMany({ where: { userId }, orderBy: { name: "asc" } }),
   ]);
 
   if (!song) notFound();

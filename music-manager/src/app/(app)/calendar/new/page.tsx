@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
 import { createEvent } from "@/lib/actions/calendar";
 
 export default async function NewEventPage({
@@ -7,7 +8,8 @@ export default async function NewEventPage({
   searchParams: Promise<{ songId?: string }>;
 }) {
   const { songId } = await searchParams;
-  const songs = await prisma.song.findMany({ orderBy: { title: "asc" } });
+  const userId = await requireUserId();
+  const songs = await prisma.song.findMany({ where: { userId }, orderBy: { title: "asc" } });
 
   return (
     <div className="max-w-2xl">

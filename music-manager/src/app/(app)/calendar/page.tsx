@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
 import { formatDateTime } from "@/lib/constants";
 import { ColorDot } from "@/components/Badges";
 import { MapPin, Plus, Mail } from "lucide-react";
 
 export default async function CalendarPage() {
+  const userId = await requireUserId();
   const events = await prisma.calendarEvent.findMany({
+    where: { userId },
     orderBy: { startDate: "asc" },
     include: { song: true, invites: true },
   });

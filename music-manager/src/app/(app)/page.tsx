@@ -1,26 +1,28 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { requireUserId } from "@/lib/auth";
 import { STAGES, STAGE_LABELS, formatDateTime, formatMoney } from "@/lib/constants";
 import { StageBadge, ColorDot } from "@/components/Badges";
 import { ImageOff, ArrowRight, CalendarClock } from "lucide-react";
 
 export default async function DashboardPage() {
+  const userId = await requireUserId();
   const [songs, upcomingEvents, pendingDistribution, budgets, royaltySum] = await Promise.all([
-    prisma.song.findMany({ orderBy: { updatedAt: "desc" } }),
+    prisma.song.findMany({ where: { userId }, orderBy: { updatedAt: "desc" } }),
     prisma.calendarEvent.findMany({
-      where: { startDate: { gte: new Date() } },
+      where: { userId, startDate: { gte: new Date() } },
       orderBy: { startDate: "asc" },
       take: 5,
       include: { song: true },
     }),
     prisma.distributionStep.findMany({
-      where: { status: { not: "HECHO" } },
+      where: { status: { not: "HECHO" }, song: { userId } },
       include: { song: true },
       orderBy: { dueDate: "asc" },
       take: 6,
     }),
-    prisma.marketingBudgetItem.findMany(),
-    prisma.royalty.count(),
+    prisma.marketingBudgetItem.findMany({ where: { song: { userId } } }),
+    prisma.royalty.count({ where: { song: { userId } } }),
   ]);
 
   const byStage = STAGES.map((s) => ({
