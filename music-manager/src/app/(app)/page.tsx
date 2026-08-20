@@ -2,28 +2,34 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
 import { STAGES, STAGE_LABELS, formatDateTime, formatMoney } from "@/lib/constants";
-import { StageBadge, ColorDot } from "@/components/Badges";
+import { buildTodayList, upcomingReleases, songsWithBrokenRoyalties } from "@/lib/agenda";
 import TipOfTheDay from "@/components/TipOfTheDay";
-import { ImageOff, ArrowRight, CalendarClock } from "lucide-react";
+import { TodayPanel, ReleaseCountdown } from "@/components/TodayPanel";
+import { ArrowRight, CalendarClock } from "lucide-react";
 
 export default async function DashboardPage() {
   const userId = await requireUserId();
-  const [songs, upcomingEvents, pendingDistribution, budgets, royaltySum] = await Promise.all([
-    prisma.song.findMany({ where: { userId }, orderBy: { updatedAt: "desc" } }),
+  const [songs, upcomingEvents, budgets] = await Promise.all([
+    prisma.song.findMany({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+      include: {
+        tasks: true,
+        distributionSteps: true,
+        marketingIdeas: true,
+        marketingBudgets: true,
+        royalties: true,
+        videoIdeas: true,
+        references: true,
+      },
+    }),
     prisma.calendarEvent.findMany({
       where: { userId, startDate: { gte: new Date() } },
       orderBy: { startDate: "asc" },
       take: 5,
       include: { song: true },
     }),
-    prisma.distributionStep.findMany({
-      where: { status: { not: "HECHO" }, song: { userId } },
-      include: { song: true },
-      orderBy: { dueDate: "asc" },
-      take: 6,
-    }),
     prisma.marketingBudgetItem.findMany({ where: { song: { userId } } }),
-    prisma.royalty.count({ where: { song: { userId } } }),
   ]);
 
   const byStage = STAGES.map((s) => ({
@@ -31,7 +37,9 @@ export default async function DashboardPage() {
     count: songs.filter((song) => song.stage === s).length,
   }));
 
-  const missingCover = songs.filter((s) => s.needsCover);
+  const todo = buildTodayList(songs);
+  const releases = upcomingReleases(songs);
+  const brokenRoyalties = songsWithBrokenRoyalties(songs);
   const totalPlanned = budgets.reduce((a, b) => a + b.plannedAmount, 0);
   const totalActual = budgets.reduce((a, b) => a + b.actualAmount, 0);
 
@@ -40,14 +48,28 @@ export default async function DashboardPage() {
       <div>
         <h1 className="text-2xl font-semibold">Resumen</h1>
         <p className="text-neutral-400 text-sm mt-1">
-          Visión general de tu catálogo, agenda y marketing.
+          Lo que toca hacer hoy, tu pipeline y lo que se acerca.
         </p>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        <TodayPanel items={todo} />
+        <ReleaseCountdown releases={releases} />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Canciones activas" value={songs.length} />
-        <StatCard label="Sin portada" value={missingCover.length} accent="text-pink-300" />
-        <StatCard label="Splits de royalties" value={royaltySum} />
+        <StatCard
+          label="Royalties sin cuadrar"
+          value={brokenRoyalties}
+          sub={brokenRoyalties === 0 ? "todo suma 100%" : "no suman 100%"}
+          accent={brokenRoyalties > 0 ? "text-amber-300" : undefined}
+        />
+        <StatCard
+          label="Sin portada"
+          value={songs.filter((s) => s.needsCover).length}
+          accent="text-pink-300"
+        />
         <StatCard
           label="Presupuesto marketing"
           value={formatMoney(totalActual)}
@@ -114,53 +136,7 @@ export default async function DashboardPage() {
         </section>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <section className="card p-5">
-          <h2 className="font-semibold mb-4">Portadas pendientes</h2>
-          <div className="space-y-2">
-            {missingCover.map((s) => (
-              <Link
-                key={s.id}
-                href={`/songs/${s.id}`}
-                className="flex items-center gap-3 text-sm hover:bg-neutral-900 rounded-lg p-2 -mx-2"
-              >
-                <ImageOff size={16} className="text-pink-400 shrink-0" />
-                <ColorDot color={s.color} />
-                <span className="flex-1">{s.title}</span>
-                <StageBadge stage={s.stage} />
-              </Link>
-            ))}
-            {missingCover.length === 0 && (
-              <p className="text-neutral-500 text-sm">Todo al día 🎨</p>
-            )}
-          </div>
-        </section>
-
-        <section className="card p-5">
-          <h2 className="font-semibold mb-4">Distribución pendiente</h2>
-          <div className="space-y-2">
-            {pendingDistribution.map((step) => (
-              <Link
-                key={step.id}
-                href={`/songs/${step.songId}`}
-                className="flex items-center justify-between text-sm hover:bg-neutral-900 rounded-lg p-2 -mx-2"
-              >
-                <div>
-                  <div className="font-medium">{step.step}</div>
-                  <div className="text-neutral-500 text-xs">
-                    {step.distributor} · {step.song.title}
-                  </div>
-                </div>
-              </Link>
-            ))}
-            {pendingDistribution.length === 0 && (
-              <p className="text-neutral-500 text-sm">Sin pasos pendientes.</p>
-            )}
-          </div>
-        </section>
-
-        <TipOfTheDay />
-      </div>
+      <TipOfTheDay />
     </div>
   );
 }
