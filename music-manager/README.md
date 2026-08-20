@@ -22,6 +22,10 @@ canción hasta su lanzamiento, distribución, marketing y reparto de royalties.
 - **Contactos**: directorio único de productores, featuring, distribuidoras, etc.,
   reutilizado en toda la app.
 
+**Cuentas de usuario**: acceso con enlace mágico por email (sin contraseñas). Cada
+canción, contacto y evento pertenece a quien lo creó — nadie ve ni puede acceder a los
+datos de otra cuenta, ni siquiera por URL directa.
+
 Es una **PWA**: se puede instalar en el iPhone (u otro móvil) desde el navegador y se
 abre a pantalla completa, con su propio icono, como una app nativa.
 
@@ -45,14 +49,21 @@ docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=devpass -e POSTGRES_DB=musicmana
 npm install            # instala dependencias y genera el cliente de Prisma
 cp .env.example .env   # copia la plantilla de variables de entorno (ajusta DATABASE_URL si hace falta)
 npm run db:migrate     # aplica el esquema a la base de datos
-npm run db:seed        # (opcional) carga datos de ejemplo
+npm run db:seed        # (opcional) carga datos de ejemplo, asociados a tu cuenta
 npm run dev            # arranca la app en http://localhost:3000
 ```
 
-### Configurar el envío de correos (agenda)
+### Iniciar sesión
 
-Para poder enviar invitaciones desde la Agenda, completa en `.env` los datos SMTP de tu
-proveedor (Gmail, SendGrid, Mailgun, tu propio servidor, etc.):
+Abre `http://localhost:3000`, introduce tu email y pulsa "Enviar enlace de acceso". Sin
+SMTP configurado (ver abajo), el enlace no se envía por correo: se imprime en la terminal
+donde corre `npm run dev` — cópialo y ábrelo en el navegador para entrar.
+
+### Configurar el envío de correos (agenda y enlaces de acceso)
+
+El mismo SMTP se usa para dos cosas: enviar invitaciones desde la Agenda, y enviar los
+enlaces mágicos de inicio de sesión. Completa en `.env` los datos de tu proveedor (Gmail,
+SendGrid, Mailgun, tu propio servidor, etc.):
 
 ```env
 SMTP_HOST="smtp.tuproveedor.com"
@@ -63,8 +74,19 @@ SMTP_FROM="Tu Estudio <no-reply@tudominio.com>"
 ```
 
 Con Gmail necesitas generar una "contraseña de aplicación" (no la contraseña normal de la
-cuenta). Si no configuras estas variables, la app sigue funcionando con normalidad; solo
-el botón de enviar invitaciones mostrará un aviso indicando que falta la configuración SMTP.
+cuenta). Si no configuras estas variables, la app sigue funcionando con normalidad; el
+enlace de acceso se imprime en consola (ver arriba) y el botón de enviar invitaciones
+mostrará un aviso indicando que falta la configuración SMTP.
+
+### Variable `AUTH_SECRET`
+
+Necesaria para firmar las sesiones. Genera la tuya con:
+
+```bash
+openssl rand -base64 33
+```
+
+y pégala en `.env` como `AUTH_SECRET`.
 
 ## Desplegar en Vercel
 
@@ -74,10 +96,13 @@ el botón de enviar invitaciones mostrará un aviso indicando que falta la confi
    la pestaña **Storage → Create Database** y elige un Postgres (Neon o similar, tienen
    capa gratuita). Al conectarlo al proyecto, Vercel añade automáticamente la variable
    `DATABASE_URL` — no hace falta copiarla a mano.
-3. **(Opcional) Añade las variables SMTP** en **Settings → Environment Variables** si
-   quieres que funcionen las invitaciones por email: `SMTP_HOST`, `SMTP_PORT`,
-   `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`.
-4. **Deploy.** El comando de build (`prisma migrate deploy && next build`) aplica el
+3. **Añade `AUTH_SECRET`** en **Settings → Environment Variables** (genera uno con
+   `openssl rand -base64 33`). Sin esto, el inicio de sesión no funciona.
+4. **(Opcional) Añade las variables SMTP** en el mismo sitio si quieres que funcionen las
+   invitaciones por email y el envío de enlaces de acceso: `SMTP_HOST`, `SMTP_PORT`,
+   `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`. Sin SMTP configurado, para entrar tendrás que
+   copiar el enlace de acceso de los **Runtime Logs** del deployment en Vercel.
+5. **Deploy.** El comando de build (`prisma migrate deploy && next build`) aplica el
    esquema a la base de datos automáticamente en cada despliegue — no necesitas ejecutar
    migraciones a mano.
 
