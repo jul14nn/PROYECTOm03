@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
-import { sendInviteEmail, isEmailConfigured } from "@/lib/email/mailer";
+import { sendAppEmail, isEmailConfigured } from "@/lib/email/mailer";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -88,7 +88,7 @@ export async function sendInvite(eventId: string, inviteId: string) {
   }).format(event.startDate);
 
   try {
-    await sendInviteEmail({
+    await sendAppEmail({
       to: invite.email,
       subject: `Invitación: ${event.title}`,
       html: `

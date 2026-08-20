@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
 import { STAGES, STAGE_LABELS, formatDateTime, formatMoney } from "@/lib/constants";
 import { StageBadge, ColorDot } from "@/components/Badges";
+import TipOfTheDay from "@/components/TipOfTheDay";
 import { ImageOff, ArrowRight, CalendarClock } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -113,7 +114,7 @@ export default async function DashboardPage() {
         </section>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-3 gap-6">
         <section className="card p-5">
           <h2 className="font-semibold mb-4">Portadas pendientes</h2>
           <div className="space-y-2">
@@ -157,6 +158,8 @@ export default async function DashboardPage() {
             )}
           </div>
         </section>
+
+        <TipOfTheDay />
       </div>
     </div>
   );

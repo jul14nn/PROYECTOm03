@@ -7,7 +7,14 @@ canción hasta su lanzamiento, distribución, marketing y reparto de royalties.
 
 - **Canciones**: título, tipo/género, color identificativo, etapa (idea → pre-producción →
   escritura → grabación → mezcla → máster → portada → distribución → lanzada), BPM,
-  tonalidad, fecha de lanzamiento y si falta sacar la portada.
+  tonalidad, **fecha aproximada de lanzamiento** (selector propio con calendario y año) y
+  si falta sacar la portada.
+- **Referencias visuales**: sube imágenes por canción para lluvia de ideas — portadas que
+  inspiran, paletas, fotogramas de referencia para el vídeo.
+- **Avisos de lanzamiento**: email automático al acercarse la fecha aproximada (30, 14, 7,
+  3 y 1 días antes), con una recomendación de cuántas sesiones de TikTok grabar esa semana.
+- **Consejo del día**: 20 consejos de marketing musical que rotan sin repetirse hasta
+  agotar la ronda.
 - **Colaboradores**: featuring y productores por canción, vinculados a la agenda de contactos.
 - **Ideas de vídeo**: lluvia de ideas para el videoclip/lyric video de cada canción.
 - **Pre-producción**: checklist de gestiones previas (registro en sociedad de autores,
@@ -88,6 +95,30 @@ openssl rand -base64 33
 
 y pégala en `.env` como `AUTH_SECRET`.
 
+### Subir imágenes de referencia (Vercel Blob)
+
+Opcional. Sin configurarlo, la app funciona igual — solo se oculta el formulario de
+subida en la sección "Referencias visuales" de cada canción.
+
+1. En el dashboard de Vercel: **Storage → Create → Blob**, conéctalo al proyecto.
+2. Copia el token que genera y ponlo en `.env` como `BLOB_READ_WRITE_TOKEN` (en local, si
+   quieres probar la subida) — en producción, Vercel lo añade solo al conectar el Blob.
+
+### Avisos de lanzamiento por email
+
+Cada canción con fecha aproximada recibe un email cuando quedan 30, 14, 7, 3 o 1 día(s)
+para esa fecha, con una recomendación de sesiones de TikTok según lo cerca que esté. Esto
+corre como una tarea programada (`vercel.json` → `crons`), una vez al día:
+
+- **En local** puedes disparar la comprobación a mano visitando
+  `http://localhost:3000/api/cron/release-reminders`.
+- **En Vercel**, añade `CRON_SECRET` en Environment Variables (genera uno con
+  `openssl rand -hex 24`) para que solo Vercel Cron pueda llamar al endpoint. El cron se
+  activa solo con el `vercel.json` del repo — no hace falta configurarlo a mano en el
+  dashboard.
+- Requiere SMTP configurado (ver arriba); sin él, el aviso se salta ese día y se reintenta
+  al siguiente, sin perderse.
+
 ## Desplegar en Vercel
 
 1. **Importa el repositorio.** En [vercel.com/new](https://vercel.com/new), importa
@@ -99,10 +130,14 @@ y pégala en `.env` como `AUTH_SECRET`.
 3. **Añade `AUTH_SECRET`** en **Settings → Environment Variables** (genera uno con
    `openssl rand -base64 33`). Sin esto, el inicio de sesión no funciona.
 4. **(Opcional) Añade las variables SMTP** en el mismo sitio si quieres que funcionen las
-   invitaciones por email y el envío de enlaces de acceso: `SMTP_HOST`, `SMTP_PORT`,
-   `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`. Sin SMTP configurado, para entrar tendrás que
-   copiar el enlace de acceso de los **Runtime Logs** del deployment en Vercel.
-5. **Deploy.** El comando de build (`prisma migrate deploy && next build`) aplica el
+   invitaciones por email, el envío de enlaces de acceso y los avisos de lanzamiento:
+   `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`. Sin SMTP configurado,
+   para entrar tendrás que copiar el enlace de acceso de los **Runtime Logs** del
+   deployment en Vercel.
+5. **(Opcional) Conecta Vercel Blob** (Storage → Create → Blob) para poder subir imágenes
+   de referencia, y añade `CRON_SECRET` para proteger los avisos de lanzamiento — ver
+   detalles arriba.
+6. **Deploy.** El comando de build (`prisma migrate deploy && next build`) aplica el
    esquema a la base de datos automáticamente en cada despliegue — no necesitas ejecutar
    migraciones a mano.
 
@@ -133,6 +168,6 @@ npm run lint        # linting
 ## Estructura de datos
 
 El esquema completo vive en [`prisma/schema.prisma`](./prisma/schema.prisma). Modelos
-principales: `Song`, `Contact`, `SongFeaturing`, `SongProducer`, `VideoIdea`,
-`PreProductionTask`, `DistributionStep`, `MarketingBudgetItem`, `MarketingIdea`,
-`Royalty`, `RoyaltyPayment`, `CalendarEvent`, `EventInvite`.
+principales: `Song`, `SongReference`, `Contact`, `SongFeaturing`, `SongProducer`,
+`VideoIdea`, `PreProductionTask`, `DistributionStep`, `MarketingBudgetItem`,
+`MarketingIdea`, `Royalty`, `RoyaltyPayment`, `CalendarEvent`, `EventInvite`.

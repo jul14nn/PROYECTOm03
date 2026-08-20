@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { STAGES, STAGE_LABELS, SUGGESTED_COLORS, formatDateInput } from "@/lib/constants";
+import DatePicker from "@/components/DatePicker";
 
 type SongLike = {
   id?: string;
@@ -113,15 +114,12 @@ export default function SongForm({
         </div>
         <div>
           <label className="label" htmlFor="releaseDate">
-            Fecha de lanzamiento
+            Fecha aproximada de lanzamiento
           </label>
-          <input
-            id="releaseDate"
-            name="releaseDate"
-            type="date"
-            className="input"
-            defaultValue={formatDateInput(song?.releaseDate)}
-          />
+          <DatePicker name="releaseDate" defaultValue={formatDateInput(song?.releaseDate) || null} />
+          <p className="text-xs text-neutral-600 mt-1">
+            Es una fecha orientativa (~), no un compromiso cerrado.
+          </p>
         </div>
       </div>
 

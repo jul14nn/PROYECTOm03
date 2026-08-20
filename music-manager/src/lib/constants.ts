@@ -56,6 +56,11 @@ export function formatDate(d: Date | string | null | undefined) {
   return new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(date);
 }
 
+export function formatDateApprox(d: Date | string | null | undefined) {
+  if (!d) return "—";
+  return `~ ${formatDate(d)}`;
+}
+
 export function formatDateTime(d: Date | string | null | undefined) {
   if (!d) return "—";
   const date = typeof d === "string" ? new Date(d) : d;

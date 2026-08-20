@@ -6,9 +6,11 @@ import SongForm from "@/components/SongForm";
 import { StageBadge, TaskStatusBadge, ColorDot } from "@/components/Badges";
 import {
   formatDate,
+  formatDateApprox,
   formatMoney,
   NEXT_TASK_STATUS,
 } from "@/lib/constants";
+import { daysUntil, tiktokPlanFor } from "@/lib/tiktokPlan";
 import {
   updateSong,
   deleteSong,
@@ -23,7 +25,9 @@ import {
 import { addTask, cycleTaskStatus, removeTask, addDistributionStep, cycleDistributionStatus, removeDistributionStep } from "@/lib/actions/tasks";
 import { addBudgetItem, removeBudgetItem, addMarketingIdea, toggleMarketingIdea, removeMarketingIdea } from "@/lib/actions/marketing";
 import { addRoyalty, removeRoyalty, addRoyaltyPayment, removeRoyaltyPayment } from "@/lib/actions/royalties";
-import { Trash2, Link2, Video, ListChecks, Truck, Megaphone, Coins, Users2 } from "lucide-react";
+import { addSongReference, removeSongReference } from "@/lib/actions/references";
+import { isBlobConfigured } from "@/lib/blob";
+import { Trash2, Link2, Video, ListChecks, Truck, Megaphone, Coins, Users2, Images, Sparkles } from "lucide-react";
 
 export default async function SongDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -42,6 +46,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
         marketingIdeas: { orderBy: { createdAt: "asc" } },
         royalties: { include: { contact: true, payments: true }, orderBy: { createdAt: "asc" } },
         events: { orderBy: { startDate: "asc" } },
+        references: { orderBy: { createdAt: "desc" } },
       },
     }),
     prisma.contact.findMany({ where: { userId }, orderBy: { name: "asc" } }),
@@ -54,6 +59,8 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
   const totalPlanned = song.marketingBudgets.reduce((a, b) => a + b.plannedAmount, 0);
   const totalActual = song.marketingBudgets.reduce((a, b) => a + b.actualAmount, 0);
   const totalRoyaltyPct = song.royalties.reduce((a, r) => a + r.percentage, 0);
+  const days = song.releaseDate ? daysUntil(song.releaseDate) : null;
+  const tiktokPlan = days !== null && days >= 0 ? tiktokPlanFor(days) : null;
 
   return (
     <div className="space-y-8 pb-16">
@@ -80,6 +87,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
           ["#info", "Info"],
           ["#colaboradores", "Colaboradores"],
           ["#video", "Vídeo"],
+          ["#referencias", "Referencias"],
           ["#preproduccion", "Pre-producción"],
           ["#distribucion", "Distribución"],
           ["#marketing", "Marketing"],
@@ -96,6 +104,24 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
         <h2 className="font-semibold mb-4">Información general</h2>
         <SongForm action={updateSongWithId} song={song} submitLabel="Guardar cambios" />
       </section>
+
+      {tiktokPlan && (
+        <section className="card p-6" style={{ borderColor: "color-mix(in srgb, var(--accent-magenta) 30%, transparent)" }}>
+          <h2 className="font-semibold flex items-center gap-2 mb-1">
+            <Sparkles size={18} className="text-fuchsia-300" /> Plan de TikTok
+          </h2>
+          <p className="text-sm text-neutral-400 mb-3">
+            A {formatDateApprox(song.releaseDate)} le quedan{" "}
+            <strong className="text-neutral-200">{days} {days === 1 ? "día" : "días"}</strong>.
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="badge bg-fuchsia-500/15 text-fuchsia-300 text-sm py-1 px-3">
+              {tiktokPlan.cadence}
+            </span>
+          </div>
+          <p className="text-sm text-neutral-400 mt-3">{tiktokPlan.focus}</p>
+        </section>
+      )}
 
       <section id="colaboradores" className="card p-6 space-y-6">
         <h2 className="font-semibold flex items-center gap-2">
@@ -213,6 +239,59 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
           <input name="referenceUrl" placeholder="URL de referencia" className="input flex-1 min-w-[10rem]" />
           <button type="submit" className="btn btn-secondary">Añadir</button>
         </form>
+      </section>
+
+      <section id="referencias" className="card p-6 space-y-3">
+        <h2 className="font-semibold flex items-center gap-2">
+          <Images size={18} /> Referencias visuales
+        </h2>
+        <p className="text-sm text-neutral-500 -mt-2">
+          Sube imágenes para lluvia de ideas: portadas que te inspiran, paletas de color, fotogramas de referencia para el vídeo...
+        </p>
+
+        {song.references.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {song.references.map((ref) => (
+              <div key={ref.id} className="relative group rounded-lg overflow-hidden bg-neutral-900 border border-neutral-800">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={ref.url} alt={ref.caption ?? "Referencia visual"} className="w-full h-32 object-cover" />
+                {ref.caption && (
+                  <div className="px-2 py-1.5 text-xs text-neutral-400 truncate">{ref.caption}</div>
+                )}
+                <form action={removeSongReference.bind(null, song.id, ref.id)}>
+                  <button
+                    type="submit"
+                    className="absolute top-1.5 right-1.5 h-6 w-6 rounded-md bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Eliminar referencia"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </form>
+              </div>
+            ))}
+          </div>
+        )}
+        {song.references.length === 0 && (
+          <p className="text-neutral-500 text-sm">Sin imágenes de referencia todavía.</p>
+        )}
+
+        {isBlobConfigured() ? (
+          <form action={addSongReference.bind(null, song.id)} className="flex flex-wrap gap-2 pt-2" encType="multipart/form-data">
+            <input
+              name="file"
+              type="file"
+              accept="image/*"
+              required
+              className="input flex-1 min-w-[10rem] file:mr-3 file:rounded-md file:border-0 file:bg-neutral-800 file:text-neutral-200 file:px-3 file:py-1.5 file:text-xs"
+            />
+            <input name="caption" placeholder="Descripción breve (opcional)" className="input flex-1 min-w-[10rem]" />
+            <button type="submit" className="btn btn-secondary">Subir imagen</button>
+          </form>
+        ) : (
+          <p className="text-xs text-neutral-600">
+            Para subir imágenes, configura Vercel Blob (variable <code>BLOB_READ_WRITE_TOKEN</code>).
+          </p>
+        )}
       </section>
 
       <section id="preproduccion" className="card p-6 space-y-3">

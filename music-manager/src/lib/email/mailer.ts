@@ -22,7 +22,7 @@ function getTransporter() {
   return transporter;
 }
 
-export async function sendInviteEmail(opts: {
+export async function sendAppEmail(opts: {
   to: string;
   subject: string;
   html: string;

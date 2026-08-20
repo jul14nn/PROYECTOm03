@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
-import { formatDate } from "@/lib/constants";
+import { formatDateApprox } from "@/lib/constants";
 import { StageBadge, ColorDot } from "@/components/Badges";
 import { ImageOff, Plus, Users2 } from "lucide-react";
 
@@ -67,7 +67,7 @@ export default async function SongsPage() {
                 </div>
               </div>
               <div className="text-xs text-neutral-500 hidden sm:block">
-                {formatDate(song.releaseDate)}
+                {formatDateApprox(song.releaseDate)}
               </div>
               <StageBadge stage={song.stage} />
             </Link>
