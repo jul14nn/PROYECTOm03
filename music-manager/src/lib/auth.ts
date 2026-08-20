@@ -12,6 +12,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/login",
     verifyRequest: "/login/verify",
+    // Sin esto, cualquier fallo de envío cae en la página por defecto de
+    // Auth.js: "There is a problem with the server configuration", en inglés
+    // y sin decir nada útil.
+    error: "/login/error",
   },
   callbacks: {
     session({ session, user }) {
@@ -65,20 +69,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           secure: Number(process.env.SMTP_PORT ?? 587) === 465,
           auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
         });
-        await transport.sendMail({
-          to: identifier,
-          from: process.env.SMTP_FROM || process.env.SMTP_USER,
-          subject: "Tu enlace de acceso a Music Manager",
-          text: `Entra en Music Manager: ${url}`,
-          html: `
-            <div style="font-family: sans-serif; line-height: 1.5;">
-              <h2>Music Manager</h2>
-              <p>Pulsa el siguiente enlace para iniciar sesión:</p>
-              <p><a href="${url}">${url}</a></p>
-              <p style="color:#888; font-size: 12px;">Si no has solicitado este acceso, ignora este correo.</p>
-            </div>
-          `,
-        });
+        // El error de nodemailer (credenciales, puerto, límite de envíos)
+        // trae el motivo exacto; sin registrarlo, en los logs solo queda un
+        // volcado de pila sin contexto.
+        try {
+          await transport.sendMail({
+            to: identifier,
+            from: process.env.SMTP_FROM || process.env.SMTP_USER,
+            subject: "Tu enlace de acceso a Music Manager",
+            text: `Entra en Music Manager: ${url}`,
+            html: `
+              <div style="font-family: sans-serif; line-height: 1.5;">
+                <h2>Music Manager</h2>
+                <p>Pulsa el siguiente enlace para iniciar sesión:</p>
+                <p><a href="${url}">${url}</a></p>
+                <p style="color:#888; font-size: 12px;">Si no has solicitado este acceso, ignora este correo.</p>
+              </div>
+            `,
+          });
+        } catch (err) {
+          console.error(
+            `[music-manager] El servidor de correo rechazó el envío a ${identifier}:`,
+            err instanceof Error ? err.message : err
+          );
+          throw err;
+        }
       },
     }),
   ],
