@@ -28,6 +28,9 @@ import {
 import { addTask, cycleTaskStatus, removeTask, addDistributionStep, cycleDistributionStatus, removeDistributionStep } from "@/lib/actions/tasks";
 import { addBudgetItem, removeBudgetItem, addMarketingIdea, toggleMarketingIdea, removeMarketingIdea, generateMarketingPlan } from "@/lib/actions/marketing";
 import { addRoyalty, removeRoyalty, addRoyaltyPayment, removeRoyaltyPayment } from "@/lib/actions/royalties";
+import { generateLaunchPlan, resyncLaunchPlan } from "@/lib/actions/launch";
+import LaunchPlan from "@/components/LaunchPlan";
+import { LAUNCH_STEPS, PHASES } from "@/lib/launchPlan";
 import { addSongReference, removeSongReference } from "@/lib/actions/references";
 import { isBlobConfigured } from "@/lib/blob";
 import {
@@ -64,6 +67,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
         royalties: { include: { contact: true, payments: true }, orderBy: { createdAt: "asc" } },
         events: { orderBy: { startDate: "asc" } },
         references: { orderBy: { createdAt: "desc" } },
+        launchTasks: { orderBy: { dayOffset: "asc" } },
       },
     }),
     prisma.contact.findMany({ where: { userId }, orderBy: { name: "asc" } }),
@@ -74,6 +78,8 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
   const updateSongWithId = updateSong.bind(null, song.id);
   const deleteSongWithId = deleteSong.bind(null, song.id);
   const generateMarketingPlanWithId = generateMarketingPlan.bind(null, song.id);
+  const generateLaunchPlanWithId = generateLaunchPlan.bind(null, song.id);
+  const resyncLaunchPlanWithId = resyncLaunchPlan.bind(null, song.id);
   const totalPlanned = song.marketingBudgets.reduce((a, b) => a + b.plannedAmount, 0);
   const totalActual = song.marketingBudgets.reduce((a, b) => a + b.actualAmount, 0);
   const totalRoyaltyPct = song.royalties.reduce((a, r) => a + r.percentage, 0);
@@ -401,6 +407,57 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               <p className="text-sm text-neutral-400 mt-3">{tiktokPlan.focus}</p>
             </div>
           )}
+
+          <div className="card p-6">
+            {song.launchTasks.length === 0 ? (
+              <div className="text-center py-6">
+                <h2 className="display text-2xl mb-2">Acompañamiento de lanzamiento</h2>
+                <p className="text-sm text-neutral-400 max-w-lg mx-auto mb-5">
+                  {LAUNCH_STEPS.length} pasos repartidos en {PHASES.length} fases, desde
+                  aprobar el máster hasta el balance del mes siguiente. Cada uno con su
+                  fecha calculada a partir de la fecha aproximada de la canción.
+                </p>
+                <form action={generateLaunchPlanWithId}>
+                  <button type="submit" className="btn btn-primary">
+                    <Wand2 size={15} /> Crear el plan
+                  </button>
+                </form>
+                {!song.releaseDate && (
+                  <p className="text-xs text-amber-300/80 mt-4">
+                    Sin fecha aproximada los pasos se crean sin fechas concretas.
+                    Ponle una en Info y vuelve a sincronizar.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <>
+                <LaunchPlan
+                  songId={song.id}
+                  tasks={song.launchTasks}
+                  daysToRelease={days}
+                />
+                {song.launchTasks.length < LAUNCH_STEPS.length && (
+                  <p className="text-xs text-neutral-500 mt-5">
+                    Se han omitido {LAUNCH_STEPS.length - song.launchTasks.length} pasos
+                    cuya fecha ya había pasado cuando creaste el plan. El plan arranca
+                    donde estás de verdad, no donde deberías haber empezado.
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2 mt-6 pt-5 border-t border-white/[0.09]">
+                  <form action={resyncLaunchPlanWithId}>
+                    <button type="submit" className="btn btn-secondary">
+                      Recalcular fechas
+                    </button>
+                  </form>
+                  <form action={generateLaunchPlanWithId}>
+                    <button type="submit" className="btn btn-secondary">
+                      Añadir pasos que falten
+                    </button>
+                  </form>
+                </div>
+              </>
+            )}
+          </div>
 
           <div className="card p-6 space-y-6">
             <div className="flex items-center justify-between flex-wrap gap-2">

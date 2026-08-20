@@ -142,6 +142,7 @@ model Song {
   royalties        Royalty[]
   events           CalendarEvent[]
   references       SongReference[]
+  launchTasks      LaunchTask[]
 }
 
 model SongReference {
@@ -293,4 +294,25 @@ model EventInvite {
 
   event   CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
   contact Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+}
+
+/// Paso concreto de la campaña de lanzamiento, anclado a la fecha aproximada.
+model LaunchTask {
+  id        String     @id @default(cuid())
+  songId    String
+  stepKey   String // clave del paso en el playbook, para no duplicarlo al regenerar
+  title     String
+  detail    String?
+  phase     String // FUNDAMENTOS, ACTIVOS, CALENTAMIENTO, CUENTA_ATRAS, SALIDA, SOSTENER
+  channel   String?
+  dayOffset Int // días respecto al lanzamiento; negativo = antes
+  dueDate   DateTime?
+  cost      Float?
+  status    TaskStatus @default(PENDIENTE)
+  createdAt DateTime   @default(now())
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@unique([songId, stepKey])
+  @@index([songId])
 }
