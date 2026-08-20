@@ -1,0 +1,114 @@
+@font-face {
+  font-family: "MarkerFallback";
+  src: local("Comic Sans MS"), local("Marker Felt");
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0f1e;
+  font-family: "MarkerFallback", "Segoe UI", system-ui, sans-serif;
+}
+
+#scene {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  cursor: default;
+}
+
+#knob-panel {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 10;
+}
+
+.knob-plate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 18px 10px;
+  background: #1c1a22;
+  border: 3px solid #100e14;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 0 0 2px rgba(255, 255, 255, 0.04);
+}
+
+.knob {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #4a4650, #201d24 70%);
+  border: 3px solid #0c0a0e;
+  position: relative;
+  cursor: ns-resize;
+  outline: none;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(255, 255, 255, 0.03);
+  transition: box-shadow 0.15s ease;
+}
+
+.knob:focus-visible {
+  box-shadow: 0 0 0 3px #f7a92e;
+}
+
+.knob.active {
+  box-shadow: 0 0 0 3px #f7a92e, 0 0 18px 2px rgba(247, 169, 46, 0.6);
+}
+
+.knob-pointer {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 4px;
+  height: 24px;
+  margin-left: -2px;
+  background: #f7a92e;
+  border-radius: 2px;
+  transform-origin: 2px 26px;
+  pointer-events: none;
+}
+
+.knob-label {
+  margin-top: 10px;
+  color: #f1e9d8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 4px 10px;
+  background: #f7a92e;
+  color: #241608;
+  border: 2px solid #100e14;
+  border-radius: 4px;
+  transform: rotate(-1.5deg);
+}
+
+#fullscreen-btn {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 2px solid #100e14;
+  background: #1c1a22;
+  color: #f1e9d8;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+
+#fullscreen-btn:hover {
+  opacity: 1;
+}

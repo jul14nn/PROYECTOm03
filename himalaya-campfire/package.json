@@ -1,0 +1,43 @@
+{
+  "name": "himalaya-campfire",
+  "version": "1.0.0",
+  "description": "Fogata ilustrada estilo grunge en lo alto del Himalaya, app de escritorio con Electron.",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "roughjs": "^4.6.6"
+  },
+  "build": {
+    "appId": "com.himalaya.campfire",
+    "productName": "Fogata del Himalaya",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.entertainment",
+      "target": ["dmg", "zip"]
+    },
+    "win": {
+      "target": ["nsis", "portable"]
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Utility"
+    }
+  }
+}

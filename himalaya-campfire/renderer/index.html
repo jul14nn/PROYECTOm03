@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
+<title>Fogata del Himalaya</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <div id="knob-panel">
+    <div class="knob-plate">
+      <div id="knob" class="knob" tabindex="0" role="slider" aria-label="Intensidad del fuego"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="45">
+        <div class="knob-pointer"></div>
+      </div>
+      <div class="knob-label">
+        <span>INTENSIDAD</span>
+      </div>
+    </div>
+  </div>
+
+  <button id="fullscreen-btn" title="Pantalla completa (F)">⛶</button>
+
+  <script src="vendor/rough.js"></script>
+  <script src="noise.js"></script>
+  <script src="scene.js"></script>
+  <script src="fire.js"></script>
+  <script src="knob.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
