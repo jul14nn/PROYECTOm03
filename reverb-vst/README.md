@@ -4,7 +4,10 @@ Plugin **VST3** para FL Studio (y cualquier DAW compatible con VST3), escrito en
 con [JUCE](https://juce.com). Estética de póster infernal: tinta negra, rojo diablo,
 amarillo serigrafía y tramas de medios tonos con desfase de *misprint*.
 
-![estilo](../assets/bg_base.png)
+![La GUI de Diablo Verb en movimiento](docs/diablo-verb.gif)
+
+*Primera mitad: MODO PACTO activo, con los mandos automáticos atenuados.
+Segunda mitad: pacto roto, control manual de los nueve mandos.*
 
 ## La receta del "perfecto siempre"
 
@@ -82,11 +85,24 @@ El plugin queda en `build\DiabloVerb_artefacts\Release\VST3\Diablo Verb.vst3`.
 > Consejo: úsalo **en insert** sobre la voz con el MODO PACTO puesto. Si prefieres
 > trabajar con envíos (send), pon MEZCLA al 100 % en el bus de reverb.
 
+## Capturas de la GUI sin abrir un DAW
+
+`tools/RenderShots.cpp` instancia el plugin, mueve los mandos y guarda la GUI
+real como secuencia de PNG (lo que ha generado el GIF de arriba):
+
+```bash
+cmake -B build -DDIABLOVERB_BUILD_SHOTS=ON
+cmake --build build --target DiabloVerbShots
+xvfb-run -a ./build/DiabloVerbShots_artefacts/Release/DiabloVerbShots frames 24
+```
+
 ## Estructura del código
 
 ```
 reverb-vst/
 ├── CMakeLists.txt          # proyecto JUCE (VST3 + Standalone)
+├── docs/                   # GIF y captura de la interfaz
+├── tools/RenderShots.cpp   # generador de capturas de la GUI
 └── src/
     ├── PluginProcessor.*   # parámetros, BPM del host, cadena de audio
     ├── PluginEditor.*      # GUI póster: diablo, llamas, medios tonos

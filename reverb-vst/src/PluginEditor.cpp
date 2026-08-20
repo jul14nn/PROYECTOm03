@@ -79,8 +79,12 @@ void DiabloVerbEditor::timerCallback()
     const bool pacto = processor.apvts.getRawParameterValue (ParamID::pacto)->load() > 0.5f;
     const int bpm = (int) std::lround (processor.getCurrentBpm());
 
+    // Los literales con acentos y puntos medios van como UTF-8 explícito: si se
+    // dejan como const char*, algunos compiladores los interpretan como Latin-1
+    // y en la GUI aparecen mojibake del tipo "Â·".
     bpmLabel.setText (pacto
-                          ? juce::String (bpm) + " BPM · pre-delay 1/64 · decay al tempo"
+                          ? juce::String (bpm)
+                                + juce::String (juce::CharPointer_UTF8 (" BPM · pre-delay 1/64 · decay al tempo"))
                           : juce::String (bpm) + " BPM",
                       juce::dontSendNotification);
 
@@ -159,26 +163,38 @@ void DiabloVerbEditor::buildBackground()
         }
     }
 
-    // Llamas recortadas en la base.
+    // Llamas recortadas en la base. Se quedan bajas para no comerse el pie.
     juce::Path flames;
     flames.startNewSubPath (0.0f, bounds.getBottom());
-    const int humps = 14;
+    const int humps = 16;
     for (int i = 0; i <= humps; ++i)
     {
         const float x = bounds.getWidth() * (float) i / (float) humps;
-        const float h = 18.0f + rng.nextFloat() * 46.0f;
+        const float h = 8.0f + rng.nextFloat() * 20.0f;
         flames.quadraticTo (x - bounds.getWidth() / (float) humps * 0.5f,
-                            bounds.getBottom() - h, x, bounds.getBottom() - 6.0f);
+                            bounds.getBottom() - h, x, bounds.getBottom() - 4.0f);
     }
     flames.lineTo (bounds.getBottomRight());
     flames.closeSubPath();
-    g.setColour (palette::bloodDeep.withAlpha (0.7f));
+    g.setColour (palette::bloodDeep.withAlpha (0.75f));
     g.fillPath (flames);
-    g.setColour (palette::flame.withAlpha (0.22f));
-    g.fillPath (flames, juce::AffineTransform::translation (4.0f, 6.0f));
+    g.setColour (palette::flame.withAlpha (0.25f));
+    g.fillPath (flames, juce::AffineTransform::translation (4.0f, 4.0f));
 
-    // El diablo del póster, asomado tras los mandos (silueta, cuernos y ojos).
-    const float dx = 596.0f, dy = 96.0f, ds = 1.05f;
+    // El diablo del póster, asomado en la cabecera entre el título y el botón.
+    const float dx = 490.0f, dy = 66.0f, ds = 0.88f;
+
+    // Orejas puntiagudas, detrás de la cara.
+    juce::Path ears;
+    ears.startNewSubPath (dx - 44.0f, dy + 20.0f);
+    ears.lineTo (dx - 84.0f, dy + 4.0f);
+    ears.lineTo (dx - 46.0f, dy + 46.0f);
+    ears.closeSubPath();
+    ears.startNewSubPath (dx + 36.0f, dy + 20.0f);
+    ears.lineTo (dx + 76.0f, dy + 4.0f);
+    ears.lineTo (dx + 38.0f, dy + 46.0f);
+    ears.closeSubPath();
+
     juce::Path devil;
     devil.startNewSubPath (dx - 52.0f, dy + 66.0f);
     devil.cubicTo (dx - 66.0f, dy + 14.0f, dx - 50.0f, dy - 16.0f, dx - 34.0f, dy - 4.0f);   // sien izq.
@@ -191,35 +207,55 @@ void DiabloVerbEditor::buildBackground()
     devil.cubicTo (dx - 20.0f, dy + 112.0f, dx - 42.0f, dy + 96.0f, dx - 52.0f, dy + 66.0f);
     devil.closeSubPath();
 
-    const auto devilTransform =
-        juce::AffineTransform::scale (ds, ds, dx, dy);
+    const auto devilTransform = juce::AffineTransform::scale (ds, ds, dx, dy);
     g.setColour (palette::bloodDeep.withAlpha (0.9f));
+    g.fillPath (ears, devilTransform.translated (5.0f, 4.0f));
     g.fillPath (devil, devilTransform.translated (5.0f, 4.0f)); // tinta desfasada
+    g.setColour (palette::bloodDeep);
+    g.fillPath (ears, devilTransform);
     g.setColour (palette::blood);
     g.fillPath (devil, devilTransform);
 
-    // Ojos amarillos entornados y sonrisa.
-    auto eye = [&g] (float ex, float ey, bool flip)
+    // Ojos amarillos entornados, con el mismo desfase de tinta que la cara.
+    auto eye = [&g, &devilTransform] (float ex, float ey, bool mirrored)
     {
+        const float tilt = mirrored ? -1.0f : 1.0f;
         juce::Path p;
-        p.startNewSubPath (ex - 14.0f, ey + 3.0f);
-        p.quadraticTo (ex, ey - (flip ? 9.0f : 7.0f), ex + 14.0f, ey - 2.0f);
-        p.quadraticTo (ex + 4.0f, ey + 8.0f, ex - 14.0f, ey + 3.0f);
+        p.startNewSubPath (ex - 16.0f, ey + 4.0f * tilt);
+        p.quadraticTo (ex, ey - 11.0f, ex + 16.0f, ey - 4.0f * tilt);
+        p.quadraticTo (ex + 2.0f, ey + 9.0f, ex - 16.0f, ey + 4.0f * tilt);
         p.closeSubPath();
+        g.setColour (palette::ink.withAlpha (0.65f));
+        g.fillPath (p, devilTransform.translated (2.5f, 2.0f));
         g.setColour (palette::sun);
-        g.fillPath (p);
-        g.setColour (palette::ink);
-        g.fillEllipse (ex - 2.0f, ey - 1.0f, 5.0f, 5.0f);
-    };
-    eye (dx - 24.0f, dy + 38.0f, false);
-    eye (dx + 18.0f, dy + 38.0f, true);
+        g.fillPath (p, devilTransform);
 
+        juce::Path pupil;
+        pupil.addEllipse (ex - 3.0f, ey - 3.5f, 6.0f, 7.0f);
+        g.setColour (palette::ink);
+        g.fillPath (pupil, devilTransform);
+    };
+    eye (dx - 26.0f, dy + 40.0f, false);
+    eye (dx + 20.0f, dy + 40.0f, true);
+
+    // Sonrisa con dientes de sierra, como en el póster.
     juce::Path grin;
-    grin.startNewSubPath (dx - 22.0f, dy + 78.0f);
-    grin.quadraticTo (dx - 3.0f, dy + 92.0f, dx + 18.0f, dy + 76.0f);
-    g.setColour (palette::ink.withAlpha (0.85f));
-    g.strokePath (grin, juce::PathStrokeType (3.5f, juce::PathStrokeType::curved,
-                                              juce::PathStrokeType::rounded));
+    grin.startNewSubPath (dx - 26.0f, dy + 74.0f);
+    grin.quadraticTo (dx - 4.0f, dy + 94.0f, dx + 22.0f, dy + 70.0f);
+    grin.lineTo (dx + 22.0f, dy + 76.0f);
+    for (int tooth = 5; tooth >= 0; --tooth)
+    {
+        const float u = (float) tooth / 6.0f;
+        const float tx = dx - 26.0f + 48.0f * u;
+        const float ty = dy + 78.0f + 12.0f * std::sin (u * juce::MathConstants<float>::pi);
+        grin.lineTo (tx + 4.0f, ty - 7.0f);
+        grin.lineTo (tx, ty);
+    }
+    grin.closeSubPath();
+    g.setColour (palette::ink.withAlpha (0.8f));
+    g.fillPath (grin, devilTransform.translated (2.0f, 2.0f));
+    g.setColour (palette::bone.withAlpha (0.92f));
+    g.fillPath (grin, devilTransform);
 
     // Marco de póster con doble tinta.
     g.setColour (palette::bloodDeep);
@@ -239,13 +275,13 @@ void DiabloVerbEditor::paint (juce::Graphics& g)
 
     g.setFont (juce::Font (juce::FontOptions (14.0f, juce::Font::bold)));
     g.setColour (palette::sun);
-    g.drawText ("EL REVERB DE LA VOZ · PERFECTO · SIEMPRE",
+    g.drawText (juce::CharPointer_UTF8 ("EL REVERB DE LA VOZ · PERFECTO · SIEMPRE"),
                 34, 88, 500, 20, juce::Justification::centredLeft);
 
     g.setFont (juce::Font (juce::FontOptions (11.0f, juce::Font::bold)));
-    g.setColour (palette::bone.withAlpha (0.45f));
-    g.drawText ("KR ESTUDIO · PLATE DATTORRO · DUCKING AUTOMÁTICO · SELLA EL PACTO Y CANTA",
-                0, getHeight() - 30, getWidth(), 16, juce::Justification::centred);
+    g.setColour (palette::bone.withAlpha (0.55f));
+    g.drawText (juce::CharPointer_UTF8 ("KR ESTUDIO · PLATE DATTORRO · DUCKING AUTOMÁTICO · SELLA EL PACTO Y CANTA"),
+                0, getHeight() - 26, getWidth(), 16, juce::Justification::centred);
 }
 
 } // namespace diablo

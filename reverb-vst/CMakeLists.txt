@@ -51,3 +51,40 @@ target_link_libraries(DiabloVerb
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
 )
+
+# Herramienta de documentación: guarda PNGs de la GUI real sin abrir un DAW.
+#   cmake -B build -DDIABLOVERB_BUILD_SHOTS=ON
+#   xvfb-run -a ./build/DiabloVerbShots_artefacts/DiabloVerbShots frames 24
+option(DIABLOVERB_BUILD_SHOTS "Compila la herramienta de capturas de la GUI" OFF)
+
+if(DIABLOVERB_BUILD_SHOTS)
+    juce_add_console_app(DiabloVerbShots PRODUCT_NAME "DiabloVerbShots")
+
+    target_sources(DiabloVerbShots PRIVATE
+        tools/RenderShots.cpp
+        src/PluginProcessor.cpp
+        src/PluginEditor.cpp
+    )
+
+    target_compile_definitions(DiabloVerbShots PRIVATE
+        JUCE_WEB_BROWSER=0
+        JUCE_USE_CURL=0
+        JUCE_DISPLAY_SPLASH_SCREEN=0
+        JUCE_MODAL_LOOPS_PERMITTED=1
+        JucePlugin_Name="Diablo Verb"
+        JucePlugin_IsSynth=0
+        JucePlugin_IsMidiEffect=0
+        JucePlugin_WantsMidiInput=0
+        JucePlugin_ProducesMidiOutput=0
+        JucePlugin_VersionString="1.0.0"
+        JucePlugin_ManufacturerCode=0x4b726573
+        JucePlugin_PluginCode=0x44767262
+    )
+
+    target_link_libraries(DiabloVerbShots PRIVATE
+        juce::juce_audio_utils
+        juce::juce_dsp
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_warning_flags
+    )
+endif()
