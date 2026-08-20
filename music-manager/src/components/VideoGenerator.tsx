@@ -1,10 +1,19 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Wand2, Download, Save, Loader2, Film } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Wand2, Download, Save, Loader2, Film, Captions, Timer, Monitor } from "lucide-react";
 import clsx from "clsx";
 import { VIDEO_STYLES, hexToRgb, type VideoStyleId } from "@/lib/videoStyles";
 import { addSongReference } from "@/lib/actions/references";
+import { checkVideoSupport, type VideoSupport } from "@/lib/videoCodec";
+import {
+  SUBTITLE_STYLES,
+  drawSubtitle,
+  autoTime,
+  type SubtitleStyleId,
+  type SubtitleLine,
+  type SubtitleOptions,
+} from "@/lib/subtitleStyles";
 
 const W = 720;
 const H = 1280;
@@ -194,18 +203,35 @@ function drawFrame(
   }
 }
 
+
+export type BrandKitValues = {
+  primaryColor: string;
+  secondaryColor: string;
+  fontFamily: string;
+  subtitleStyle: SubtitleStyleId;
+  subtitlePosPct: number;
+  subtitleScale: number;
+  defaultVideoStyle: string;
+};
+
 export default function VideoGenerator({
   songId,
   songTitle,
   songColor,
   images,
+  brand,
 }: {
   songId: string;
   songTitle: string;
   songColor: string;
   images: { url: string }[];
+  brand: BrandKitValues;
 }) {
-  const [styleId, setStyleId] = useState<VideoStyleId>("neon");
+  const [styleId, setStyleId] = useState<VideoStyleId>(
+    (VIDEO_STYLES.some((s) => s.id === brand.defaultVideoStyle)
+      ? brand.defaultVideoStyle
+      : "neon") as VideoStyleId
+  );
   const [duration, setDuration] = useState(8);
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -214,11 +240,72 @@ export default function VideoGenerator({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [support, setSupport] = useState<VideoSupport | null>(null);
 
+  // Subtítulos
+  const [subsOpen, setSubsOpen] = useState(false);
+  const [rawLines, setRawLines] = useState("");
+  const [lines, setLines] = useState<SubtitleLine[]>([]);
+  const [subStyle, setSubStyle] = useState<SubtitleStyleId>(brand.subtitleStyle);
+  const [syncing, setSyncing] = useState(false);
+  const [syncIndex, setSyncIndex] = useState(0);
+  const syncStart = useRef(0);
+  const syncMarks = useRef<number[]>([]);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const style = VIDEO_STYLES.find((s) => s.id === styleId)!;
 
+  useEffect(() => {
+    // Comprobación real de capacidades del navegador; no se puede hacer en el
+    // servidor porque depende de las APIs del cliente.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSupport(checkVideoSupport());
+  }, []);
+
+  const subOpts: SubtitleOptions = {
+    style: subStyle,
+    accent: songColor,
+    fontFamily: `${brand.fontFamily}, Arial, sans-serif`,
+    positionPct: brand.subtitlePosPct,
+    scale: brand.subtitleScale,
+  };
+
+  const textLines = rawLines.split("\n").map((l) => l.trim()).filter(Boolean);
+
+  function distribute() {
+    setLines(autoTime(textLines, duration));
+  }
+
+  function startSync() {
+    if (textLines.length === 0) return;
+    syncMarks.current = [];
+    setSyncIndex(0);
+    setSyncing(true);
+    syncStart.current = performance.now();
+  }
+
+  function mark() {
+    const t = (performance.now() - syncStart.current) / 1000;
+    syncMarks.current.push(t);
+    const next = syncIndex + 1;
+    if (next >= textLines.length) {
+      // La última línea dura hasta el final del vídeo.
+      const marks = syncMarks.current;
+      setLines(
+        textLines.map((text, i) => ({
+          text,
+          start: +marks[i].toFixed(2),
+          end: +(i + 1 < marks.length ? marks[i + 1] : duration).toFixed(2),
+        }))
+      );
+      setSyncing(false);
+    } else {
+      setSyncIndex(next);
+    }
+  }
+
   async function handleGenerate() {
+    if (!support?.ok) return;
     setError(null);
     setVideoUrl(null);
     setVideoBlob(null);
@@ -236,10 +323,8 @@ export default function VideoGenerator({
       const imgs = style.usesImages ? await loadImages(images.map((i) => i.url)) : [];
 
       const stream = canvas.captureStream(30);
-      const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-        ? "video/webm;codecs=vp9"
-        : "video/webm";
-      const recorder = new MediaRecorder(stream, { mimeType });
+      const { mime, ext } = support.format;
+      const recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunks.push(e.data);
@@ -253,22 +338,20 @@ export default function VideoGenerator({
       const start = performance.now();
       await new Promise<void>((resolve) => {
         function loop() {
-          const elapsed = (performance.now() - start) / 1000;
-          const t = Math.min(1, elapsed / duration);
+          const seconds = (performance.now() - start) / 1000;
+          const t = Math.min(1, seconds / duration);
           drawFrame(styleId, ctx, t, imgs, songTitle, songColor);
+          if (lines.length > 0) drawSubtitle(ctx, W, H, lines, seconds, subOpts);
           setProgress(Math.round(t * 100));
-          if (t < 1) {
-            requestAnimationFrame(loop);
-          } else {
-            resolve();
-          }
+          if (t < 1) requestAnimationFrame(loop);
+          else resolve();
         }
         requestAnimationFrame(loop);
       });
       recorder.stop();
       await done;
 
-      const blob = new Blob(chunks, { type: "video/webm" });
+      const blob = new Blob(chunks, { type: mime || `video/${ext}` });
       setVideoBlob(blob);
       setVideoUrl(URL.createObjectURL(blob));
     } catch (err) {
@@ -282,11 +365,14 @@ export default function VideoGenerator({
     }
   }
 
+  const ext = support?.ok ? support.format.ext : "webm";
+  const fileName = `${songTitle}-${styleId}.${ext}`;
+
   async function handleSave() {
     if (!videoBlob) return;
     setSaving(true);
     try {
-      const file = new File([videoBlob], `${songTitle}-${styleId}.webm`, { type: "video/webm" });
+      const file = new File([videoBlob], fileName, { type: videoBlob.type });
       const fd = new FormData();
       fd.set("file", file);
       fd.set("caption", `Vídeo generado — ${style.name}`);
@@ -299,8 +385,37 @@ export default function VideoGenerator({
     }
   }
 
+  if (support === null) {
+    return <p className="text-sm text-neutral-500">Comprobando el navegador…</p>;
+  }
+
+  // El montaje de vídeo se hace desde ordenador a propósito: grabar el lienzo
+  // en tiempo real es poco fiable en móvil y el formato de salida no siempre
+  // sirve para subir a TikTok o Instagram.
+  if (!support.ok) {
+    return (
+      <div className="tile p-5 flex items-start gap-3">
+        <Monitor size={18} className="text-fuchsia-300 shrink-0 mt-0.5" />
+        <div>
+          <p className="font-medium">El montaje de vídeo se hace desde el ordenador</p>
+          <p className="text-sm text-neutral-400 mt-1.5 max-w-lg">
+            {support.reason} Grabar vídeo en el móvil da tirones y un formato que
+            luego no puedes subir. Abre esta misma canción desde un ordenador y
+            aquí tendrás el generador con sus plantillas de subtítulos.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
+      <p className="text-sm text-neutral-500">
+        Elige un estilo y genera un vídeo vertical listo para TikTok o Reels a partir
+        de tus imágenes de referencia. Se genera en tu navegador: no sale de tu
+        ordenador hasta que decidas guardarlo.
+      </p>
+
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {VIDEO_STYLES.map((s) => (
           <button
@@ -318,6 +433,114 @@ export default function VideoGenerator({
         ))}
       </div>
 
+      {/* ------------------------------------------------------- Subtítulos */}
+      <div className="tile p-4">
+        <button
+          type="button"
+          onClick={() => setSubsOpen((v) => !v)}
+          className="flex items-center gap-2 text-sm font-medium w-full text-left"
+        >
+          <Captions size={16} className="text-fuchsia-300" />
+          Subtítulos
+          <span className="text-xs text-neutral-500 font-normal ml-auto">
+            {lines.length > 0 ? `${lines.length} líneas` : "sin subtítulos"}
+          </span>
+        </button>
+
+        {subsOpen && (
+          <div className="mt-4 space-y-4">
+            <div>
+              <label className="label" htmlFor="sub-lines">
+                Una línea por verso
+              </label>
+              <textarea
+                id="sub-lines"
+                value={rawLines}
+                onChange={(e) => setRawLines(e.target.value)}
+                rows={4}
+                placeholder={"Y las noches de neón\nse apagan sin ti"}
+                className="input font-mono text-sm"
+              />
+            </div>
+
+            <div>
+              <div className="label">Estilo</div>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {SUBTITLE_STYLES.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setSubStyle(s.id)}
+                    className={clsx(
+                      "text-left rounded-lg p-2.5 border transition-colors",
+                      subStyle === s.id
+                        ? "border-fuchsia-500/60 bg-fuchsia-500/10"
+                        : "border-white/[0.07] hover:bg-white/[0.04]"
+                    )}
+                  >
+                    <div className="text-sm">{s.name}</div>
+                    <div className="text-xs text-neutral-500 mt-0.5">{s.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {syncing ? (
+              <div className="rounded-lg p-4 border border-fuchsia-500/40 bg-fuchsia-500/10">
+                <p className="text-xs text-neutral-400 mb-2">
+                  Línea {syncIndex + 1} de {textLines.length} — pulsa cuando deba aparecer
+                </p>
+                <p className="text-lg mb-3">{textLines[syncIndex]}</p>
+                <button type="button" onClick={mark} className="btn btn-primary w-full">
+                  Marcar ahora
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={distribute}
+                  disabled={textLines.length === 0}
+                  className="btn btn-secondary"
+                >
+                  Repartir en {duration}s
+                </button>
+                <button
+                  type="button"
+                  onClick={startSync}
+                  disabled={textLines.length === 0}
+                  className="btn btn-secondary"
+                >
+                  <Timer size={14} /> Sincronizar al ritmo
+                </button>
+                {lines.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setLines([])}
+                    className="btn btn-danger"
+                  >
+                    Quitar
+                  </button>
+                )}
+              </div>
+            )}
+
+            {lines.length > 0 && !syncing && (
+              <ul className="text-xs text-neutral-500 space-y-1 font-mono">
+                {lines.map((l, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span className="text-neutral-600 tabular-nums w-24 shrink-0">
+                      {l.start.toFixed(1)}s → {l.end.toFixed(1)}s
+                    </span>
+                    <span className="truncate text-neutral-400">{l.text}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="flex flex-wrap items-center gap-3">
         <label className="text-xs text-neutral-400 flex items-center gap-2">
           Duración
@@ -331,7 +554,12 @@ export default function VideoGenerator({
             <option value={12}>12 s</option>
           </select>
         </label>
-        <button type="button" onClick={handleGenerate} disabled={generating} className="btn btn-primary">
+        <button
+          type="button"
+          onClick={handleGenerate}
+          disabled={generating}
+          className="btn btn-primary"
+        >
           {generating ? <Loader2 size={15} className="animate-spin" /> : <Wand2 size={15} />}
           {generating ? `Generando… ${progress}%` : "Generar vídeo"}
         </button>
@@ -340,6 +568,13 @@ export default function VideoGenerator({
       {style.usesImages && images.length === 0 && (
         <p className="text-xs text-neutral-600">
           Este estilo usa tus imágenes de referencia — sin ninguna subida, se genera igual con solo color y título.
+        </p>
+      )}
+
+      {support.warnWebm && (
+        <p className="text-xs text-amber-300/80">
+          Este navegador solo graba en WebM. TikTok e Instagram prefieren MP4:
+          para publicar, genera desde Chrome o Edge.
         </p>
       )}
 
@@ -355,10 +590,15 @@ export default function VideoGenerator({
 
       {videoUrl && videoBlob && (
         <div className="flex flex-wrap gap-2">
-          <a href={videoUrl} download={`${songTitle}-${styleId}.webm`} className="btn btn-secondary">
-            <Download size={14} /> Descargar
+          <a href={videoUrl} download={fileName} className="btn btn-secondary">
+            <Download size={14} /> Descargar {ext.toUpperCase()}
           </a>
-          <button type="button" onClick={handleSave} disabled={saving || saved} className="btn btn-secondary">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || saved}
+            className="btn btn-secondary"
+          >
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             {saved ? "Guardado en Referencias" : "Guardar en Referencias"}
           </button>

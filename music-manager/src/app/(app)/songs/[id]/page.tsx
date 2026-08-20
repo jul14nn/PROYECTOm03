@@ -5,6 +5,7 @@ import { requireUserId } from "@/lib/auth";
 import SongForm from "@/components/SongForm";
 import SongWorkspace, { type SongTab } from "@/components/SongWorkspace";
 import VideoGenerator from "@/components/VideoGenerator";
+import type { SubtitleStyleId } from "@/lib/subtitleStyles";
 import { StageBadge, TaskStatusBadge, ColorDot } from "@/components/Badges";
 import {
   formatDate,
@@ -53,7 +54,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const userId = await requireUserId();
 
-  const [song, contacts] = await Promise.all([
+  const [song, contacts, brandKit] = await Promise.all([
     prisma.song.findFirst({
       where: { id, userId },
       include: {
@@ -71,6 +72,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
       },
     }),
     prisma.contact.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+    prisma.brandKit.findUnique({ where: { userId } }),
   ]);
 
   if (!song) notFound();
@@ -86,6 +88,15 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
   const days = song.releaseDate ? daysUntil(song.releaseDate) : null;
   const tiktokPlan = days !== null && days >= 0 ? tiktokPlanFor(days) : null;
   const nextStep = getNextStep(song);
+  const brand = {
+    primaryColor: brandKit?.primaryColor ?? "#9333ea",
+    secondaryColor: brandKit?.secondaryColor ?? "#e0299e",
+    fontFamily: brandKit?.fontFamily ?? "Anton",
+    subtitleStyle: (brandKit?.subtitleStyle ?? "barra") as SubtitleStyleId,
+    subtitlePosPct: brandKit?.subtitlePosPct ?? 78,
+    subtitleScale: brandKit?.subtitleScale ?? 1,
+    defaultVideoStyle: brandKit?.defaultVideoStyle ?? "neon",
+  };
 
   const tabs: SongTab[] = [
     {
@@ -195,16 +206,12 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
             <h2 className="font-semibold flex items-center gap-2">
               <Wand2 size={18} /> Vídeo automático
             </h2>
-            <p className="text-sm text-neutral-500 -mt-2">
-              Elige un estilo y genera un vídeo real (formato vertical, listo para TikTok/Reels) a
-              partir de tus imágenes de referencia — se genera en tu navegador, sin subir nada a
-              ningún sitio hasta que tú decidas guardarlo.
-            </p>
             <VideoGenerator
               songId={song.id}
               songTitle={song.title}
               songColor={song.color}
               images={song.references.map((r) => ({ url: r.url }))}
+              brand={brand}
             />
           </div>
 

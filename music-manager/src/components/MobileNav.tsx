@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV } from "@/lib/nav";
 import { signOutAction } from "@/lib/actions/auth";
-import { LogOut } from "lucide-react";
+import { LogOut, Settings2 } from "lucide-react";
 import clsx from "clsx";
 
 export function MobileTopBar() {
@@ -27,6 +27,9 @@ export function MobileTopBar() {
         KR
       </div>
       <span className="display text-[0.95rem] flex-1">Music Manager</span>
+      <Link href="/ajustes" aria-label="Ajustes" className="p-1.5 text-neutral-500">
+        <Settings2 size={17} />
+      </Link>
       <form action={signOutAction}>
         <button
           type="submit"

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV } from "@/lib/nav";
 import { signOutAction } from "@/lib/actions/auth";
-import { LogOut } from "lucide-react";
+import { LogOut, Settings2 } from "lucide-react";
 import clsx from "clsx";
 
 export default function Sidebar({
@@ -97,6 +97,18 @@ export default function Sidebar({
             )}
           </div>
         )}
+        <Link
+          href="/ajustes"
+          className={clsx(
+            "w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+            pathname.startsWith("/ajustes")
+              ? "text-fuchsia-300"
+              : "text-neutral-500 hover:bg-white/[0.045] hover:text-neutral-100"
+          )}
+        >
+          <Settings2 size={16} />
+          Ajustes
+        </Link>
         <form action={signOutAction}>
           <button
             type="submit"

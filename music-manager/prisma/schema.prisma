@@ -53,6 +53,7 @@ model User {
   songs    Song[]
   contacts Contact[]
   events   CalendarEvent[]
+  brandKit BrandKit?
 }
 
 model Account {
@@ -315,4 +316,21 @@ model LaunchTask {
 
   @@unique([songId, stepKey])
   @@index([songId])
+}
+
+/// Preferencias visuales del artista. Se aplican a todo lo que se genere,
+/// para que el contenido salga con su identidad sin reconfigurarla cada vez.
+model BrandKit {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  primaryColor    String   @default("#9333ea")
+  secondaryColor  String   @default("#e0299e")
+  fontFamily      String   @default("Anton") // familia para títulos generados
+  subtitleStyle   String   @default("barra") // limpio | barra | linea | bloque
+  subtitlePosPct  Int      @default(78) // posición vertical, zona segura de TikTok
+  subtitleScale   Float    @default(1)
+  defaultVideoStyle String @default("neon")
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
