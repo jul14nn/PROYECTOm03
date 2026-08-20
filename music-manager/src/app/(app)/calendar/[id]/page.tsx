@@ -33,7 +33,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     <div className="max-w-2xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{event.title}</h1>
+          <h1 className="display-title text-5xl sm:text-6xl">{event.title}</h1>
           <div className="text-sm text-neutral-400 mt-1 space-y-1">
             <div>{formatDateTime(event.startDate)}</div>
             {event.location && (
@@ -70,7 +70,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
 
         <div className="space-y-2">
           {event.invites.map((inv) => (
-            <div key={inv.id} className="flex items-center justify-between gap-3 bg-neutral-900 rounded-lg px-3 py-2 text-sm">
+            <div key={inv.id} className="flex items-center justify-between gap-3 tile px-3 py-2 text-sm">
               <div>
                 <div className="font-medium">{inv.contact?.name ?? inv.email}</div>
                 <div className="text-xs text-neutral-500">{inv.email}</div>

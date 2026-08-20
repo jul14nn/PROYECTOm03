@@ -29,7 +29,8 @@ export default async function SongsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Canciones</h1>
+          <div className="eyebrow mb-2">Catálogo</div>
+          <h1 className="display-title text-5xl sm:text-6xl">Canciones</h1>
           <p className="text-neutral-400 text-sm mt-1">
             Todo tu catálogo: tipo, etapa, featuring, productores y portada.
           </p>

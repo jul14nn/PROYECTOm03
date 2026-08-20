@@ -309,7 +309,7 @@ export default function VideoGenerator({
             onClick={() => setStyleId(s.id)}
             className={clsx(
               "text-left rounded-lg p-3 border transition-colors",
-              styleId === s.id ? "border-fuchsia-500/60 bg-fuchsia-500/10" : "border-neutral-800 bg-neutral-900 hover:bg-neutral-800"
+              styleId === s.id ? "border-fuchsia-500/60 bg-fuchsia-500/10" : "tile"
             )}
           >
             <div className="text-sm font-medium">{s.name}</div>
@@ -348,7 +348,7 @@ export default function VideoGenerator({
       <canvas ref={canvasRef} className="hidden" />
 
       {videoUrl && (
-        <div className="rounded-lg overflow-hidden border border-neutral-800 bg-black max-w-[220px]">
+        <div className="rounded-lg overflow-hidden border border-white/[0.07] bg-black max-w-[220px]">
           <video src={videoUrl} controls loop className="w-full h-full" />
         </div>
       )}

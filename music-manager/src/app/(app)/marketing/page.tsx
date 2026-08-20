@@ -25,7 +25,8 @@ export default async function MarketingPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Marketing</h1>
+        <div className="eyebrow mb-2">Promoción</div>
+          <h1 className="display-title text-5xl sm:text-6xl">Marketing</h1>
         <p className="text-neutral-400 text-sm mt-1">
           Presupuesto e ideas de marketing por canción. Gastado {formatMoney(totalActual)} de{" "}
           {formatMoney(totalPlanned)} planificado.
@@ -43,7 +44,7 @@ export default async function MarketingPage() {
                 <Link
                   key={song.id}
                   href={`/songs/${song.id}#marketing`}
-                  className="flex items-center justify-between text-sm hover:bg-neutral-900 rounded-lg px-2 py-2 -mx-2"
+                  className="flex items-center justify-between text-sm hover:bg-white/[0.045] rounded-lg px-2 py-2 -mx-2"
                 >
                   <span className="flex items-center gap-2">
                     <ColorDot color={song.color} /> {song.title}
@@ -65,7 +66,7 @@ export default async function MarketingPage() {
               <Link
                 key={idea.id}
                 href={`/songs/${idea.songId}#marketing`}
-                className="flex items-center justify-between gap-3 text-sm hover:bg-neutral-900 rounded-lg px-2 py-2 -mx-2"
+                className="flex items-center justify-between gap-3 text-sm hover:bg-white/[0.045] rounded-lg px-2 py-2 -mx-2"
               >
                 <div>
                   <div className="font-medium">{idea.title}</div>

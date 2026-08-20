@@ -88,7 +88,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
       icon: <Info size={15} />,
       content: (
         <div className="card p-6">
-          <h2 className="font-semibold mb-4">Información general</h2>
+          <h2 className="eyebrow mb-4">Información general</h2>
           <SongForm action={updateSongWithId} song={song} submitLabel="Guardar cambios" />
         </div>
       ),
@@ -108,7 +108,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               <h3 className="text-sm font-medium text-neutral-300 mb-2">Featuring</h3>
               <div className="space-y-2 mb-3">
                 {song.featurings.map((f) => (
-                  <div key={f.id} className="flex items-center justify-between text-sm bg-neutral-900 rounded-lg px-3 py-2">
+                  <div key={f.id} className="flex items-center justify-between text-sm tile px-3 py-2">
                     <div>
                       <span className="font-medium">{f.artistName}</span>
                       {f.role && <span className="text-neutral-500"> · {f.role}</span>}
@@ -143,7 +143,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               <h3 className="text-sm font-medium text-neutral-300 mb-2">Productores</h3>
               <div className="space-y-2 mb-3">
                 {song.producers.map((p) => (
-                  <div key={p.id} className="flex items-center justify-between text-sm bg-neutral-900 rounded-lg px-3 py-2">
+                  <div key={p.id} className="flex items-center justify-between text-sm tile px-3 py-2">
                     <div>
                       <span className="font-medium">{p.contact.name}</span>
                       {p.role && <span className="text-neutral-500"> · {p.role}</span>}
@@ -208,7 +208,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
             </h2>
             <div className="space-y-2">
               {song.videoIdeas.map((v) => (
-                <div key={v.id} className="flex items-start justify-between gap-3 bg-neutral-900 rounded-lg px-3 py-2 text-sm">
+                <div key={v.id} className="flex items-start justify-between gap-3 tile px-3 py-2 text-sm">
                   <div className="flex-1">
                     <div className="font-medium">{v.title}</div>
                     {v.description && <div className="text-neutral-500 text-xs mt-0.5">{v.description}</div>}
@@ -252,7 +252,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
             {song.references.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {song.references.map((ref) => (
-                  <div key={ref.id} className="relative group rounded-lg overflow-hidden bg-neutral-900 border border-neutral-800">
+                  <div key={ref.id} className="relative group rounded-lg overflow-hidden tile">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={ref.url} alt={ref.caption ?? "Referencia visual"} className="w-full h-32 object-cover" />
                     {ref.caption && (
@@ -308,7 +308,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
             </h2>
             <div className="space-y-2">
               {song.tasks.map((t) => (
-                <div key={t.id} className="flex items-center justify-between gap-3 bg-neutral-900 rounded-lg px-3 py-2 text-sm">
+                <div key={t.id} className="flex items-center justify-between gap-3 tile px-3 py-2 text-sm">
                   <div>
                     <div className="font-medium">{t.title}</div>
                     <div className="text-neutral-500 text-xs">
@@ -344,7 +344,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
             </h2>
             <div className="space-y-2">
               {song.distributionSteps.map((d) => (
-                <div key={d.id} className="flex items-center justify-between gap-3 bg-neutral-900 rounded-lg px-3 py-2 text-sm">
+                <div key={d.id} className="flex items-center justify-between gap-3 tile px-3 py-2 text-sm">
                   <div>
                     <div className="font-medium">{d.step}</div>
                     <div className="text-neutral-500 text-xs">
@@ -423,7 +423,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               </div>
               <div className="space-y-2 mb-3">
                 {song.marketingBudgets.map((b) => (
-                  <div key={b.id} className="flex items-center justify-between gap-3 bg-neutral-900 rounded-lg px-3 py-2 text-sm">
+                  <div key={b.id} className="flex items-center justify-between gap-3 tile px-3 py-2 text-sm">
                     <div>
                       <span className="font-medium">{b.category}</span>
                       <span className="text-neutral-500 text-xs ml-2">
@@ -453,7 +453,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               <h3 className="text-sm font-medium text-neutral-300 mb-2">Ideas de marketing</h3>
               <div className="space-y-2 mb-3">
                 {song.marketingIdeas.map((m) => (
-                  <div key={m.id} className="flex items-center justify-between gap-3 bg-neutral-900 rounded-lg px-3 py-2 text-sm">
+                  <div key={m.id} className="flex items-center justify-between gap-3 tile px-3 py-2 text-sm">
                     <div>
                       <span className="font-medium">{m.title}</span>
                       {m.channel && <span className="text-neutral-500 text-xs ml-2">{m.channel}</span>}
@@ -498,7 +498,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
           </h2>
           <div className="space-y-3">
             {song.royalties.map((r) => (
-              <div key={r.id} className="bg-neutral-900 rounded-lg px-3 py-2 text-sm">
+              <div key={r.id} className="tile px-3 py-2 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <span className="font-medium">{r.name}</span>
@@ -511,7 +511,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
                     </button>
                   </form>
                 </div>
-                <div className="mt-2 pl-3 border-l border-neutral-800 space-y-1">
+                <div className="mt-2 pl-3 border-l border-white/[0.07] space-y-1">
                   {r.payments.map((p) => (
                     <div key={p.id} className="flex items-center justify-between text-xs text-neutral-400">
                       <span>{formatMoney(p.amount, p.currency)} · {formatDate(p.date)} {p.notes && `· ${p.notes}`}</span>
@@ -556,7 +556,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
         <div className="card p-6 space-y-2">
           <h2 className="font-semibold">Eventos relacionados</h2>
           {song.events.map((ev) => (
-            <Link key={ev.id} href={`/calendar/${ev.id}`} className="flex items-center justify-between text-sm bg-neutral-900 rounded-lg px-3 py-2 hover:bg-neutral-800">
+            <Link key={ev.id} href={`/calendar/${ev.id}`} className="flex items-center justify-between text-sm tile px-3 py-2 hover:bg-neutral-800">
               <span>{ev.title}</span>
               <span className="text-neutral-500 text-xs">{formatDate(ev.startDate)}</span>
             </Link>
@@ -578,14 +578,15 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
   return (
     <div className="space-y-6 pb-16">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-center gap-3">
-          <ColorDot color={song.color} />
-          <div>
-            <h1 className="text-2xl font-semibold">{song.title}</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <StageBadge stage={song.stage} />
-              {song.genre && <span className="text-sm text-neutral-500">{song.genre}</span>}
-            </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            <ColorDot color={song.color} />
+            <span className="eyebrow">Ficha de canción</span>
+          </div>
+          <h1 className="display-title text-4xl sm:text-5xl break-words">{song.title}</h1>
+          <div className="flex items-center gap-2 mt-3">
+            <StageBadge stage={song.stage} />
+            {song.genre && <span className="text-sm text-neutral-500">{song.genre}</span>}
           </div>
         </div>
         <form action={deleteSongWithId}>

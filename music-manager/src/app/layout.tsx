@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0c",
+  themeColor: "#08070b",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -53,7 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-neutral-950 text-neutral-100">
+      <body className="min-h-full">
         <SplashScreen />
         {children}
       </body>

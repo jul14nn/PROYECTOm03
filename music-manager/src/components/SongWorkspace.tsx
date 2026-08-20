@@ -44,11 +44,16 @@ export default function SongWorkspace({ tabs, nextStep }: { tabs: SongTab[]; nex
             onClick={() => setActive(t.id)}
             className={clsx(
               "shrink-0 flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
-              active === t.id ? "text-white" : "bg-neutral-900 text-neutral-400 hover:text-neutral-200 border border-neutral-800"
+              active === t.id ? "text-white" : "bg-white/[0.04] text-neutral-400 hover:text-neutral-100 hover:bg-white/[0.075] border border-white/[0.07]"
             )}
             style={
               active === t.id
-                ? { background: "linear-gradient(135deg, var(--accent-violet), var(--accent-magenta))" }
+                ? {
+                    background:
+                      "linear-gradient(135deg, var(--accent-violet), var(--accent-magenta))",
+                    boxShadow:
+                      "inset 0 1px 0 rgba(255,255,255,0.28), 0 4px 14px -6px color-mix(in srgb, var(--accent-magenta) 80%, transparent)",
+                  }
                 : undefined
             }
           >

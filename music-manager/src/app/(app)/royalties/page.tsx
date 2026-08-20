@@ -20,7 +20,8 @@ export default async function RoyaltiesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Royalties</h1>
+        <div className="eyebrow mb-2">Reparto</div>
+          <h1 className="display-title text-5xl sm:text-6xl">Royalties</h1>
         <p className="text-neutral-400 text-sm mt-1">
           Splits por canción y pagos registrados. Total pagado: {formatMoney(totalPaid)}.
         </p>

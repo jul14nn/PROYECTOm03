@@ -95,12 +95,12 @@ export default function SongsBrowser({ songs }: { songs: SongRow[] }) {
           Ninguna canción coincide con la búsqueda.
         </div>
       ) : (
-        <div className="card divide-y divide-neutral-800 overflow-hidden">
+        <div className="card divide-y divide-white/[0.06] overflow-hidden">
           {filtered.map((song) => (
             <Link
               key={song.id}
               href={`/songs/${song.id}`}
-              className="flex items-center gap-4 px-5 py-4 hover:bg-neutral-900/60 transition-colors"
+              className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.035] transition-colors"
             >
               <ColorDot color={song.color} />
               <div className="flex-1 min-w-0">
@@ -154,11 +154,15 @@ function FilterChip({
         "shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
         active
           ? "text-white"
-          : "bg-neutral-900 text-neutral-400 hover:text-neutral-200 border border-neutral-800"
+          : "bg-white/[0.04] text-neutral-400 hover:text-neutral-100 hover:bg-white/[0.075] border border-white/[0.07]"
       )}
       style={
         active
-          ? { background: "linear-gradient(135deg, var(--accent-violet), var(--accent-magenta))" }
+          ? {
+              background: "linear-gradient(135deg, var(--accent-violet), var(--accent-magenta))",
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.28), 0 4px 14px -6px color-mix(in srgb, var(--accent-magenta) 80%, transparent)",
+            }
           : undefined
       }
     >

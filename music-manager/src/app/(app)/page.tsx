@@ -46,8 +46,9 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">Resumen</h1>
-        <p className="text-neutral-400 text-sm mt-1">
+        <div className="eyebrow mb-2">Panel de control</div>
+        <h1 className="display-title text-5xl sm:text-6xl">Resumen</h1>
+        <p className="text-neutral-400 text-sm mt-3 max-w-md">
           Lo que toca hacer hoy, tu pipeline y lo que se acerca.
         </p>
       </div>
@@ -78,21 +79,29 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        <section className="card p-5 lg:col-span-2">
-          <h2 className="font-semibold mb-4">Pipeline de canciones</h2>
-          <div className="space-y-2">
+        <section className="card p-6 lg:col-span-2 min-w-0">
+          <h2 className="eyebrow mb-5">Pipeline de canciones</h2>
+          <div className="space-y-3">
             {byStage.map(({ stage, count }) => (
-              <div key={stage} className="flex items-center gap-3">
-                <div className="w-32 text-sm text-neutral-400">{STAGE_LABELS[stage]}</div>
-                <div className="flex-1 h-2 rounded-full bg-neutral-900 overflow-hidden">
+              <div key={stage} className="flex items-center gap-4">
+                <div
+                  className={`w-32 text-sm ${count > 0 ? "text-neutral-200" : "text-neutral-600"}`}
+                >
+                  {STAGE_LABELS[stage]}
+                </div>
+                <div className="flex-1 meter">
                   <div
-                    className="h-full bg-fuchsia-500"
+                    className="meter-fill"
                     style={{
                       width: songs.length ? `${(count / songs.length) * 100}%` : "0%",
                     }}
                   />
                 </div>
-                <div className="w-6 text-right text-sm">{count}</div>
+                <div
+                  className={`w-6 text-right numeral text-lg ${count > 0 ? "text-neutral-100" : "text-neutral-700"}`}
+                >
+                  {count}
+                </div>
               </div>
             ))}
           </div>
@@ -107,9 +116,9 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        <section className="card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold">Próximos eventos</h2>
+        <section className="card p-6 min-w-0">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="eyebrow">Próximos eventos</h2>
             <Link href="/calendar" className="text-xs text-fuchsia-400 hover:underline flex items-center gap-1">
               Ver agenda <ArrowRight size={12} />
             </Link>
@@ -119,7 +128,7 @@ export default async function DashboardPage() {
               <Link
                 key={ev.id}
                 href={`/calendar/${ev.id}`}
-                className="flex items-start gap-3 text-sm hover:bg-neutral-900 rounded-lg p-2 -mx-2"
+                className="flex items-start gap-3 text-sm row-hover p-2 -mx-2"
               >
                 <CalendarClock size={16} className="text-fuchsia-400 mt-0.5 shrink-0" />
                 <div>
@@ -153,10 +162,14 @@ function StatCard({
   accent?: string;
 }) {
   return (
-    <div className="card p-4">
-      <div className="text-xs text-neutral-500">{label}</div>
-      <div className={`text-2xl font-semibold mt-1 ${accent ?? ""}`}>{value}</div>
-      {sub && <div className="text-xs text-neutral-600 mt-1">{sub}</div>}
+    <div className="card p-5 flex flex-col justify-between min-h-[7rem]">
+      <div className="eyebrow text-[0.6rem]">{label}</div>
+      <div>
+        <div className={`numeral text-4xl sm:text-[2.6rem] mt-3 ${accent ?? "text-white"}`}>
+          {value}
+        </div>
+        {sub && <div className="text-[0.7rem] text-neutral-600 mt-2">{sub}</div>}
+      </div>
     </div>
   );
 }

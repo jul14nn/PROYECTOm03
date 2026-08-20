@@ -16,14 +16,15 @@ export default async function ContactsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Contactos</h1>
+        <div className="eyebrow mb-2">Equipo</div>
+          <h1 className="display-title text-5xl sm:text-6xl">Contactos</h1>
         <p className="text-neutral-400 text-sm mt-1">
           Productores, featuring, distribuidoras y demás personas del proyecto.
         </p>
       </div>
 
       <div className="card p-6">
-        <h2 className="font-semibold mb-4 flex items-center gap-2">
+        <h2 className="eyebrow mb-4 flex items-center gap-2">
           <Plus size={16} /> Nuevo contacto
         </h2>
         <form action={createContact} className="grid sm:grid-cols-2 gap-4">
@@ -53,7 +54,7 @@ export default async function ContactsPage() {
         </form>
       </div>
 
-      <div className="card divide-y divide-neutral-800 overflow-hidden">
+      <div className="card divide-y divide-white/[0.06] overflow-hidden">
         {contacts.map((c) => (
           <div key={c.id} className="flex items-center gap-4 px-5 py-4">
             <div className="flex-1 min-w-0">

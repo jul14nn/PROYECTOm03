@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  /* Negro con una pizca de azul: el negro puro aplasta y abarata. */
+  --background: #08070b;
+  --foreground: #f2f0f5;
 
   /* Marca: luces de escenario sobre negro */
   --accent-violet: #9333ea;
@@ -10,6 +11,24 @@
   --accent-amber: #f6a723;
   --accent: #a855f7;
   --accent-ink: #7e22ce;
+
+  /* Sistema de superficies: se apilan por elevación, no por bordes. */
+  --surface-1: #0f0e14;
+  --surface-2: #16141d;
+  --surface-3: #1d1a26;
+
+  /* El borde es luz de canto, no un contorno gris. */
+  --edge: rgba(255, 255, 255, 0.07);
+  --edge-strong: rgba(255, 255, 255, 0.12);
+
+  --text-dim: #9a96a6;
+  --text-dimmer: #6e6a7a;
+
+  /* Luz desde arriba + sombra ambiental: lo que da sensación de objeto real. */
+  --lift-1: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.5),
+    0 8px 24px -12px rgba(0, 0, 0, 0.8);
+  --lift-2: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 16px 40px -16px rgba(0, 0, 0, 0.9);
 }
 
 @theme inline {
@@ -25,61 +44,247 @@ body {
   color: var(--foreground);
 }
 
+/* ---------------------------------------------------------------------
+   Atmósfera: bloom ambiental + grano de película en TODA la app.
+   Antes esto solo existía en el login, así que al entrar se perdía
+   todo el carácter y quedaba un panel gris genérico.
+   --------------------------------------------------------------------- */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(70% 55% at 12% -5%, color-mix(in srgb, var(--accent-violet) 22%, transparent), transparent 60%),
+    radial-gradient(60% 50% at 95% 5%, color-mix(in srgb, var(--accent-magenta) 16%, transparent), transparent 62%),
+    radial-gradient(80% 60% at 50% 108%, color-mix(in srgb, var(--accent-amber) 9%, transparent), transparent 65%);
+  filter: blur(28px);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  mix-blend-mode: overlay;
+  /* Grano generado con feTurbulence: textura sin pedir ninguna imagen. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Superficies
+   --------------------------------------------------------------------- */
+
 .card {
-  background: #141416;
-  border: 1px solid #262629;
-  border-radius: 0.75rem;
+  position: relative;
+  background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0.012) 42%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    var(--surface-1);
+  border: 1px solid var(--edge);
+  border-radius: 1rem;
+  box-shadow: var(--lift-1);
+  backdrop-filter: blur(12px);
+}
+
+/* Tarjeta principal de cada pantalla: más presencia, sin gritar. */
+.card-featured {
+  background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.018) 45%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    var(--surface-2);
+  border-color: var(--edge-strong);
+  box-shadow: var(--lift-2);
+}
+
+/* Filas de contenido dentro de una card (featuring, tareas, presupuesto…).
+   Sin esto la ficha de canción se queda plana por dentro por muchas capas
+   que tenga la tarjeta que la envuelve. */
+.tile {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.022));
+  border: 1px solid var(--edge);
+  border-radius: 0.7rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.tile:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.032));
+  border-color: var(--edge-strong);
+}
+
+/* Filas pulsables dentro de una card. */
+.row-hover {
+  border-radius: 0.7rem;
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+.row-hover:hover {
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .input {
-  background: #0f0f11;
-  border: 1px solid #2d2d31;
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--edge);
+  border-radius: 0.6rem;
+  padding: 0.6rem 0.85rem;
   font-size: 0.875rem;
   width: 100%;
-  color: #ededed;
+  color: var(--foreground);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45),
+    0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.input::placeholder {
+  color: var(--text-dimmer);
+}
+
+/* El checkbox por defecto del navegador es azul sistema y rompe la paleta. */
+input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
 }
 
 .label {
-  font-size: 0.75rem;
-  color: #a3a3a3;
-  margin-bottom: 0.25rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin-bottom: 0.4rem;
   display: block;
 }
+
+/* ---------------------------------------------------------------------
+   Tipografía: contraste de escala real.
+   Anton estaba cargada pero solo se usaba en el logo de 7px.
+   --------------------------------------------------------------------- */
+
+.display {
+  font-family: var(--font-poster), "Arial Narrow", sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.004em;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+/* Títulos de página, con un punto de luz por encima.
+   El padding superior NO es decorativo: con background-clip:text y una
+   interlínea tan cerrada, las tildes de las mayúsculas (NEÓN, CANCIÓN,
+   DISTRIBUCIÓN) caen fuera de la caja del degradado y desaparecen.
+   El margen negativo lo compensa para que no altere la maquetación. */
+.display-title {
+  font-family: var(--font-poster), "Arial Narrow", sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.004em;
+  line-height: 0.92;
+  padding-top: 0.18em;
+  margin-top: -0.18em;
+  background: linear-gradient(175deg, #ffffff 25%, #b9b3c9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Antetítulo de sección: pequeño y espaciado para que el display mande. */
+.eyebrow {
+  font-size: 0.67rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+/* Cifras: condensadas y tabulares para que no bailen. */
+.numeral {
+  font-family: var(--font-poster), "Arial Narrow", sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.poster {
+  font-family: var(--font-poster), "Arial Narrow", sans-serif;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+
+/* ---------------------------------------------------------------------
+   Botones
+   --------------------------------------------------------------------- */
 
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: background-color 0.15s ease, filter 0.15s ease;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 0.6rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease,
+    filter 0.16s ease;
   cursor: pointer;
+}
+
+.btn:active {
+  transform: translateY(1px);
 }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-violet), var(--accent-magenta));
   color: white;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 6px 20px -8px color-mix(in srgb, var(--accent-magenta) 75%, transparent);
 }
 .btn-primary:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 10px 28px -8px color-mix(in srgb, var(--accent-magenta) 85%, transparent);
 }
 
 .btn-secondary {
-  background: #1f1f23;
-  color: #ededed;
-  border: 1px solid #2d2d31;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  color: var(--foreground);
+  border: 1px solid var(--edge);
+  box-shadow: var(--lift-1);
 }
 .btn-secondary:hover {
-  background: #27272b;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.04));
+  border-color: var(--edge-strong);
 }
 
 .btn-danger {
@@ -87,28 +292,41 @@ body {
   color: #f87171;
 }
 .btn-danger:hover {
-  background: rgba(248, 113, 113, 0.1);
+  background: rgba(248, 113, 113, 0.12);
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
-  padding: 0.125rem 0.625rem;
-  font-size: 0.7rem;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+/* Barra de progreso con degradado de marca y brillo. */
+.meter {
+  height: 0.4rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--accent-violet), var(--accent-magenta));
+  box-shadow: 0 0 12px -2px color-mix(in srgb, var(--accent-magenta) 80%, transparent);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ---------------------------------------------------------------------
-   Cartel / cinemático — usado en la splash screen y el login
+   Cartel / cinemático — splash screen y login
    --------------------------------------------------------------------- */
-
-.poster {
-  font-family: var(--font-poster), "Arial Narrow", sans-serif;
-  letter-spacing: 0.01em;
-  text-wrap: balance;
-}
 
 .stage-bg {
   position: relative;

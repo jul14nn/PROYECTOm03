@@ -143,7 +143,7 @@ export default function SongForm({
           type="checkbox"
           name="needsCover"
           defaultChecked={song?.needsCover ?? true}
-          className="h-4 w-4 rounded border-neutral-700 bg-neutral-900"
+          className="rounded"
         />
         Falta sacar portada
       </label>

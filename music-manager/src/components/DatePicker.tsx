@@ -93,14 +93,14 @@ export default function DatePicker({
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-2 w-72 rounded-xl border border-neutral-800 bg-neutral-950 p-3 shadow-2xl shadow-black/50">
+        <div className="absolute z-30 mt-2 w-72 rounded-xl border border-white/[0.07] bg-neutral-950 p-3 shadow-2xl shadow-black/50">
           <div className="flex items-center justify-between gap-2 mb-3">
             <button
               type="button"
               onClick={() => {
                 if (viewM === 0) { setViewM(11); setViewY((y) => y - 1); } else setViewM((m) => m - 1);
               }}
-              className="p-1.5 rounded-md text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100"
+              className="p-1.5 rounded-md text-neutral-400 hover:bg-white/[0.045] hover:text-neutral-100"
               aria-label="Mes anterior"
             >
               <ChevronLeft size={16} />
@@ -110,7 +110,7 @@ export default function DatePicker({
               <select
                 value={viewY}
                 onChange={(e) => setViewY(Number(e.target.value))}
-                className="bg-transparent text-sm font-medium border border-neutral-800 rounded-md px-1.5 py-0.5"
+                className="bg-transparent text-sm font-medium border border-white/[0.07] rounded-md px-1.5 py-0.5"
               >
                 {years.map((y) => (
                   <option key={y} value={y} className="bg-neutral-900">
@@ -124,7 +124,7 @@ export default function DatePicker({
               onClick={() => {
                 if (viewM === 11) { setViewM(0); setViewY((y) => y + 1); } else setViewM((m) => m + 1);
               }}
-              className="p-1.5 rounded-md text-neutral-400 hover:bg-neutral-900 hover:text-neutral-100"
+              className="p-1.5 rounded-md text-neutral-400 hover:bg-white/[0.045] hover:text-neutral-100"
               aria-label="Mes siguiente"
             >
               <ChevronRight size={16} />
@@ -159,8 +159,8 @@ export default function DatePicker({
                     isSelected
                       ? "text-white"
                       : isToday
-                        ? "ring-1 ring-inset ring-fuchsia-500/50 hover:bg-neutral-900"
-                        : "hover:bg-neutral-900"
+                        ? "ring-1 ring-inset ring-fuchsia-500/50 hover:bg-white/[0.045]"
+                        : "hover:bg-white/[0.045]"
                   )}
                   style={
                     isSelected

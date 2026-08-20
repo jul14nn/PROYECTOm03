@@ -21,7 +21,8 @@ export default async function CalendarPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Agenda</h1>
+          <div className="eyebrow mb-2">Planificación</div>
+          <h1 className="display-title text-5xl sm:text-6xl">Agenda</h1>
           <p className="text-neutral-400 text-sm mt-1">
             Sesiones, reuniones y citaciones, con ubicación y envío de invitaciones por email.
           </p>
@@ -57,9 +58,9 @@ function EventList({
   return (
     <section>
       <h2 className="text-sm font-medium text-neutral-400 mb-2">{title}</h2>
-      <div className={`card divide-y divide-neutral-800 overflow-hidden ${muted ? "opacity-60" : ""}`}>
+      <div className={`card divide-y divide-white/[0.06] overflow-hidden ${muted ? "opacity-60" : ""}`}>
         {events.map((ev) => (
-          <Link key={ev.id} href={`/calendar/${ev.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-neutral-900/60">
+          <Link key={ev.id} href={`/calendar/${ev.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.035]">
             {ev.song && <ColorDot color={ev.song.color} />}
             <div className="flex-1 min-w-0">
               <div className="font-medium">{ev.title}</div>

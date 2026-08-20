@@ -29,12 +29,18 @@ export function TodayPanel({ items }: { items: AgendaItem[] }) {
   const rest = items.length - shown.length;
 
   return (
-    <section className="card p-5 lg:col-span-2">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-semibold">Qué hago hoy</h2>
+    // min-w-0: sin esto el hijo de grid usa min-width:auto y el título en
+    // Anton estira la tarjeta más allá del ancho de la pantalla en móvil.
+    <section className="card card-featured p-6 lg:col-span-2 min-w-0">
+      <div className="flex items-baseline justify-between gap-3 mb-5">
+        <h2 className="display text-2xl min-w-0">Qué hago hoy</h2>
         {items.length > 0 && (
-          <span className="text-xs text-neutral-500">
-            {items.length} {items.length === 1 ? "cabo suelto" : "cabos sueltos"}
+          <span className="eyebrow text-[0.6rem] shrink-0 text-right leading-tight">
+            {items.length}{" "}
+            <span className="hidden sm:inline">
+              {items.length === 1 ? "cabo suelto" : "cabos sueltos"}
+            </span>
+            <span className="sm:hidden">pend.</span>
           </span>
         )}
       </div>
@@ -52,12 +58,12 @@ export function TodayPanel({ items }: { items: AgendaItem[] }) {
             <Link
               key={item.songId}
               href={`/songs/${item.songId}`}
-              className="flex items-center gap-3 rounded-lg p-2.5 -mx-1 hover:bg-neutral-900 transition-colors group"
+              className="flex items-center gap-3.5 row-hover p-3 -mx-1 group"
             >
               <ColorDot color={item.color} />
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate">{item.step.label}</div>
-                <div className="text-xs text-neutral-500 truncate">{item.songTitle}</div>
+                <div className="text-xs text-neutral-500 truncate mt-0.5">{item.songTitle}</div>
               </div>
               {item.step.daysToRelease !== null && (
                 <span
@@ -94,10 +100,10 @@ export function ReleaseCountdown({ releases }: { releases: UpcomingRelease[] }) 
   const shown = releases.slice(0, 3);
 
   return (
-    <section className="card p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <Rocket size={16} className="text-fuchsia-400" />
-        <h2 className="font-semibold">Próximos lanzamientos</h2>
+    <section className="card p-6 min-w-0">
+      <div className="flex items-center gap-2 mb-5">
+        <Rocket size={14} className="text-fuchsia-400 shrink-0" />
+        <h2 className="eyebrow">Próximos lanzamientos</h2>
       </div>
 
       {shown.length === 0 ? (
@@ -111,7 +117,7 @@ export function ReleaseCountdown({ releases }: { releases: UpcomingRelease[] }) 
             <Link
               key={r.songId}
               href={`/songs/${r.songId}`}
-              className="block rounded-lg p-2.5 -mx-1 hover:bg-neutral-900 transition-colors"
+              className="block row-hover p-3 -mx-1"
             >
               <div className="flex items-center gap-2">
                 <ColorDot color={r.color} />

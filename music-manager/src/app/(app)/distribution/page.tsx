@@ -15,7 +15,8 @@ export default async function DistributionPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Distribución</h1>
+        <div className="eyebrow mb-2">Publicación</div>
+          <h1 className="display-title text-5xl sm:text-6xl">Distribución</h1>
         <p className="text-neutral-400 text-sm mt-1">
           Todos los pasos con distribuidoras, en todas tus canciones.
         </p>
@@ -26,12 +27,12 @@ export default async function DistributionPage() {
           Sin pasos de distribución todavía. Añádelos desde la ficha de cada canción.
         </div>
       ) : (
-        <div className="card divide-y divide-neutral-800 overflow-hidden">
+        <div className="card divide-y divide-white/[0.06] overflow-hidden">
           {steps.map((d) => (
             <Link
               key={d.id}
               href={`/songs/${d.songId}#distribucion`}
-              className="flex items-center gap-4 px-5 py-4 hover:bg-neutral-900/60"
+              className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.035]"
             >
               <ColorDot color={d.song.color} />
               <div className="flex-1 min-w-0">

@@ -13,7 +13,7 @@ export default async function NewEventPage({
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-semibold mb-6">Nuevo evento</h1>
+      <h1 className="display-title text-5xl sm:text-6xl mb-8">Nuevo evento</h1>
       <div className="card p-6">
         <form action={createEvent} className="space-y-5">
           <div>
