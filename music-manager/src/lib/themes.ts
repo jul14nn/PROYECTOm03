@@ -33,7 +33,7 @@ export const SIDEBAR_MODES = [
     id: "rail",
     name: "Raíl",
     description:
-      "Solo iconos; se despliega al acercar el ratón. Devuelve unos 12rem de ancho al contenido.",
+      "Solo iconos; se despliega al acercar el ratón. Devuelve unos 180 px de ancho al contenido.",
   },
 ] as const;
 

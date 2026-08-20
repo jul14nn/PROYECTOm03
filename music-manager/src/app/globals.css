@@ -185,6 +185,15 @@ input[type="checkbox"] {
   display: block;
 }
 
+/* Estas clases no están dentro de una capa, así que le ganan a las utilidades
+   de Tailwind: poner `flex` junto a `.label` no hacía nada y el icono caía a
+   su propia línea. Para etiquetas con icono se usa esta variante. */
+.label-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 /* ---------------------------------------------------------------------
    Tipografía: contraste de escala real.
    Anton estaba cargada pero solo se usaba en el logo de 7px.

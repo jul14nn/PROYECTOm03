@@ -6,6 +6,8 @@ import SongForm from "@/components/SongForm";
 import SongWorkspace, { type SongTab } from "@/components/SongWorkspace";
 import VideoGenerator from "@/components/VideoGenerator";
 import ClipStudio from "@/components/ClipStudio";
+import AssetUploader from "@/components/AssetUploader";
+import AssetList from "@/components/AssetList";
 import type { SubtitleStyleId } from "@/lib/subtitleStyles";
 import { StageBadge, TaskStatusBadge, ColorDot } from "@/components/Badges";
 import {
@@ -57,7 +59,7 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const userId = await requireUserId();
 
-  const [song, contacts, brandKit] = await Promise.all([
+  const [song, contacts, brandKit, fonts] = await Promise.all([
     prisma.song.findFirst({
       where: { id, userId },
       include: {
@@ -72,10 +74,15 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
         events: { orderBy: { startDate: "asc" } },
         references: { orderBy: { createdAt: "desc" } },
         launchTasks: { orderBy: { dayOffset: "asc" } },
+        assets: { orderBy: { createdAt: "desc" } },
       },
     }),
     prisma.contact.findMany({ where: { userId }, orderBy: { name: "asc" } }),
     prisma.brandKit.findUnique({ where: { userId } }),
+    prisma.asset.findMany({
+      where: { userId, kind: "FONT" },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
 
   if (!song) notFound();
@@ -100,6 +107,15 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
     subtitleScale: brandKit?.subtitleScale ?? 1,
     defaultVideoStyle: brandKit?.defaultVideoStyle ?? "neon",
   };
+
+  const videoAssets = song.assets
+    .filter((a) => a.kind === "VIDEO")
+    .map((a) => ({ id: a.id, name: a.name, url: a.url }));
+  const audioAssets = song.assets
+    .filter((a) => a.kind === "AUDIO")
+    .map((a) => ({ id: a.id, name: a.name, url: a.url }));
+  const fontAssets = fonts.map((a) => ({ id: a.id, name: a.name, url: a.url }));
+  const blobOn = isBlobConfigured();
 
   const tabs: SongTab[] = [
     {
@@ -218,16 +234,44 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
             />
           </div>
 
-          <div className="card p-6 space-y-4">
+          <div className="card p-6 space-y-5">
             <h2 className="font-semibold flex items-center gap-2">
               <Scissors size={18} /> Estudio de clips
             </h2>
+
+            <div className="grid sm:grid-cols-2 gap-5">
+              <div>
+                <div className="label">Clips de vídeo guardados</div>
+                <AssetUploader
+                  kind="VIDEO"
+                  songId={song.id}
+                  label="Subir un clip"
+                  enabled={blobOn}
+                />
+                <AssetList assets={song.assets.filter((a) => a.kind === "VIDEO")} />
+              </div>
+              <div>
+                <div className="label">Audio de la canción</div>
+                <AssetUploader
+                  kind="AUDIO"
+                  songId={song.id}
+                  label="Subir el audio"
+                  enabled={blobOn}
+                />
+                <AssetList assets={song.assets.filter((a) => a.kind === "AUDIO")} />
+              </div>
+            </div>
+
             <ClipStudio
               songId={song.id}
               songTitle={song.title}
               songColor={song.color}
-              brand={brand}
-              uploadEnabled={isBlobConfigured()}
+              videos={videoAssets}
+              audios={audioAssets}
+              fonts={fontAssets}
+              defaultSubtitleStyle={brand.subtitleStyle}
+              subtitlePosPct={brand.subtitlePosPct}
+              subtitleScale={brand.subtitleScale}
             />
           </div>
 

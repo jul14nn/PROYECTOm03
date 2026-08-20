@@ -1,18 +1,16 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { ASSET_RULES, isAssetKind } from "@/lib/assets";
 
 /**
  * Subida directa del navegador al almacenamiento.
  *
- * Las subidas que pasan por una acción de servidor chocan con el límite de
- * cuerpo de petición de las funciones serverless (4,5 MB), que un clip de
- * vídeo supera de sobra. Aquí el servidor solo firma un permiso de subida y
- * el archivo viaja directo, sin pasar por la función.
+ * El fichero NO pasa por aquí: esta ruta solo firma un permiso de subida y
+ * después recibe el aviso de que terminó. Es lo que permite subir un clip de
+ * 40 MB, porque el cuerpo de una función de servidor está limitado a 4,5 MB.
  */
-const MAX_BYTES = 200 * 1024 * 1024; // 200 MB
-
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadBody;
 
@@ -20,44 +18,68 @@ export async function POST(request: Request): Promise<NextResponse> {
     const result = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async (pathname) => {
-        // El permiso se firma aquí: sin sesión válida y sin ser dueño de la
-        // canción no se emite, así que nadie puede subir a la cuenta de otro.
+      onBeforeGenerateToken: async (pathname, clientPayload) => {
+        // La autorización se comprueba aquí, antes de firmar nada.
         const session = await auth();
-        const userId = session?.user?.id;
-        if (!userId) throw new Error("No autenticado");
+        if (!session?.user?.id) throw new Error("No autenticado");
 
-        const songId = pathname.split("/")[1];
-        if (!songId) throw new Error("Ruta de subida no válida");
+        const payload = JSON.parse(clientPayload ?? "{}") as {
+          kind?: string;
+          songId?: string | null;
+        };
+        if (!isAssetKind(payload.kind)) throw new Error("Tipo de archivo no admitido");
 
-        const song = await prisma.song.findFirst({
-          where: { id: songId, userId },
-          select: { id: true },
-        });
-        if (!song) throw new Error("Canción no encontrada");
+        const rule = ASSET_RULES[payload.kind];
+
+        // Si dice pertenecer a una canción, tiene que ser suya.
+        if (payload.songId) {
+          const song = await prisma.song.findFirst({
+            where: { id: payload.songId, userId: session.user.id },
+            select: { id: true },
+          });
+          if (!song) throw new Error("Canción no encontrada");
+        }
 
         return {
-          allowedContentTypes: ["video/mp4", "video/webm", "video/quicktime"],
-          maximumSizeInBytes: MAX_BYTES,
+          allowedContentTypes: [...rule.mimeTypes],
+          maximumSizeInBytes: rule.maxBytes,
           addRandomSuffix: true,
-          tokenPayload: JSON.stringify({ userId, songId }),
+          // Se reenvía a onUploadCompleted para registrar el activo.
+          tokenPayload: JSON.stringify({
+            userId: session.user.id,
+            kind: payload.kind,
+            songId: payload.songId ?? null,
+            name: pathname.split("/").pop() ?? pathname,
+          }),
         };
       },
       onUploadCompleted: async ({ blob, tokenPayload }) => {
-        // Se ejecuta cuando el archivo ya está subido: aquí se deja la
-        // referencia en la base de datos.
-        if (!tokenPayload) return;
-        const { songId } = JSON.parse(tokenPayload) as { songId: string };
-        await prisma.songReference.create({
-          data: { songId, url: blob.url, caption: "Clip con subtítulos" },
+        const meta = JSON.parse(tokenPayload ?? "{}") as {
+          userId: string;
+          kind: "AUDIO" | "VIDEO" | "FONT";
+          songId: string | null;
+          name: string;
+        };
+        await prisma.asset.create({
+          data: {
+            userId: meta.userId,
+            songId: meta.songId,
+            kind: meta.kind,
+            url: blob.url,
+            pathname: blob.pathname,
+            name: meta.name,
+            // El aviso no siempre trae el tamaño; se guarda 0 si falta.
+            size: (blob as { size?: number }).size ?? 0,
+            mimeType: blob.contentType ?? "application/octet-stream",
+          },
         });
       },
     });
 
     return NextResponse.json(result);
-  } catch (err) {
+  } catch (error) {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Error al subir" },
+      { error: error instanceof Error ? error.message : "Error de subida" },
       { status: 400 }
     );
   }

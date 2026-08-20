@@ -6,6 +6,9 @@ import { SUBTITLE_STYLES } from "@/lib/subtitleStyles";
 import { VIDEO_STYLES } from "@/lib/videoStyles";
 import { SUGGESTED_COLORS } from "@/lib/constants";
 import { THEMES, SIDEBAR_MODES } from "@/lib/themes";
+import AssetUploader from "@/components/AssetUploader";
+import AssetList from "@/components/AssetList";
+import { isBlobConfigured } from "@/lib/blob";
 
 const FONTS = [
   { value: "Anton", label: "Anton — cartel condensada" },
@@ -16,7 +19,13 @@ const FONTS = [
 
 export default async function AjustesPage() {
   const userId = await requireUserId();
-  const kit = await prisma.brandKit.findUnique({ where: { userId } });
+  const [kit, fonts] = await Promise.all([
+    prisma.brandKit.findUnique({ where: { userId } }),
+    prisma.asset.findMany({
+      where: { userId, kind: "FONT" },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
 
   return (
     <div className="max-w-2xl">
@@ -218,6 +227,17 @@ export default async function AjustesPage() {
           <SubmitButton pendingLabel="Guardando…">Guardar preferencias</SubmitButton>
         </div>
       </form>
+
+      <section className="mt-12">
+        <h2 className="eyebrow pb-3 border-b border-white/20 mb-5">Tus tipografías</h2>
+        <p className="text-sm text-neutral-400 mb-4 max-w-lg">
+          Sube las fuentes de tu identidad y podrás elegirlas para los
+          subtítulos de los clips. Se cargan solo en tu navegador cuando montas
+          un vídeo.
+        </p>
+        <AssetUploader kind="FONT" label="Subir una tipografía" enabled={isBlobConfigured()} />
+        <AssetList assets={fonts} />
+      </section>
     </div>
   );
 }

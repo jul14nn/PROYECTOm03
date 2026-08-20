@@ -54,6 +54,7 @@ model User {
   contacts Contact[]
   events   CalendarEvent[]
   brandKit BrandKit?
+  assets   Asset[]
 }
 
 model Account {
@@ -144,6 +145,7 @@ model Song {
   events           CalendarEvent[]
   references       SongReference[]
   launchTasks      LaunchTask[]
+  assets           Asset[]
 }
 
 model SongReference {
@@ -335,4 +337,33 @@ model BrandKit {
   updatedAt       DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum AssetKind {
+  AUDIO
+  VIDEO
+  FONT
+}
+
+/// Ficheros que sube el artista: el máster de la canción, clips de vídeo y
+/// tipografías propias. Se suben directamente al almacenamiento desde el
+/// navegador, porque la función de servidor corta el cuerpo a 4,5 MB y un
+/// clip de 30 s pesa bastante más.
+model Asset {
+  id        String    @id @default(cuid())
+  userId    String
+  songId    String? // las fuentes son del artista, no de una canción
+  kind      AssetKind
+  url       String
+  pathname  String // ruta en el almacenamiento, para poder borrarlo
+  name      String
+  size      Int
+  mimeType  String
+  createdAt DateTime  @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  song Song? @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+  @@index([songId])
 }
