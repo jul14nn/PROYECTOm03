@@ -1,19 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Wand2, Download, Save, Loader2, Film, Captions, Timer, Monitor } from "lucide-react";
+import { Wand2, Download, Save, Loader2, Film, Monitor } from "lucide-react";
 import clsx from "clsx";
 import { VIDEO_STYLES, hexToRgb, type VideoStyleId } from "@/lib/videoStyles";
 import { addSongReference } from "@/lib/actions/references";
 import { checkVideoSupport, type VideoSupport } from "@/lib/videoCodec";
 import {
-  SUBTITLE_STYLES,
   drawSubtitle,
-  autoTime,
   type SubtitleStyleId,
   type SubtitleLine,
   type SubtitleOptions,
 } from "@/lib/subtitleStyles";
+import SubtitleEditor from "@/components/SubtitleEditor";
 
 const W = 720;
 const H = 1280;
@@ -243,14 +242,8 @@ export default function VideoGenerator({
   const [support, setSupport] = useState<VideoSupport | null>(null);
 
   // Subtítulos
-  const [subsOpen, setSubsOpen] = useState(false);
-  const [rawLines, setRawLines] = useState("");
   const [lines, setLines] = useState<SubtitleLine[]>([]);
   const [subStyle, setSubStyle] = useState<SubtitleStyleId>(brand.subtitleStyle);
-  const [syncing, setSyncing] = useState(false);
-  const [syncIndex, setSyncIndex] = useState(0);
-  const syncStart = useRef(0);
-  const syncMarks = useRef<number[]>([]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const style = VIDEO_STYLES.find((s) => s.id === styleId)!;
@@ -269,40 +262,6 @@ export default function VideoGenerator({
     positionPct: brand.subtitlePosPct,
     scale: brand.subtitleScale,
   };
-
-  const textLines = rawLines.split("\n").map((l) => l.trim()).filter(Boolean);
-
-  function distribute() {
-    setLines(autoTime(textLines, duration));
-  }
-
-  function startSync() {
-    if (textLines.length === 0) return;
-    syncMarks.current = [];
-    setSyncIndex(0);
-    setSyncing(true);
-    syncStart.current = performance.now();
-  }
-
-  function mark() {
-    const t = (performance.now() - syncStart.current) / 1000;
-    syncMarks.current.push(t);
-    const next = syncIndex + 1;
-    if (next >= textLines.length) {
-      // La última línea dura hasta el final del vídeo.
-      const marks = syncMarks.current;
-      setLines(
-        textLines.map((text, i) => ({
-          text,
-          start: +marks[i].toFixed(2),
-          end: +(i + 1 < marks.length ? marks[i + 1] : duration).toFixed(2),
-        }))
-      );
-      setSyncing(false);
-    } else {
-      setSyncIndex(next);
-    }
-  }
 
   async function handleGenerate() {
     if (!support?.ok) return;
@@ -433,113 +392,13 @@ export default function VideoGenerator({
         ))}
       </div>
 
-      {/* ------------------------------------------------------- Subtítulos */}
-      <div className="tile p-4">
-        <button
-          type="button"
-          onClick={() => setSubsOpen((v) => !v)}
-          className="flex items-center gap-2 text-sm font-medium w-full text-left"
-        >
-          <Captions size={16} className="text-fuchsia-300" />
-          Subtítulos
-          <span className="text-xs text-neutral-500 font-normal ml-auto">
-            {lines.length > 0 ? `${lines.length} líneas` : "sin subtítulos"}
-          </span>
-        </button>
-
-        {subsOpen && (
-          <div className="mt-4 space-y-4">
-            <div>
-              <label className="label" htmlFor="sub-lines">
-                Una línea por verso
-              </label>
-              <textarea
-                id="sub-lines"
-                value={rawLines}
-                onChange={(e) => setRawLines(e.target.value)}
-                rows={4}
-                placeholder={"Y las noches de neón\nse apagan sin ti"}
-                className="input font-mono text-sm"
-              />
-            </div>
-
-            <div>
-              <div className="label">Estilo</div>
-              <div className="grid sm:grid-cols-2 gap-2">
-                {SUBTITLE_STYLES.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setSubStyle(s.id)}
-                    className={clsx(
-                      "text-left rounded-lg p-2.5 border transition-colors",
-                      subStyle === s.id
-                        ? "border-fuchsia-500/60 bg-fuchsia-500/10"
-                        : "border-white/[0.07] hover:bg-white/[0.04]"
-                    )}
-                  >
-                    <div className="text-sm">{s.name}</div>
-                    <div className="text-xs text-neutral-500 mt-0.5">{s.description}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {syncing ? (
-              <div className="rounded-lg p-4 border border-fuchsia-500/40 bg-fuchsia-500/10">
-                <p className="text-xs text-neutral-400 mb-2">
-                  Línea {syncIndex + 1} de {textLines.length} — pulsa cuando deba aparecer
-                </p>
-                <p className="text-lg mb-3">{textLines[syncIndex]}</p>
-                <button type="button" onClick={mark} className="btn btn-primary w-full">
-                  Marcar ahora
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={distribute}
-                  disabled={textLines.length === 0}
-                  className="btn btn-secondary"
-                >
-                  Repartir en {duration}s
-                </button>
-                <button
-                  type="button"
-                  onClick={startSync}
-                  disabled={textLines.length === 0}
-                  className="btn btn-secondary"
-                >
-                  <Timer size={14} /> Sincronizar al ritmo
-                </button>
-                {lines.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setLines([])}
-                    className="btn btn-danger"
-                  >
-                    Quitar
-                  </button>
-                )}
-              </div>
-            )}
-
-            {lines.length > 0 && !syncing && (
-              <ul className="text-xs text-neutral-500 space-y-1 font-mono">
-                {lines.map((l, i) => (
-                  <li key={i} className="flex gap-3">
-                    <span className="text-neutral-600 tabular-nums w-24 shrink-0">
-                      {l.start.toFixed(1)}s → {l.end.toFixed(1)}s
-                    </span>
-                    <span className="truncate text-neutral-400">{l.text}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </div>
+      <SubtitleEditor
+        duration={duration}
+        lines={lines}
+        setLines={setLines}
+        style={subStyle}
+        setStyle={setSubStyle}
+      />
 
       <div className="flex flex-wrap items-center gap-3">
         <label className="text-xs text-neutral-400 flex items-center gap-2">

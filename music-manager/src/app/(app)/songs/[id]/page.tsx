@@ -5,6 +5,7 @@ import { requireUserId } from "@/lib/auth";
 import SongForm from "@/components/SongForm";
 import SongWorkspace, { type SongTab } from "@/components/SongWorkspace";
 import VideoGenerator from "@/components/VideoGenerator";
+import ClipStudio from "@/components/ClipStudio";
 import type { SubtitleStyleId } from "@/lib/subtitleStyles";
 import { StageBadge, TaskStatusBadge, ColorDot } from "@/components/Badges";
 import {
@@ -49,6 +50,7 @@ import {
   Info,
   Wand2,
   CalendarDays,
+  Scissors,
 } from "lucide-react";
 
 export default async function SongDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -213,6 +215,19 @@ export default async function SongDetailPage({ params }: { params: Promise<{ id:
               songColor={song.color}
               images={song.references.map((r) => ({ url: r.url }))}
               brand={brand}
+            />
+          </div>
+
+          <div className="card p-6 space-y-4">
+            <h2 className="font-semibold flex items-center gap-2">
+              <Scissors size={18} /> Estudio de clips
+            </h2>
+            <ClipStudio
+              songId={song.id}
+              songTitle={song.title}
+              songColor={song.color}
+              brand={brand}
+              uploadEnabled={isBlobConfigured()}
             />
           </div>
 
