@@ -29,8 +29,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       from: process.env.SMTP_FROM,
       async sendVerificationRequest({ identifier, url }) {
         if (!isEmailConfigured()) {
-          // Sin SMTP configurado (típicamente en desarrollo local): el enlace
-          // mágico se imprime en la consola del servidor en vez de enviarse.
+          // En local esto es lo normal y cómodo: el enlace sale por consola.
+          // En producción es un fallo silencioso — al usuario le decimos
+          // "revisa tu correo" y no se envía nada. Por eso, desplegado, se
+          // avisa nombrando las variables que faltan: sin esto, el único
+          // síntoma es un correo que nunca llega.
+          const missing = [
+            ["SMTP_HOST", process.env.SMTP_HOST],
+            ["SMTP_USER", process.env.SMTP_USER],
+            ["SMTP_PASS", process.env.SMTP_PASS],
+          ]
+            .filter(([, v]) => !v)
+            .map(([k]) => k);
+
+          if (process.env.NODE_ENV === "production") {
+            console.error(
+              `[music-manager] No se ha enviado el enlace de acceso a ${identifier}: ` +
+                `faltan estas variables de entorno: ${missing.join(", ")}. ` +
+                `Añádelas en el despliegue y vuelve a desplegar.`
+            );
+            throw new Error("El envío de correo no está configurado en el servidor.");
+          }
+
           console.log(`\n[music-manager] Enlace de acceso para ${identifier}:\n${url}\n`);
           return;
         }
