@@ -272,3 +272,30 @@ export async function sendAgreement(
     mensaje: `Enviado a ${enviados} ${enviados === 1 ? "persona" : "personas"}.`,
   };
 }
+
+/** Marca (o desmarca) la obra como declarada en la entidad de gestión. */
+export async function setSongRegistered(songId: string, registrada: boolean) {
+  const userId = await requireUserId();
+  await assertSongOwner(songId, userId);
+  await prisma.song.updateMany({
+    where: { id: songId, userId },
+    data: { registeredAt: registrada ? new Date() : null },
+  });
+  revalidatePath(`/songs/${songId}`);
+  revalidatePath(`/songs/${songId}/contrato`);
+  revalidatePath("/guias/sgae");
+}
+
+/** Estado del alta como socio. Es de una vez, no por canción. */
+export async function setSocietyStatus(estado: string) {
+  const userId = await requireUserId();
+  const validos = ["sin_responder", "no", "tramite", "alta"];
+  const societyStatus = validos.includes(estado) ? estado : "sin_responder";
+  await prisma.brandKit.upsert({
+    where: { userId },
+    create: { userId, societyStatus },
+    update: { societyStatus },
+  });
+  revalidatePath("/guias/sgae");
+  revalidatePath("/ajustes");
+}

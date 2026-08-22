@@ -1,3 +1,4 @@
+import { LAUNCH_STEPS } from "@/lib/launchPlan";
 import Link from "next/link";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/constants";
 import { daysUntil } from "@/lib/tiktokPlan";
@@ -117,7 +118,7 @@ export default function Hilo({ data }: { data: DashboardData }) {
             },
             {
               t: "Genera su plan de lanzamiento",
-              d: "31 pasos con fecha, desde aprobar el máster hasta el balance del mes siguiente.",
+              d: `${LAUNCH_STEPS.length} pasos con fecha, desde aprobar el máster hasta el balance del mes siguiente.`,
             },
             {
               t: "Vuelve aquí cada mañana",

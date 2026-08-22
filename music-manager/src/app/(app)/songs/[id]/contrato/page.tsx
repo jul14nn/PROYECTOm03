@@ -21,6 +21,7 @@ import {
   linkRoyaltyToContact,
   setRoyaltyKind,
   copyObraToMaster,
+  setSongRegistered,
 } from "@/lib/actions/contracts";
 import { ArrowLeft, FileText, AlertTriangle, Check, Copy } from "lucide-react";
 
@@ -324,6 +325,42 @@ export default async function ContratoPage({
             </p>
           )}
         </div>
+      </div>
+
+      {/* --------------------------------------------- Declarar la obra */}
+      <div className="card p-6">
+        <h2 className="font-semibold">Declarar la obra</h2>
+        <p className="text-sm text-neutral-400 mt-2">
+          Firmar el reparto entre vosotros y declararlo en tu entidad de
+          gestión son cosas distintas: lo primero es la prueba de vuestro
+          acuerdo, lo segundo es lo que hace que el dinero llegue. Lo que suena
+          sin registrar no lo cobra nadie.
+        </p>
+
+        {song.registeredAt ? (
+          <div className="tile p-3.5 mt-4 flex items-center gap-2.5 flex-wrap">
+            <Check size={15} className="text-emerald-400 shrink-0" />
+            <span className="text-sm flex-1">
+              Declarada el {song.registeredAt.toLocaleDateString("es-ES")}.
+            </span>
+            <form action={setSongRegistered.bind(null, song.id, false)}>
+              <SubmitButton className="btn btn-secondary text-xs py-1" pendingLabel="…">
+                Deshacer
+              </SubmitButton>
+            </form>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-3 mt-4">
+            <form action={setSongRegistered.bind(null, song.id, true)}>
+              <SubmitButton className="btn btn-secondary" pendingLabel="Guardando…">
+                Ya la he declarado
+              </SubmitButton>
+            </form>
+            <Link href="/guias/sgae" className="text-sm text-fuchsia-400 hover:underline">
+              Cómo declararla
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* ------------------------------------------------- Lugar y fecha */}

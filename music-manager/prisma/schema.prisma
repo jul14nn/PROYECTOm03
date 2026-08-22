@@ -152,6 +152,7 @@ model Song {
   agreementPlace String? // lugar de firma del acuerdo de reparto
   agreementDate  DateTime? // fecha de firma; fija, no "hoy", para que el documento no cambie
   agreementSentAt DateTime? // cuándo se envió el acuerdo a los firmantes
+  registeredAt   DateTime? // cuándo se declaró la obra en la entidad de gestión
   releaseDate   DateTime? // fecha aproximada de lanzamiento, no un compromiso exacto
   lastReminderThreshold Int? // último umbral de días ya avisado por email (30/14/7/3/1)
   createdAt     DateTime  @default(now())
@@ -359,6 +360,10 @@ model BrandKit {
   defaultVideoStyle String @default("neon")
   theme           String   @default("neon") // neon | bits | vinilo
   sidebarMode     String   @default("fijo") // fijo | rail
+
+  // El alta en la entidad de gestión es de una vez, no por canción: guardarlo
+  // evita que la app siga insistiendo cuando ya está hecho.
+  societyStatus   String   @default("sin_responder") // sin_responder | no | tramite | alta
   updatedAt       DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

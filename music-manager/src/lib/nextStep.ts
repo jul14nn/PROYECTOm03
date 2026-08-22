@@ -9,6 +9,7 @@ type NextStepInput = {
   marketingIdeas: { status: string }[];
   marketingBudgets: unknown[];
   royalties: { percentage: number }[];
+  registeredAt?: Date | string | null;
   videoIdeas: unknown[];
   references: unknown[];
 };
@@ -31,6 +32,7 @@ const SEVERITY = {
   cover: 70,
   royaltiesWrong: 60,
   royaltiesMissing: 55,
+  notRegistered: 52,
   noDate: 50,
   noMarketing: 45,
   tasks: 40,
@@ -142,6 +144,18 @@ export function getNextStep(song: NextStepInput): NextStep {
       SEVERITY.royaltiesWrong,
       `El reparto de royalties suma ${royaltyTotal}%, no 100%`,
       "Ajusta los porcentajes para que cuadren.",
+      "royalties"
+    );
+  }
+
+  // Con el reparto ya cuadrado, lo siguiente es declararlo: los porcentajes
+  // que se registran son los que después se cobran, y lo que suena sin
+  // registrar no lo cobra nadie.
+  if (!song.registeredAt) {
+    return step(
+      SEVERITY.notRegistered,
+      "La obra no está declarada en tu entidad de gestión",
+      "El reparto ya cuadra, así que puedes registrarla. Lo que suena sin registrar no lo cobra nadie.",
       "royalties"
     );
   }

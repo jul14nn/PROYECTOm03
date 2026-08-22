@@ -2,6 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
 import { ExternalLink, Check, AlertTriangle } from "lucide-react";
+import SubmitButton from "@/components/SubmitButton";
+import { setSocietyStatus } from "@/lib/actions/contracts";
 
 export const metadata = { title: "Darse de alta en la SGAE" };
 
@@ -17,11 +19,16 @@ export default async function GuiaSgaePage() {
   const userId = await requireUserId();
 
   // Si ya tiene canciones con reparto, la guía puede señalar la suya.
-  const conReparto = await prisma.song.findFirst({
-    where: { userId, royalties: { some: { kind: "OBRA" } } },
-    select: { id: true, title: true },
-    orderBy: { updatedAt: "desc" },
-  });
+  const [conReparto, kit, sinRegistrar] = await Promise.all([
+    prisma.song.findFirst({
+      where: { userId, royalties: { some: { kind: "OBRA" } } },
+      select: { id: true, title: true },
+      orderBy: { updatedAt: "desc" },
+    }),
+    prisma.brandKit.findUnique({ where: { userId }, select: { societyStatus: true } }),
+    prisma.song.count({ where: { userId, registeredAt: null, royalties: { some: {} } } }),
+  ]);
+  const estado = kit?.societyStatus ?? "sin_responder";
 
   return (
     <div className="max-w-2xl pb-16">
@@ -34,8 +41,53 @@ export default async function GuiaSgaePage() {
         entre otros.
       </p>
 
-      {/* ------------------------------------------------ Qué gestiona cada uno */}
+      {/* ------------------------------------------------------- Tu situación */}
       <section className="card p-6 mt-8">
+        <h2 className="font-semibold">¿En qué punto estás?</h2>
+        <p className="text-sm text-neutral-500 mt-1">
+          Dilo una vez y la app deja de insistir con lo que ya tengas hecho.
+        </p>
+        <div className="grid sm:grid-cols-3 gap-2 mt-4">
+          {[
+            { id: "no", t: "No estoy dado de alta", d: "Te interesa la guía de abajo." },
+            { id: "tramite", t: "Lo estoy tramitando", d: "En cuanto entres, registra tus obras." },
+            { id: "alta", t: "Ya soy socio", d: "Solo te queda declarar cada canción." },
+          ].map((o) => (
+            <form key={o.id} action={setSocietyStatus.bind(null, o.id)}>
+              <SubmitButton
+                pendingLabel="…"
+                className={
+                  estado === o.id
+                    ? "tile p-3 w-full text-left border-fuchsia-500/60 bg-fuchsia-500/10"
+                    : "tile p-3 w-full text-left"
+                }
+              >
+                <span className="block">
+                  <span className="block text-sm">{o.t}</span>
+                  <span className="block text-xs text-neutral-500 mt-0.5">{o.d}</span>
+                </span>
+              </SubmitButton>
+            </form>
+          ))}
+        </div>
+
+        {estado === "alta" && sinRegistrar > 0 && (
+          <div className="tile p-3.5 mt-4 flex gap-2.5">
+            <AlertTriangle size={15} className="text-amber-400 mt-0.5 shrink-0" />
+            <p className="text-sm text-neutral-300">
+              Tienes {sinRegistrar} {sinRegistrar === 1 ? "canción" : "canciones"} con
+              reparto pero sin declarar.{" "}
+              <Link href="/royalties" className="text-fuchsia-400 hover:underline">
+                Verlas
+              </Link>
+              .
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* ------------------------------------------------ Qué gestiona cada uno */}
+      <section className="card p-6 mt-6">
         <h2 className="font-semibold">Antes de nada: no todo lo gestiona la SGAE</h2>
         <p className="text-sm text-neutral-400 mt-2">
           Es la confusión más común, y es la misma división que usa esta app en

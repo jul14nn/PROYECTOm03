@@ -100,6 +100,15 @@ export const LAUNCH_STEPS: LaunchStep[] = [
     channel: "Legal",
   },
   {
+    key: "registro",
+    title: "Declarar la obra en tu entidad de gestión",
+    detail:
+      "Va después de cerrar los splits, porque los porcentajes que declares son los que se usarán para pagarte, y antes de que salga: lo que suene sin registrar no lo cobra nadie. Ojo con dos reglas: por defecto se reparte 50% música y 50% letra, y no puede asignarse menos del 10% al conjunto de una de las dos partes.",
+    phase: "FUNDAMENTOS",
+    day: -42,
+    channel: "Legal",
+  },
+  {
     key: "subir",
     title: "Subir a la distribuidora",
     detail:

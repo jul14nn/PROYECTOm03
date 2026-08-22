@@ -541,9 +541,11 @@ export default async function SongDetailPage({
                 />
                 {song.launchTasks.length < LAUNCH_STEPS.length && (
                   <p className="text-xs text-neutral-500 mt-5">
-                    Se han omitido {LAUNCH_STEPS.length - song.launchTasks.length} pasos
-                    cuya fecha ya había pasado cuando creaste el plan. El plan arranca
-                    donde estás de verdad, no donde deberías haber empezado.
+                    Faltan {LAUNCH_STEPS.length - song.launchTasks.length} pasos del
+                    playbook. Puede ser porque su fecha ya había pasado cuando creaste
+                    el plan —el plan arranca donde estás de verdad, no donde deberías
+                    haber empezado— o porque son pasos añadidos después. Con «Añadir
+                    pasos que falten» se incorporan los que aún tengan sentido.
                   </p>
                 )}
                 <div className="flex flex-wrap gap-2 mt-6 pt-5 border-t border-white/[0.09]">
