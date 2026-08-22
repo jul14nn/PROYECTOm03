@@ -40,6 +40,7 @@ import { LAUNCH_STEPS, PHASES } from "@/lib/launchPlan";
 import { addSongReference, removeSongReference } from "@/lib/actions/references";
 import { isBlobConfigured } from "@/lib/blob";
 import Waveform from "@/components/Waveform";
+import SongResults from "@/components/SongResults";
 import {
   Trash2,
   Link2,
@@ -86,6 +87,8 @@ export default async function SongDetailPage({
         references: { orderBy: { createdAt: "desc" } },
         launchTasks: { orderBy: { dayOffset: "asc" } },
         assets: { orderBy: { createdAt: "desc" } },
+        snapshots: { orderBy: { takenAt: "desc" } },
+        posts: { select: { views: true } },
       },
     }),
     prisma.contact.findMany({ where: { userId }, orderBy: { name: "asc" } }),
@@ -493,6 +496,11 @@ export default async function SongDetailPage({
       icon: <Megaphone size={15} />,
       content: (
         <>
+          <SongResults
+            songId={song.id}
+            snapshots={song.snapshots}
+            posts={song.posts}
+          />
           {tiktokPlan && (
             <div className="card p-6" style={{ borderColor: "color-mix(in srgb, var(--accent-magenta) 30%, transparent)" }}>
               <h2 className="font-semibold flex items-center gap-2 mb-1">

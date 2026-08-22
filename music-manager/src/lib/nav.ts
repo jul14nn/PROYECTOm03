@@ -6,6 +6,7 @@ import {
   Truck,
   Megaphone,
   Coins,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -19,6 +20,7 @@ export const NAV: NavItem[] = [
   { href: "/distribution", label: "Distribución", icon: Truck },
   { href: "/marketing", label: "Marketing", icon: Megaphone },
   { href: "/royalties", label: "Royalties", icon: Coins },
+  { href: "/resultados", label: "Resultados", icon: TrendingUp },
 ];
 
 /**
@@ -30,10 +32,11 @@ export const MOBILE_PRIMARY: NavItem[] = [
   NAV[0], // Resumen
   NAV[1], // Canciones
   NAV[2], // Agenda
-  NAV[5], // Marketing
+  NAV[7], // Resultados
 ];
 
 export const MOBILE_SECONDARY: NavItem[] = [
+  NAV[5], // Marketing
   NAV[3], // Contactos
   NAV[4], // Distribución
   NAV[6], // Royalties

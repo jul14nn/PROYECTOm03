@@ -62,6 +62,7 @@ model User {
 
   songs    Song[]
   contacts Contact[]
+  posts    ContentPost[]
   events   CalendarEvent[]
   brandKit BrandKit?
   assets   Asset[]
@@ -171,6 +172,8 @@ model Song {
   references       SongReference[]
   launchTasks      LaunchTask[]
   assets           Asset[]
+  posts            ContentPost[]
+  snapshots        SongSnapshot[]
 }
 
 model SongReference {
@@ -369,6 +372,16 @@ model BrandKit {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+/// Dónde se publicó. Se guarda aparte del formato porque la misma idea
+/// rinde distinto según la plataforma.
+enum Platform {
+  TIKTOK
+  INSTAGRAM
+  YOUTUBE
+  SPOTIFY
+  OTRA
+}
+
 enum AssetKind {
   AUDIO
   VIDEO
@@ -396,4 +409,54 @@ model Asset {
 
   @@index([userId, kind])
   @@index([songId])
+}
+
+/// Una publicación ya hecha, con lo que consiguió.
+///
+/// La app planificaba mucho y no medía nada: sin esto, cada lanzamiento
+/// empieza de cero y el playbook nunca aprende de lo que a ti te funciona.
+/// El campo que de verdad importa es `format`: es lo que permite comparar
+/// ideas entre sí ("los clips con letra rinden el triple que los de estudio").
+model ContentPost {
+  id        String   @id @default(cuid())
+  userId    String
+  songId    String?
+  platform  Platform @default(TIKTOK)
+  /// Qué tipo de pieza era: "clip con letra", "detrás de cámaras"...
+  format    String
+  postedAt  DateTime @default(now())
+  url       String?
+  views     Int      @default(0)
+  likes     Int      @default(0)
+  comments  Int      @default(0)
+  shares    Int      @default(0)
+  saves     Int      @default(0)
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  song Song? @relation(fields: [songId], references: [id], onDelete: SetNull)
+
+  @@index([userId, postedAt])
+}
+
+/// Foto del rendimiento de una canción en una fecha.
+///
+/// No se guarda un total acumulado sino instantáneas, porque lo que enseña
+/// no es el número sino la pendiente: comparar la primera semana de un
+/// lanzamiento con la del anterior.
+model SongSnapshot {
+  id        String   @id @default(cuid())
+  songId    String
+  takenAt   DateTime @default(now())
+  streams   Int      @default(0)
+  listeners Int      @default(0)
+  saves     Int      @default(0)
+  playlists Int      @default(0)
+  notes     String?
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@index([songId, takenAt])
 }
