@@ -1,0 +1,53 @@
+name: Build Diablo Verb
+
+on:
+  push:
+    paths:
+      - "reverb-vst/**"
+      - ".github/workflows/build-diablo-verb.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+          - name: macos
+            os: macos-latest
+          - name: linux
+            os: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libx11-dev libxext-dev \
+            libxrandr-dev libxinerama-dev libxcursor-dev libfreetype-dev \
+            libfontconfig1-dev
+
+      - name: Configure
+        run: cmake -B build -S reverb-vst -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build VST3
+        run: cmake --build build --config Release --target DiabloVerb_VST3 --parallel 4
+
+      - name: Locate artefacts
+        shell: bash
+        run: find build/DiabloVerb_artefacts -name "*.vst3" -maxdepth 4
+
+      - name: Upload VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: diablo-verb-${{ matrix.name }}
+          path: |
+            build/DiabloVerb_artefacts/Release/VST3
+            build/DiabloVerb_artefacts/VST3
+          if-no-files-found: error
