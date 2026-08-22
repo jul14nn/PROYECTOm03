@@ -1,5 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Anton, Silkscreen, Instrument_Serif } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Anton,
+  Silkscreen,
+  Instrument_Serif,
+  Montserrat,
+  Poppins,
+  Bebas_Neue,
+  Oswald,
+  Roboto,
+} from "next/font/google";
 import "./globals.css";
 import SplashScreen from "@/components/SplashScreen";
 
@@ -29,6 +40,55 @@ const silkscreen = Silkscreen({
 const instrumentSerif = Instrument_Serif({
   variable: "--font-editorial",
   weight: "400",
+  subsets: ["latin"],
+});
+
+/**
+ * Tipografías para los subtítulos de los vídeos.
+ *
+ * Son las que se ven una y otra vez en los vídeos de fondo con subtítulo
+ * centrado. Se cargan aquí, con next/font, y no como fuentes del sistema:
+ * "Impact" o "Helvetica" no existen en la mitad de los ordenadores, y el
+ * lienzo, cuando no encuentra una fuente, pinta con la de reserva sin
+ * avisar de nada. Cargadas así, están siempre.
+ *
+ * Los grosores son los gruesos a propósito: un subtítulo sobre vídeo en
+ * movimiento necesita peso para leerse.
+ *
+ * Se quedan precargadas aunque solo hagan falta al montar vídeo. Con
+ * `preload: false` el navegador no llega a descargarlas y `document.fonts.load`
+ * tampoco las trae: se dibuja con la métrica de reserva y los subtítulos salen
+ * con otra tipografía sin avisar. Comprobado midiendo el texto en el lienzo —
+ * las cinco daban exactamente el mismo ancho, que es la señal de que ninguna
+ * se había cargado.
+ */
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  weight: ["600", "700", "800"],
+  subsets: ["latin"],
+});
+
+const poppins = Poppins({
+  variable: "--font-poppins",
+  weight: ["600", "700"],
+  subsets: ["latin"],
+});
+
+const bebas = Bebas_Neue({
+  variable: "--font-bebas",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const oswald = Oswald({
+  variable: "--font-oswald",
+  weight: ["500", "700"],
+  subsets: ["latin"],
+});
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  weight: ["500", "700", "900"],
   subsets: ["latin"],
 });
 
@@ -64,7 +124,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} ${silkscreen.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} ${silkscreen.variable} ${instrumentSerif.variable} ${montserrat.variable} ${poppins.variable} ${bebas.variable} ${oswald.variable} ${roboto.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <SplashScreen />

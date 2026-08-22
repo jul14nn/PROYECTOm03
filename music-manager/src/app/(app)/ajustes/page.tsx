@@ -1,3 +1,4 @@
+import { BUILTIN_FONTS } from "@/lib/loadFont";
 import { prisma } from "@/lib/prisma";
 import SubmitButton from "@/components/SubmitButton";
 import { requireUserId } from "@/lib/auth";
@@ -10,12 +11,9 @@ import AssetUploader from "@/components/AssetUploader";
 import AssetList from "@/components/AssetList";
 import { isBlobConfigured } from "@/lib/blob";
 
-const FONTS = [
-  { value: "Anton", label: "Anton — cartel condensada" },
-  { value: "Geist", label: "Geist — limpia y neutra" },
-  { value: "Georgia", label: "Georgia — serif clásica" },
-  { value: "Impact", label: "Impact — muy contundente" },
-];
+/* La lista sale de un único sitio: mantener una copia a mano aquí ya provocó
+   que se ofrecieran fuentes que el lienzo no sabía dibujar. */
+const FONTS = BUILTIN_FONTS.map((f) => ({ value: f.id, label: f.name }));
 
 export default async function AjustesPage() {
   const userId = await requireUserId();

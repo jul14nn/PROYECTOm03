@@ -356,7 +356,7 @@ model BrandKit {
   userId          String   @unique
   primaryColor    String   @default("#9333ea")
   secondaryColor  String   @default("#e0299e")
-  fontFamily      String   @default("Anton") // familia para títulos generados
+  fontFamily      String   @default("montserrat") // id de BUILTIN_FONTS
   subtitleStyle   String   @default("barra") // limpio | barra | linea | bloque
   subtitlePosPct  Int      @default(78) // posición vertical, zona segura de TikTok
   subtitleScale   Float    @default(1)

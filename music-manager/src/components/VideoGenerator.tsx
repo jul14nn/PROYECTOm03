@@ -5,6 +5,7 @@ import { Wand2, Download, Save, Loader2, Film, Monitor } from "lucide-react";
 import clsx from "clsx";
 import { VIDEO_STYLES, hexToRgb, type VideoStyleId } from "@/lib/videoStyles";
 import { addSongReference } from "@/lib/actions/references";
+import { BUILTIN_FONTS, resolveFontFamily } from "@/lib/loadFont";
 import { checkVideoSupport, type VideoSupport } from "@/lib/videoCodec";
 import {
   drawSubtitle,
@@ -257,10 +258,28 @@ export default function VideoGenerator({
     setSupport(checkVideoSupport());
   }, []);
 
+  // La familia hay que resolverla: el nombre guardado es un identificador
+  // ("montserrat"), no algo que el lienzo entienda, y además la fuente puede
+  // no estar descargada todavía.
+  const [brandFont, setBrandFont] = useState("sans-serif");
+  useEffect(() => {
+    let vigente = true;
+    const opcion =
+      BUILTIN_FONTS.find((f) => f.id === brand.fontFamily) ?? BUILTIN_FONTS[0];
+    resolveFontFamily(opcion)
+      .then((f) => {
+        if (vigente) setBrandFont(f);
+      })
+      .catch(() => {});
+    return () => {
+      vigente = false;
+    };
+  }, [brand.fontFamily]);
+
   const subOpts: SubtitleOptions = {
     style: subStyle,
     accent: songColor,
-    fontFamily: `${brand.fontFamily}, Arial, sans-serif`,
+    fontFamily: brandFont,
     positionPct: brand.subtitlePosPct,
     scale: brand.subtitleScale,
   };

@@ -78,7 +78,7 @@ export default function ClipStudio({
   const [lines, setLines] = useState<SubtitleLine[]>([]);
   const [subStyle, setSubStyle] = useState<SubtitleStyleId>(defaultSubtitleStyle);
   const [fontId, setFontId] = useState<string>(BUILTIN_FONTS[0].id);
-  const [previewFont, setPreviewFont] = useState<string>(BUILTIN_FONTS[0].family);
+  const [previewFont, setPreviewFont] = useState<string>("sans-serif");
 
   const [syncing, setSyncing] = useState(false);
   const [syncIndex, setSyncIndex] = useState(0);
@@ -112,7 +112,7 @@ export default function ClipStudio({
   const fontOptions: FontOption[] = useMemo(
     () => [
       ...BUILTIN_FONTS,
-      ...fonts.map((f) => ({ id: f.id, name: f.name, family: "", url: f.url })),
+      ...fonts.map((f) => ({ id: f.id, name: f.name, url: f.url })),
     ],
     [fonts]
   );
