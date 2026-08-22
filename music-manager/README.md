@@ -155,14 +155,30 @@ corre como una tarea programada (`vercel.json` → `crons`), una vez al día:
 
 ## Desplegar en Vercel
 
+> **Cambiar una variable no afecta al despliegue ya publicado.** Después de añadir o
+> corregir cualquiera, hay que volver a desplegar (Deployments → ⋯ → Redeploy). Es el
+> paso que más se olvida al depurar el correo o la base de datos.
+
+
 1. **Importa el repositorio.** En [vercel.com/new](https://vercel.com/new), importa
-   `jul14nn/PROYECTOm03` y, en "Root Directory", selecciona **`music-manager`**.
+   `jul14nn/music-manager-app`. La app está en la raíz, así que **no** hay que tocar
+   "Root Directory".
 2. **Conecta una base de datos Postgres.** Dentro del proyecto ya creado en Vercel, ve a
    la pestaña **Storage → Create Database** y elige un Postgres (Neon o similar, tienen
-   capa gratuita). Al conectarlo al proyecto, Vercel añade automáticamente la variable
-   `DATABASE_URL` — no hace falta copiarla a mano.
+   capa gratuita). Conéctalo al proyecto.
+
+   Después **comprueba el nombre de la variable** en Settings → Environment Variables: la
+   integración a veces inyecta `POSTGRES_URL` en lugar de `DATABASE_URL`, y la app solo
+   lee esta última. Si no existe `DATABASE_URL`, créala a mano con la cadena de conexión
+   (usa la variante *pooled*, la del host con `-pooler`: en serverless cada función abre
+   su propia conexión y sin el pooler se agota el cupo).
+
+   Si falta, el despliegue falla con `The datasource.url property is required in your
+   Prisma config file`. El mensaje engaña: la propiedad sí está en `prisma.config.ts`,
+   lo que falta es la variable de la que lee.
 3. **Añade `AUTH_SECRET`** en **Settings → Environment Variables** (genera uno con
-   `openssl rand -base64 33`). Sin esto, el inicio de sesión no funciona.
+   `openssl rand -base64 33`). Sin esto, el inicio de sesión no funciona: los registros
+   muestran `MissingSecret: Please define a secret` y no se envía ningún correo.
 4. **(Opcional) Añade las variables SMTP** en el mismo sitio si quieres que funcionen las
    invitaciones por email, el envío de enlaces de acceso y los avisos de lanzamiento:
    `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`. Sin SMTP configurado,
