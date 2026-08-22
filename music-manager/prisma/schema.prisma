@@ -151,6 +151,7 @@ model Song {
   isrc          String? // identificador de la grabación, útil en el reparto de máster
   agreementPlace String? // lugar de firma del acuerdo de reparto
   agreementDate  DateTime? // fecha de firma; fija, no "hoy", para que el documento no cambie
+  agreementSentAt DateTime? // cuándo se envió el acuerdo a los firmantes
   releaseDate   DateTime? // fecha aproximada de lanzamiento, no un compromiso exacto
   lastReminderThreshold Int? // último umbral de días ya avisado por email (30/14/7/3/1)
   createdAt     DateTime  @default(now())

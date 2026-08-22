@@ -35,6 +35,9 @@ export default async function RoyaltiesPage() {
           <p className="text-neutral-400 text-sm mt-1">
             Splits por canción y pagos registrados. Total pagado: {formatMoney(totalPaid)}.
           </p>
+        <Link href="/guias/sgae" className="text-sm text-fuchsia-400 hover:underline mt-2 inline-block">
+          Cómo darte de alta en la SGAE y registrar tus canciones
+        </Link>
         </div>
         {songs.length > 0 && (
           <a href="/api/export/royalties" className="btn btn-secondary shrink-0" download>

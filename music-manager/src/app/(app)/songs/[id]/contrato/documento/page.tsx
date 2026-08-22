@@ -5,6 +5,7 @@ import { requireUserId } from "@/lib/auth";
 import { SPLIT_KINDS, total, porcentajeTexto, type SplitKind } from "@/lib/contracts";
 import { ArrowLeft } from "lucide-react";
 import PrintClient from "@/components/PrintClient";
+import SendAgreement from "@/components/SendAgreement";
 
 const FECHA = new Intl.DateTimeFormat("es-ES", { dateStyle: "long" });
 
@@ -43,7 +44,14 @@ export default async function DocumentoPage({
         >
           <ArrowLeft size={14} /> Volver al cuestionario
         </Link>
-        <PrintClient />
+        <div className="flex flex-wrap items-start gap-3">
+          <SendAgreement
+            songId={song.id}
+            destinatarios={firmantes.filter((c) => c.email).map((c) => c.email!)}
+            enviadoEl={song.agreementSentAt ? FECHA.format(song.agreementSentAt) : null}
+          />
+          <PrintClient />
+        </div>
       </div>
 
       <p className="no-print text-xs text-neutral-600 mb-4">

@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
 import { assertSongOwner } from "@/lib/actions/helpers";
 import { revalidatePath } from "next/cache";
+import { sendAppEmail, isEmailConfigured } from "@/lib/email/mailer";
+import { agreementEmailHtml } from "@/lib/agreementEmail";
+import { bloqueos, type ParticipanteReparto, type SplitKind } from "@/lib/contracts";
 
 function str(fd: FormData, key: string) {
   const v = fd.get(key);
@@ -139,4 +142,133 @@ export async function copyObraToMaster(songId: string) {
   });
   revalidatePath(`/songs/${songId}/contrato`);
   revalidatePath(`/songs/${songId}`);
+}
+
+const FECHA_LARGA = new Intl.DateTimeFormat("es-ES", { dateStyle: "long" });
+
+/**
+ * Envía el acuerdo a cada firmante que tenga email.
+ *
+ * Devuelve un resultado en vez de lanzar: enviar correo falla por motivos
+ * ajenos a quien pulsa el botón (credenciales, límites del proveedor), y una
+ * pantalla de error genérica no le diría nada.
+ */
+export async function sendAgreement(
+  songId: string
+): Promise<{ ok: boolean; mensaje: string }> {
+  const userId = await requireUserId();
+
+  if (!isEmailConfigured()) {
+    return {
+      ok: false,
+      mensaje:
+        "El envío de correo no está configurado en este despliegue (faltan las variables SMTP).",
+    };
+  }
+
+  const song = await prisma.song.findFirst({
+    where: { id: songId, userId },
+    include: { royalties: { include: { contact: true }, orderBy: { percentage: "desc" } } },
+  });
+  if (!song) return { ok: false, mensaje: "Canción no encontrada." };
+
+  const participantes: ParticipanteReparto[] = song.royalties.map((r) => ({
+    id: r.id,
+    name: r.name,
+    role: r.role,
+    kind: r.kind as SplitKind,
+    percentage: r.percentage,
+    contacto: r.contact
+      ? {
+          id: r.contact.id,
+          name: r.contact.name,
+          legalName: r.contact.legalName,
+          taxId: r.contact.taxId,
+          address: r.contact.address,
+          email: r.contact.email,
+          society: r.contact.society,
+          ipi: r.contact.ipi,
+          publisher: r.contact.publisher,
+        }
+      : null,
+  }));
+
+  // No se manda un acuerdo a medias: sería peor que no mandarlo.
+  const graves = bloqueos(participantes, song.agreementPlace).filter((b) => b.grave);
+  if (graves.length > 0) {
+    return { ok: false, mensaje: "El acuerdo todavía no está completo." };
+  }
+
+  const usuario = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, email: true },
+  });
+
+  const destinatarios = Array.from(
+    new Map(
+      song.royalties
+        .filter((r) => r.contact?.email)
+        .map((r) => [r.contact!.email!, r.contact!.name])
+    ).entries()
+  );
+  if (destinatarios.length === 0) {
+    return { ok: false, mensaje: "Ningún firmante tiene email." };
+  }
+
+  const html = agreementEmailHtml({
+    songTitle: song.title,
+    genre: song.genre,
+    isrc: song.isrc,
+    lugar: song.agreementPlace ?? "—",
+    fecha: song.agreementDate ? FECHA_LARGA.format(song.agreementDate) : "—",
+    remitente: usuario?.name ?? usuario?.email ?? "El artista",
+    lineas: song.royalties.map((r) => ({
+      id: r.id,
+      name: r.name,
+      role: r.role,
+      kind: r.kind as SplitKind,
+      percentage: r.percentage,
+      contact: r.contact
+        ? { legalName: r.contact.legalName, taxId: r.contact.taxId, society: r.contact.society }
+        : null,
+    })),
+  });
+
+  const fallos: string[] = [];
+  for (const [email, nombre] of destinatarios) {
+    try {
+      await sendAppEmail({
+        to: email,
+        subject: `Reparto de «${song.title}»`,
+        html,
+      });
+    } catch (err) {
+      console.error(`[music-manager] No se pudo enviar el acuerdo a ${email}:`, err);
+      fallos.push(nombre);
+    }
+  }
+
+  const enviados = destinatarios.length - fallos.length;
+  if (enviados > 0) {
+    await prisma.song.updateMany({
+      where: { id: songId, userId },
+      data: { agreementSentAt: new Date() },
+    });
+  }
+  revalidatePath(`/songs/${songId}/contrato`);
+  revalidatePath(`/songs/${songId}/contrato/documento`);
+
+  if (fallos.length > 0) {
+    return {
+      ok: enviados > 0,
+      mensaje:
+        enviados > 0
+          ? `Enviado a ${enviados}, pero falló con ${fallos.join(", ")}.`
+          : "No se pudo enviar a nadie. Revisa los registros del despliegue.",
+    };
+  }
+  return {
+    ok: true,
+    mensaje: `Enviado a ${enviados} ${enviados === 1 ? "persona" : "personas"}.`,
+  };
 }

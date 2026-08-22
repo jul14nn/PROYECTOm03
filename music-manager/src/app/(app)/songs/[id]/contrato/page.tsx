@@ -210,6 +210,13 @@ export default async function ContratoPage({
           Se guardan en el contacto, así que solo hay que escribirlos una vez:
           la próxima canción con esa misma persona ya vendrá completa.
         </p>
+        <p className="text-sm text-neutral-500 mt-1">
+          ¿No sabes qué poner en «entidad de gestión»?{" "}
+          <Link href="/guias/sgae" className="text-fuchsia-400 hover:underline">
+            Guía para darse de alta en la SGAE
+          </Link>
+          .
+        </p>
 
         <div className="mt-5 space-y-5">
           {Array.from(new Map(participantes.map((p) => [p.contacto?.id ?? p.id, p])).values()).map(
