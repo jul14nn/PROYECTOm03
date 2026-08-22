@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import {
   Film,
@@ -8,9 +8,10 @@ import {
   Save,
   Loader2,
   Monitor,
-  Music,
   Timer,
-  Scissors,
+  Play,
+  Pause,
+  Upload,
 } from "lucide-react";
 import { checkVideoSupport, type VideoSupport } from "@/lib/videoCodec";
 import {
@@ -22,23 +23,22 @@ import {
 } from "@/lib/subtitleStyles";
 import { BUILTIN_FONTS, resolveFontFamily, type FontOption } from "@/lib/loadFont";
 import { addSongReference } from "@/lib/actions/references";
+import { drawCover, seek, extractThumbnails } from "@/lib/videoFrames";
+import Timeline, { tiempo } from "@/components/clip/Timeline";
 
 const W = 720;
 const H = 1280;
 
 export type StudioAsset = { id: string; name: string; url: string };
 
-/** Recorte "cover" del vídeo dentro del lienzo vertical. */
-function drawCover(ctx: CanvasRenderingContext2D, v: HTMLVideoElement) {
-  const vw = v.videoWidth;
-  const vh = v.videoHeight;
-  if (!vw || !vh) return;
-  const scale = Math.max(W / vw, H / vh);
-  const sw = W / scale;
-  const sh = H / scale;
-  ctx.drawImage(v, (vw - sw) / 2, (vh - sh) / 2, sw, sh, 0, 0, W, H);
-}
-
+/**
+ * Estudio de clips.
+ *
+ * Maquetado como un editor de vídeo y no como un formulario: previsualización
+ * a la izquierda, ajustes a la derecha y línea de tiempo abajo. Lo que se ve
+ * en la previsualización es exactamente lo que se va a grabar, porque ambos
+ * dibujan en el mismo lienzo con el mismo código.
+ */
 export default function ClipStudio({
   songId,
   songTitle,
@@ -70,10 +70,15 @@ export default function ClipStudio({
   const [start, setStart] = useState(0);
   const [length, setLength] = useState(10);
 
+  const [thumbs, setThumbs] = useState<string[]>([]);
+  const [playhead, setPlayhead] = useState(0);
+  const [playing, setPlaying] = useState(false);
+
   const [rawLines, setRawLines] = useState(initialLyrics ?? "");
   const [lines, setLines] = useState<SubtitleLine[]>([]);
   const [subStyle, setSubStyle] = useState<SubtitleStyleId>(defaultSubtitleStyle);
   const [fontId, setFontId] = useState<string>(BUILTIN_FONTS[0].id);
+  const [previewFont, setPreviewFont] = useState<string>(BUILTIN_FONTS[0].family);
 
   const [syncing, setSyncing] = useState(false);
   const [syncIndex, setSyncIndex] = useState(0);
@@ -92,6 +97,7 @@ export default function ClipStudio({
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const localUrls = useRef<string[]>([]);
+  const rafRef = useRef<number>(0);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -100,7 +106,6 @@ export default function ClipStudio({
 
   useEffect(() => {
     const urls = localUrls.current;
-    // Los object URL de ficheros locales hay que soltarlos al desmontar.
     return () => urls.forEach((u) => URL.revokeObjectURL(u));
   }, []);
 
@@ -112,25 +117,135 @@ export default function ClipStudio({
     [fonts]
   );
 
+  // La tipografía se resuelve aparte y antes de dibujar: el lienzo no espera
+  // a que cargue y pintaría con la de reserva sin avisar.
+  useEffect(() => {
+    let vigente = true;
+    const opcion = fontOptions.find((f) => f.id === fontId) ?? BUILTIN_FONTS[0];
+    resolveFontFamily(opcion)
+      .then((f) => {
+        if (vigente) setPreviewFont(f);
+      })
+      .catch(() => {});
+    return () => {
+      vigente = false;
+    };
+  }, [fontId, fontOptions]);
+
   const textLines = rawLines.split("\n").map((l) => l.trim()).filter(Boolean);
   const clipEnd = Math.min(duration || length, start + length);
+
+  /** Pinta el fotograma actual con sus subtítulos. Lo mismo que graba. */
+  const dibujar = useCallback(() => {
+    const v = videoRef.current;
+    const c = canvasRef.current;
+    if (!v || !c || !v.videoWidth) return;
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    drawCover(ctx, v, W, H);
+    if (lines.length > 0) {
+      drawSubtitle(ctx, W, H, lines, v.currentTime - start, {
+        style: subStyle,
+        accent: songColor,
+        fontFamily: previewFont,
+        positionPct: subtitlePosPct,
+        scale: subtitleScale,
+      });
+    }
+  }, [lines, start, subStyle, songColor, previewFont, subtitlePosPct, subtitleScale]);
+
+  // Repintar cuando cambia algo visible y no se está reproduciendo ni grabando.
+  useEffect(() => {
+    if (playing || rendering) return;
+    dibujar();
+  }, [dibujar, playing, rendering, playhead]);
 
   function pickLocalVideo(file: File) {
     const url = URL.createObjectURL(file);
     localUrls.current.push(url);
-    setVideoUrl(url);
-    setVideoName(file.name);
-    setOutUrl(null);
-    setLines([]);
+    elegirVideo(url, file.name);
   }
 
-  function onVideoLoaded() {
+  function elegirVideo(url: string, name: string) {
+    setVideoUrl(url);
+    setVideoName(name);
+    setOutUrl(null);
+    setLines([]);
+    setThumbs([]);
+    setPlayhead(0);
+  }
+
+  async function onVideoLoaded() {
     const v = videoRef.current;
+    const c = canvasRef.current;
     if (!v) return;
+    if (c) {
+      c.width = W;
+      c.height = H;
+    }
     setDuration(v.duration);
     setStart(0);
     setLength(Math.min(10, Math.floor(v.duration) || 10));
+    setPlayhead(0);
+    await seek(v, 0);
+    dibujar();
+    // Las miniaturas van después: mueven el cursor del vídeo y tardan.
+    setThumbs(await extractThumbnails(v, 12));
+    await seek(v, 0);
+    dibujar();
   }
+
+  // -------------------------------------------------------------- transporte
+  const irA = useCallback(
+    async (t: number) => {
+      const v = videoRef.current;
+      if (!v) return;
+      const destino = Math.max(0, Math.min(duration, t));
+      setPlayhead(destino);
+      await seek(v, destino);
+      dibujar();
+    },
+    [duration, dibujar]
+  );
+
+  function pausar() {
+    cancelAnimationFrame(rafRef.current);
+    videoRef.current?.pause();
+    audioRef.current?.pause();
+    setPlaying(false);
+  }
+
+  async function reproducir() {
+    const v = videoRef.current;
+    if (!v) return;
+    // Reproducir siempre recorre el trozo elegido, no el vídeo entero.
+    const desde = playhead < start || playhead >= clipEnd ? start : playhead;
+    await seek(v, desde);
+    const a = audioRef.current;
+    if (a && audioUrl) {
+      a.currentTime = desde;
+      await a.play().catch(() => {});
+    }
+    v.muted = true;
+    await v.play().catch(() => {});
+    setPlaying(true);
+
+    const paso = () => {
+      const actual = videoRef.current;
+      if (!actual) return;
+      if (actual.currentTime >= clipEnd || actual.ended) {
+        pausar();
+        void irA(start);
+        return;
+      }
+      setPlayhead(actual.currentTime);
+      dibujar();
+      rafRef.current = requestAnimationFrame(paso);
+    };
+    rafRef.current = requestAnimationFrame(paso);
+  }
+
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
   // ---------------------------------------------------------------- sincronía
   function distribute() {
@@ -147,7 +262,6 @@ export default function ClipStudio({
       a.currentTime = start;
       await a.play().catch(() => {});
     }
-    // Referencia para el caso sin audio: se cuenta desde que arranca.
     syncStart.current = performance.now();
   }
 
@@ -182,9 +296,10 @@ export default function ClipStudio({
     audioRef.current?.pause();
   }
 
-  // ----------------------------------------------------------------- render
+  // ----------------------------------------------------------------- montaje
   async function render() {
     if (!support?.ok || !videoUrl) return;
+    pausar();
     setError(null);
     setOutUrl(null);
     setOutBlob(null);
@@ -202,15 +317,12 @@ export default function ClipStudio({
       canvas.height = H;
       const ctx = canvas.getContext("2d")!;
 
-      // La fuente se resuelve ANTES de dibujar: si no está cargada, el canvas
-      // no espera y pinta con la de reserva sin avisar de nada.
       const option = fontOptions.find((f) => f.id === fontId) ?? BUILTIN_FONTS[0];
       const fontFamily = await resolveFontFamily(option);
       await document.fonts.ready;
 
       const stream = canvas.captureStream(30);
 
-      // Audio: se enruta por WebAudio para poder añadir la pista al vídeo.
       if (a && audioUrl) {
         ctxAudio = new AudioContext();
         const src = ctxAudio.createMediaElementSource(a);
@@ -228,15 +340,8 @@ export default function ClipStudio({
       };
       const done = new Promise<void>((r) => (recorder.onstop = () => r()));
 
-      v.currentTime = start;
+      await seek(v, start);
       v.muted = true;
-      await new Promise<void>((r) => {
-        const onSeek = () => {
-          v.removeEventListener("seeked", onSeek);
-          r();
-        };
-        v.addEventListener("seeked", onSeek);
-      });
 
       if (a && audioUrl) {
         a.currentTime = start;
@@ -252,7 +357,7 @@ export default function ClipStudio({
             resolve();
             return;
           }
-          drawCover(ctx, v);
+          drawCover(ctx, v, W, H);
           if (lines.length > 0) {
             drawSubtitle(ctx, W, H, lines, t, {
               style: subStyle,
@@ -278,11 +383,14 @@ export default function ClipStudio({
       setOutUrl(URL.createObjectURL(blob));
     } catch (err) {
       setError(
-        err instanceof Error ? `No se pudo montar el clip: ${err.message}` : "No se pudo montar el clip."
+        err instanceof Error
+          ? `No se pudo montar el clip: ${err.message}`
+          : "No se pudo montar el clip."
       );
     } finally {
       await ctxAudio?.close().catch(() => {});
       setRendering(false);
+      void irA(start);
     }
   }
 
@@ -322,230 +430,230 @@ export default function ClipStudio({
     );
   }
 
-  return (
-    <div className="space-y-5">
-      <p className="text-sm text-neutral-500">
-        Monta un clip vertical con tu propio vídeo y la letra encima. Todo se
-        procesa en tu ordenador.
-      </p>
+  const audioName = audios.find((a) => a.url === audioUrl)?.name ?? null;
 
-      {/* ------------------------------------------------------------ Vídeo */}
-      <div>
-        <div className="label">1 · El vídeo</div>
-        <div className="flex flex-wrap gap-2">
-          <label className="btn btn-secondary cursor-pointer">
-            <Film size={14} /> Elegir del ordenador
-            <input
-              type="file"
-              accept="video/*"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) pickLocalVideo(f);
-              }}
-            />
-          </label>
-          {videos.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              onClick={() => {
-                setVideoUrl(v.url);
-                setVideoName(v.name);
-                setOutUrl(null);
-              }}
-              className={clsx(
-                "btn",
-                videoUrl === v.url ? "btn-primary" : "btn-secondary"
-              )}
-            >
-              {v.name}
-            </button>
-          ))}
-        </div>
+  return (
+    <div className="space-y-4" style={{ ["--song" as string]: songColor }}>
+      {/* --------------------------------------------------- Barra de origen */}
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="btn btn-secondary cursor-pointer">
+          <Upload size={14} /> Abrir vídeo
+          <input
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) pickLocalVideo(f);
+            }}
+          />
+        </label>
+        {videos.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            onClick={() => elegirVideo(v.url, v.name)}
+            className={clsx("btn", videoUrl === v.url ? "btn-primary" : "btn-secondary")}
+          >
+            {v.name}
+          </button>
+        ))}
         {videoName && (
-          <p className="text-xs text-neutral-500 mt-2">
+          <span className="text-xs text-neutral-500 ml-auto">
             {videoName}
-            {duration > 0 && ` · ${duration.toFixed(1)}s`}
-          </p>
+            {duration > 0 && ` · ${tiempo(duration)}`}
+          </span>
         )}
       </div>
 
+      {!videoUrl && (
+        <div className="tile p-8 text-center">
+          <Film size={22} className="mx-auto text-neutral-600 mb-3" />
+          <p className="text-sm text-neutral-400">
+            Abre un vídeo para empezar a montar.
+          </p>
+          <p className="text-xs text-neutral-600 mt-1">
+            Todo se procesa en tu ordenador: el vídeo no sale de aquí hasta que
+            tú lo guardes.
+          </p>
+        </div>
+      )}
+
       {videoUrl && (
         <>
-          {/* ---------------------------------------------------- Recorte */}
-          <div>
-            <div className="label label-icon">
-              <Scissors size={12} /> 2 · El trozo
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <label className="text-xs text-neutral-400">
-                Empieza en {start.toFixed(1)}s
-                <input
-                  type="range"
-                  min={0}
-                  max={Math.max(0, duration - 1)}
-                  step={0.1}
-                  value={start}
-                  onChange={(e) => setStart(Number(e.target.value))}
-                  className="w-full mt-1"
-                />
-              </label>
-              <label className="text-xs text-neutral-400">
-                Dura {length}s (hasta {clipEnd.toFixed(1)}s)
-                <input
-                  type="range"
-                  min={3}
-                  max={Math.min(30, Math.max(3, Math.floor(duration - start) || 30))}
-                  step={1}
-                  value={length}
-                  onChange={(e) => setLength(Number(e.target.value))}
-                  className="w-full mt-1"
-                />
-              </label>
-            </div>
-          </div>
-
-          {/* ----------------------------------------------------- Audio */}
-          {audios.length > 0 && (
+          <div className="grid lg:grid-cols-[minmax(0,17rem)_1fr] gap-5">
+            {/* ------------------------------------------ Previsualización */}
             <div>
-              <div className="label label-icon">
-                <Music size={12} /> 3 · La canción
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setAudioUrl(null)}
-                  className={clsx("btn", audioUrl === null ? "btn-primary" : "btn-secondary")}
-                >
-                  Sin audio
-                </button>
-                {audios.map((a) => (
-                  <button
-                    key={a.id}
-                    type="button"
-                    onClick={() => setAudioUrl(a.url)}
-                    className={clsx("btn", audioUrl === a.url ? "btn-primary" : "btn-secondary")}
-                  >
-                    {a.name}
-                  </button>
-                ))}
-              </div>
-              {audioUrl && (
-                <p className="text-xs text-neutral-500 mt-2">
-                  El clip se exporta con esta pista de audio.
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* ------------------------------------------------ Subtítulos */}
-          <div>
-            <div className="label">
-              {audios.length > 0 ? "4" : "3"} · La letra
-            </div>
-            <textarea
-              value={rawLines}
-              onChange={(e) => setRawLines(e.target.value)}
-              rows={4}
-              placeholder={"Y las noches de neón\nse apagan sin ti"}
-              className="input font-mono text-sm"
-              aria-label="Líneas de subtítulo"
-            />
-
-            <div className="grid sm:grid-cols-2 gap-2 mt-3">
-              {SUBTITLE_STYLES.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setSubStyle(s.id)}
-                  className={clsx(
-                    "text-left rounded-lg p-2.5 border transition-colors",
-                    subStyle === s.id
-                      ? "border-fuchsia-500/60 bg-fuchsia-500/10"
-                      : "border-white/[0.07] hover:bg-white/[0.04]"
-                  )}
-                >
-                  <div className="text-sm">{s.name}</div>
-                  <div className="text-xs text-neutral-500 mt-0.5">{s.description}</div>
-                </button>
-              ))}
-            </div>
-
-            <label className="block mt-3">
-              <span className="label">Tipografía del subtítulo</span>
-              <select
-                value={fontId}
-                onChange={(e) => setFontId(e.target.value)}
-                className="input"
+              <div
+                className="rounded-xl overflow-hidden bg-black relative"
+                style={{ border: "1px solid var(--edge)" }}
               >
-                {fontOptions.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
-                    {f.url ? " (tuya)" : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {syncing ? (
-              <div className="rounded-lg p-4 mt-3 border border-fuchsia-500/40 bg-fuchsia-500/10">
-                <p className="text-xs text-neutral-400 mb-2">
-                  Línea {syncIndex + 1} de {textLines.length}
-                  {audioUrl ? " — pulsa cuando entre en la canción" : " — pulsa cuando deba aparecer"}
-                </p>
-                <p className="text-lg mb-3">{textLines[syncIndex]}</p>
-                <div className="flex gap-2">
-                  <button type="button" onClick={mark} className="btn btn-primary flex-1">
-                    Marcar ahora
-                  </button>
-                  <button type="button" onClick={stopSync} className="btn btn-secondary">
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2 mt-3">
-                <button
-                  type="button"
-                  onClick={distribute}
-                  disabled={textLines.length === 0}
-                  className="btn btn-secondary"
-                >
-                  Repartir en {length}s
-                </button>
-                <button
-                  type="button"
-                  onClick={startSync}
-                  disabled={textLines.length === 0}
-                  className="btn btn-secondary"
-                >
-                  <Timer size={14} />
-                  {audioUrl ? "Sincronizar con la canción" : "Sincronizar al ritmo"}
-                </button>
-                {lines.length > 0 && (
-                  <button type="button" onClick={() => setLines([])} className="btn btn-danger">
-                    Quitar
-                  </button>
+                <canvas
+                  ref={canvasRef}
+                  className="w-full block"
+                  style={{ aspectRatio: "9 / 16" }}
+                />
+                {rendering && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-sm">
+                    Montando… {pct}%
+                  </div>
                 )}
               </div>
-            )}
 
-            {lines.length > 0 && !syncing && (
-              <ul className="text-xs text-neutral-500 space-y-1 font-mono mt-3">
-                {lines.map((l, i) => (
-                  <li key={i} className="flex gap-3">
-                    <span className="text-neutral-600 tabular-nums w-24 shrink-0">
-                      {l.start.toFixed(1)}s → {l.end.toFixed(1)}s
-                    </span>
-                    <span className="truncate text-neutral-400">{l.text}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
+              <div className="flex items-center gap-3 mt-2.5">
+                <button
+                  type="button"
+                  onClick={() => (playing ? pausar() : void reproducir())}
+                  className="btn btn-secondary"
+                  aria-label={playing ? "Pausar" : "Reproducir"}
+                  disabled={rendering}
+                >
+                  {playing ? <Pause size={15} /> : <Play size={15} />}
+                </button>
+                <span className="text-xs text-neutral-500 numeral">
+                  {tiempo(Math.max(0, playhead - start))} / {tiempo(length)}
+                </span>
+              </div>
+            </div>
+
+            {/* --------------------------------------------------- Ajustes */}
+            <div className="space-y-4 min-w-0">
+              <div>
+                <span className="label">Letra</span>
+                <textarea
+                  value={rawLines}
+                  onChange={(e) => setRawLines(e.target.value)}
+                  rows={4}
+                  placeholder={"Y las noches de neón\nse apagan sin ti"}
+                  className="input font-mono text-sm"
+                  aria-label="Líneas de subtítulo"
+                />
+              </div>
+
+              <div>
+                <span className="label">Estilo</span>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {SUBTITLE_STYLES.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSubStyle(s.id)}
+                      className={clsx(
+                        "text-left rounded-lg p-2.5 border transition-colors",
+                        subStyle === s.id
+                          ? "border-fuchsia-500/60 bg-fuchsia-500/10"
+                          : "border-white/[0.07] hover:bg-white/[0.04]"
+                      )}
+                    >
+                      <div className="text-sm">{s.name}</div>
+                      <div className="text-xs text-neutral-500 mt-0.5">{s.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-3">
+                <label>
+                  <span className="label">Tipografía</span>
+                  <select
+                    value={fontId}
+                    onChange={(e) => setFontId(e.target.value)}
+                    className="input"
+                  >
+                    {fontOptions.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.name}
+                        {f.url ? " (tuya)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                {audios.length > 0 && (
+                  <label>
+                    <span className="label">Audio</span>
+                    <select
+                      value={audioUrl ?? ""}
+                      onChange={(e) => setAudioUrl(e.target.value || null)}
+                      className="input"
+                    >
+                      <option value="">Sin audio</option>
+                      {audios.map((a) => (
+                        <option key={a.id} value={a.url}>
+                          {a.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </div>
+
+              {syncing ? (
+                <div className="rounded-lg p-4 border border-fuchsia-500/40 bg-fuchsia-500/10">
+                  <p className="text-xs text-neutral-400 mb-2">
+                    Línea {syncIndex + 1} de {textLines.length}
+                    {audioUrl ? " — pulsa cuando entre en la canción" : " — pulsa cuando deba aparecer"}
+                  </p>
+                  <p className="text-lg mb-3">{textLines[syncIndex]}</p>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={mark} className="btn btn-primary flex-1">
+                      Marcar ahora
+                    </button>
+                    <button type="button" onClick={stopSync} className="btn btn-secondary">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={distribute}
+                    disabled={textLines.length === 0}
+                    className="btn btn-secondary"
+                  >
+                    Repartir en {length.toFixed(0)}s
+                  </button>
+                  <button
+                    type="button"
+                    onClick={startSync}
+                    disabled={textLines.length === 0}
+                    className="btn btn-secondary"
+                  >
+                    <Timer size={14} />
+                    {audioUrl ? "Sincronizar con la canción" : "Sincronizar al ritmo"}
+                  </button>
+                  {lines.length > 0 && (
+                    <button type="button" onClick={() => setLines([])} className="btn btn-danger">
+                      Quitar
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="pt-2">
+          {/* ------------------------------------------------ Línea de tiempo */}
+          <Timeline
+            duration={duration}
+            start={start}
+            length={length}
+            playhead={playhead}
+            thumbs={thumbs}
+            lines={lines}
+            audioName={audioName}
+            color={songColor}
+            onTrim={(s, l) => {
+              setStart(s);
+              setLength(l);
+            }}
+            onSeek={(t) => {
+              if (playing) pausar();
+              void irA(t);
+            }}
+          />
+
+          <div className="flex flex-wrap items-center gap-3 pt-1">
             <button
               type="button"
               onClick={render}
@@ -555,29 +663,37 @@ export default function ClipStudio({
               {rendering ? <Loader2 size={15} className="animate-spin" /> : <Film size={15} />}
               {rendering ? `Montando… ${pct}%` : "Montar el clip"}
             </button>
-            <p className="text-xs text-neutral-600 mt-2">
-              El montaje va en tiempo real: {length}s de clip tardan {length}s.
-            </p>
+            <span className="text-xs text-neutral-600">
+              El montaje va en tiempo real: {length.toFixed(0)}s de clip tardan{" "}
+              {length.toFixed(0)}s.
+            </span>
           </div>
         </>
       )}
 
       {error && <p className="text-sm text-red-400">{error}</p>}
 
-      {/* Elementos de trabajo: no se enseñan, solo alimentan al lienzo. */}
+      {/* Fuentes de imagen y sonido. `crossOrigin` es imprescindible: sin él,
+          un vídeo servido desde el almacenamiento contamina el lienzo y
+          `captureStream()` falla con un error de seguridad al grabar. */}
       <video
         ref={videoRef}
         src={videoUrl ?? undefined}
+        crossOrigin="anonymous"
         onLoadedMetadata={onVideoLoaded}
         playsInline
         muted
         className="hidden"
       />
-      <audio ref={audioRef} src={audioUrl ?? undefined} className="hidden" />
-      <canvas ref={canvasRef} className="hidden" />
+      <audio
+        ref={audioRef}
+        src={audioUrl ?? undefined}
+        crossOrigin="anonymous"
+        className="hidden"
+      />
 
       {outUrl && (
-        <div className="space-y-3">
+        <div className="space-y-3 pt-1">
           <div className="rounded-lg overflow-hidden border border-white/[0.07] bg-black max-w-[220px]">
             <video src={outUrl} controls loop className="w-full" />
           </div>
