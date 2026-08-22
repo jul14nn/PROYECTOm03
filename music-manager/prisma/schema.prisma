@@ -29,6 +29,16 @@ enum TaskStatus {
   HECHO
 }
 
+/// Un reparto de royalties son en realidad dos repartos independientes, y
+/// mezclarlos es el error que invalida estos acuerdos en la práctica:
+/// - OBRA: la composición (autores y editoriales). La gestiona la SGAE.
+/// - MASTER: la grabación (intérpretes y productor). AIE/AGEDI o el sello.
+/// Una misma persona puede tener porcentajes distintos en cada uno.
+enum SplitKind {
+  OBRA
+  MASTER
+}
+
 enum InviteStatus {
   PENDIENTE
   ENVIADA
@@ -106,6 +116,15 @@ model Contact {
   phone     String?
   role      String? // productor, featuring, mánager, distribuidora, etc.
   notes     String?
+
+  // Datos que pide un acuerdo de reparto. Viven en el contacto, no en cada
+  // royalty, para escribirlos una vez y reutilizarlos en todas las canciones.
+  legalName String? // nombre completo tal y como aparece en el DNI
+  taxId     String? // DNI / NIE / NIF
+  address   String?
+  society   String? // SGAE, AIE, AGEDI, otra entidad de gestión
+  ipi       String? // IPI/CAE: identificador de autor en su sociedad
+  publisher String? // editorial, si tiene contrato de edición
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -129,6 +148,9 @@ model Song {
   key           String?
   notes         String?
   lyrics        String? // la letra vive en la canción: el estudio y los vídeos la precargan
+  isrc          String? // identificador de la grabación, útil en el reparto de máster
+  agreementPlace String? // lugar de firma del acuerdo de reparto
+  agreementDate  DateTime? // fecha de firma; fija, no "hoy", para que el documento no cambie
   releaseDate   DateTime? // fecha aproximada de lanzamiento, no un compromiso exacto
   lastReminderThreshold Int? // último umbral de días ya avisado por email (30/14/7/3/1)
   createdAt     DateTime  @default(now())
@@ -251,6 +273,7 @@ model Royalty {
   contactId   String?
   name        String
   role        String? // autor, productor, featuring, sello...
+  kind        SplitKind @default(OBRA)
   percentage  Float    @default(0)
   notes       String?
   createdAt   DateTime @default(now())

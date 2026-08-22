@@ -56,6 +56,7 @@ import {
   CalendarDays,
   Scissors,
   MicVocal,
+  FileText,
 } from "lucide-react";
 
 export default async function SongDetailPage({
@@ -701,9 +702,20 @@ export default async function SongDetailPage({
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
+            <select name="kind" className="input w-32" aria-label="Tipo de reparto">
+              <option value="OBRA">Obra</option>
+              <option value="MASTER">Máster</option>
+            </select>
             <input name="percentage" type="number" step="0.01" placeholder="%" className="input w-24" required />
             <SubmitButton className="btn btn-secondary" pendingLabel="Añadiendo…">Añadir</SubmitButton>
           </form>
+
+          <Link
+            href={`/songs/${song.id}/contrato`}
+            className="btn btn-secondary mt-4"
+          >
+            <FileText size={15} /> Preparar el acuerdo de reparto
+          </Link>
         </div>
       ),
     },

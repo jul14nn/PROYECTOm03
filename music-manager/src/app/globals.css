@@ -419,6 +419,179 @@ input[type="checkbox"] {
 }
 
 /* ---------------------------------------------------------------------
+   El documento del acuerdo de reparto.
+   En pantalla se ve como papel (fondo claro, serif) porque eso es lo que
+   va a ser: un folio que alguien firma. Al imprimir desaparece todo lo
+   demás — barra lateral, botones, atmósfera — y queda solo el documento.
+   --------------------------------------------------------------------- */
+
+.documento {
+  background: #fdfdfb;
+  color: #16141a;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.6;
+  padding: 3rem 3.2rem;
+  border-radius: 0.6rem;
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.85);
+}
+
+.documento h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.01em;
+  margin-bottom: 1.6rem;
+}
+
+.documento h2 {
+  font-size: 1.02rem;
+  font-weight: 700;
+  margin: 2rem 0 0.5rem;
+}
+
+.documento p {
+  margin-bottom: 0.9rem;
+}
+
+.documento .doc-meta {
+  text-align: center;
+  padding-bottom: 1.2rem;
+  margin-bottom: 1.4rem;
+  border-bottom: 1px solid #d9d5cc;
+}
+
+.documento .doc-nota {
+  font-size: 0.85rem;
+  color: #55505c;
+}
+
+.tabla-scroll {
+  overflow-x: auto;
+  margin: 0.9rem 0;
+}
+
+.documento table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.9rem 0;
+  font-size: 0.88rem;
+}
+
+.documento th,
+.documento td {
+  border: 1px solid #cfcabf;
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+}
+
+.documento th {
+  background: #f0ede6;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.documento .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.documento tr.total td {
+  font-weight: 700;
+  background: #f6f4ef;
+}
+
+.documento ol {
+  padding-left: 1.3rem;
+  list-style: decimal;
+}
+
+.documento ol li {
+  margin-bottom: 0.5rem;
+}
+
+/* Las firmas no deben partirse entre dos páginas al imprimir. */
+.documento .firmas {
+  break-inside: avoid;
+}
+
+.documento .firma-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 2.4rem 2rem;
+  margin-top: 2.4rem;
+}
+
+.documento .firma {
+  break-inside: avoid;
+}
+
+.documento .firma .linea {
+  border-bottom: 1px solid #16141a;
+  height: 3.2rem;
+  margin-bottom: 0.4rem;
+}
+
+.documento .firma-nombre {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.documento .firma-datos {
+  font-size: 0.78rem;
+  color: #55505c;
+  margin-top: 0.15rem;
+}
+
+.documento .doc-pie {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #d9d5cc;
+  font-size: 0.75rem;
+  color: #6b6674;
+}
+
+@media (max-width: 640px) {
+  .documento {
+    padding: 1.6rem 1.2rem;
+  }
+  .documento h1 {
+    font-size: 1.25rem;
+  }
+}
+
+@media print {
+  /* Fuera la app: queda el folio. */
+  body::before,
+  body::after,
+  aside,
+  nav,
+  header,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .documento {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    max-width: none;
+  }
+
+  .tabla-scroll {
+    overflow-x: visible;
+  }
+
+  @page {
+    margin: 1.8cm;
+  }
+}
+
+/* ---------------------------------------------------------------------
    Cartel / cinemático — splash screen y login
    --------------------------------------------------------------------- */
 

@@ -21,6 +21,7 @@ export async function addRoyalty(songId: string, formData: FormData) {
       name,
       role: str(formData, "role"),
       contactId: str(formData, "contactId"),
+      kind: str(formData, "kind") === "MASTER" ? "MASTER" : "OBRA",
       percentage: Number(str(formData, "percentage") ?? 0),
       notes: str(formData, "notes"),
     },
