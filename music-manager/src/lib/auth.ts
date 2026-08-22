@@ -32,6 +32,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       from: process.env.SMTP_FROM,
       async sendVerificationRequest({ identifier, url }) {
+        // Marca de entrada: si esta línea no sale en los registros, el fallo
+        // ocurrió antes de llegar al envío (normalmente en la base de datos).
+        console.log(
+          `[music-manager] Preparando enlace para ${identifier} · SMTP configurado: ${isEmailConfigured()}`
+        );
+
         if (!isEmailConfigured()) {
           // En local esto es lo normal y cómodo: el enlace sale por consola.
           // En producción es un fallo silencioso — al usuario le decimos
