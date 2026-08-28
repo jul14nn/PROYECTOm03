@@ -43,8 +43,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Los utilitarios de Tailwind tienen que caer en las mismas dos familias
+     que el sistema de diseño. Apuntaban a Geist, asi que `font-mono` daba
+     Geist Mono mientras .label y .numeral daban JetBrains: dos monoespaciadas
+     distintas conviviendo en la misma pantalla sin que nadie lo pidiera. */
+  --font-sans: var(--font-display);
+  --font-mono: var(--font-tech);
   --font-poster: var(--font-poster);
 }
 
@@ -360,6 +364,11 @@ input[type="checkbox"] {
 }
 
 .badge {
+  /* Mayúsculas espaciadas y diminutas: es un rótulo técnico, del mismo
+     grupo que .label y .eyebrow, así que le toca la mono. Antes la heredaba
+     del cuerpo sin declararla, y al pasar el cuerpo a Inter perdió el
+     carácter en toda la app de golpe. */
+  font-family: var(--font-tech), ui-monospace, monospace;
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
@@ -549,6 +558,8 @@ input[type="checkbox"] {
 .documento .num {
   text-align: right;
   white-space: nowrap;
+  /* Columna de porcentajes: sin cifras tabulares no alinean entre filas. */
+  font-variant-numeric: tabular-nums;
 }
 
 .documento tr.total td {

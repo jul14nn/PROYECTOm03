@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
       to: song.user.email,
       subject: `"${song.title}" se acerca a su fecha aproximada (${dayLabel})`,
       html: `
-        <div style="font-family: sans-serif; line-height: 1.55;">
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.55;">
           <h2>${song.title}</h2>
           <p>Quedan aproximadamente <strong>${dayLabel}</strong> para la fecha que marcaste
           (recuerda: es orientativa, no un compromiso cerrado). Etapa actual:

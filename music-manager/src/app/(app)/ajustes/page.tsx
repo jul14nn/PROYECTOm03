@@ -1,4 +1,4 @@
-import { BUILTIN_FONTS } from "@/lib/loadFont";
+import { BUILTIN_FONTS, DEFAULT_FONT_ID } from "@/lib/loadFont";
 import { prisma } from "@/lib/prisma";
 import SubmitButton from "@/components/SubmitButton";
 import { requireUserId } from "@/lib/auth";
@@ -110,7 +110,7 @@ export default async function AjustesPage() {
               <select
                 id="fontFamily"
                 name="fontFamily"
-                defaultValue={kit?.fontFamily ?? "Anton"}
+                defaultValue={kit?.fontFamily ?? DEFAULT_FONT_ID}
                 className="input"
               >
                 {FONTS.map((f) => (

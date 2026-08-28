@@ -8,6 +8,7 @@ import VideoGenerator from "@/components/VideoGenerator";
 import ClipStudio from "@/components/ClipStudio";
 import AssetUploader from "@/components/AssetUploader";
 import AssetList from "@/components/AssetList";
+import { DEFAULT_FONT_ID } from "@/lib/loadFont";
 import type { SubtitleStyleId } from "@/lib/subtitleStyles";
 import { StageBadge, TaskStatusBadge, ColorDot } from "@/components/Badges";
 import {
@@ -115,7 +116,7 @@ export default async function SongDetailPage({
   const brand = {
     primaryColor: brandKit?.primaryColor ?? "#9333ea",
     secondaryColor: brandKit?.secondaryColor ?? "#e0299e",
-    fontFamily: brandKit?.fontFamily ?? "Anton",
+    fontFamily: brandKit?.fontFamily ?? DEFAULT_FONT_ID,
     subtitleStyle: (brandKit?.subtitleStyle ?? "barra") as SubtitleStyleId,
     subtitlePosPct: brandKit?.subtitlePosPct ?? 78,
     subtitleScale: brandKit?.subtitleScale ?? 1,

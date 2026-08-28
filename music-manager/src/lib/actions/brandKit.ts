@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { DEFAULT_FONT_ID } from "@/lib/loadFont";
 
 function str(fd: FormData, key: string, fallback: string) {
   const v = fd.get(key);
@@ -21,7 +22,7 @@ export async function saveBrandKit(formData: FormData) {
   const data = {
     primaryColor: str(formData, "primaryColor", "#9333ea"),
     secondaryColor: str(formData, "secondaryColor", "#e0299e"),
-    fontFamily: str(formData, "fontFamily", "Anton"),
+    fontFamily: str(formData, "fontFamily", DEFAULT_FONT_ID),
     subtitleStyle: str(formData, "subtitleStyle", "barra"),
     subtitlePosPct: num(formData, "subtitlePosPct", 78, 40, 92),
     subtitleScale: num(formData, "subtitleScale", 1, 0.7, 1.5),

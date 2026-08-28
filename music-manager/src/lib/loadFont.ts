@@ -37,9 +37,19 @@ export const BUILTIN_FONTS: FontOption[] = [
   { id: "oswald", name: "Oswald — condensada, titular", cssVar: "--font-oswald" },
   { id: "roboto", name: "Roboto — neutra, se lee siempre", cssVar: "--font-roboto" },
   { id: "anton", name: "Anton — cartel, muy gruesa", cssVar: "--font-poster" },
-  { id: "geist", name: "Geist — la de la app", cssVar: "--font-geist-sans" },
+  { id: "inter", name: "Inter — la de la app", cssVar: "--font-display" },
   { id: "georgia", name: "Georgia — serif clásica", family: "Georgia, serif" },
 ];
+
+/**
+ * El id que se usa cuando todavía no hay kit de marca.
+ *
+ * Estaba escrito a mano como "Anton" en tres sitios, con mayúscula, y ningún
+ * id lo lleva. La acción de guardar llegaba a escribir ese literal en la base
+ * de datos, y desde ahí toda búsqueda por id fallaba y caía a la primera
+ * opción sin avisar. Debe coincidir con el `@default` de BrandKit.fontFamily.
+ */
+export const DEFAULT_FONT_ID = "montserrat";
 
 const cargadas = new Set<string>();
 

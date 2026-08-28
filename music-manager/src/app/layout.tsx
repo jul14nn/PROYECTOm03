@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import {
-  Geist,
-  Geist_Mono,
   Anton,
   Silkscreen,
   Instrument_Serif,
@@ -15,16 +13,6 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import SplashScreen from "@/components/SplashScreen";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const anton = Anton({
   variable: "--font-poster",
@@ -149,7 +137,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} ${silkscreen.variable} ${instrumentSerif.variable} ${montserrat.variable} ${poppins.variable} ${bebas.variable} ${oswald.variable} ${roboto.variable} ${jetbrains.variable} ${inter.variable} h-full antialiased`}
+      className={`${anton.variable} ${silkscreen.variable} ${instrumentSerif.variable} ${montserrat.variable} ${poppins.variable} ${bebas.variable} ${oswald.variable} ${roboto.variable} ${jetbrains.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <SplashScreen />

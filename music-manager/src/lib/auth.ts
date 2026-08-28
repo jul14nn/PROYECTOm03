@@ -85,7 +85,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             subject: "Tu enlace de acceso a Music Manager",
             text: `Entra en Music Manager: ${url}`,
             html: `
-              <div style="font-family: sans-serif; line-height: 1.5;">
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.5;">
                 <h2>Music Manager</h2>
                 <p>Pulsa el siguiente enlace para iniciar sesión:</p>
                 <p><a href="${url}">${url}</a></p>
