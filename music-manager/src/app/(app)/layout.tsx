@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import TopNav from "@/components/TopNav";
-import { MobileTabBar } from "@/components/MobileNav";
 import { THEMES, isTheme } from "@/lib/themes";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -23,11 +22,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="skin min-h-full" data-skin={theme}>
       <TopNav userName={session.user.name} userEmail={session.user.email} />
       <main className="min-w-0">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-12 pb-32 md:pb-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-12 pb-16">
           {children}
         </div>
       </main>
-      <MobileTabBar />
     </div>
   );
 }

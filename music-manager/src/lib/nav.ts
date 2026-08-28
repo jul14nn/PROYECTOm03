@@ -22,22 +22,3 @@ export const NAV: NavItem[] = [
   { href: "/royalties", label: "Royalties", icon: Coins },
   { href: "/resultados", label: "Resultados", icon: TrendingUp },
 ];
-
-/**
- * En el móvil solo caben cuatro pestañas sin que se corten las etiquetas
- * ("Distribución" se quedaba en "Distribuci…"). Se dejan visibles las de uso
- * diario y el resto pasa al menú "Más".
- */
-export const MOBILE_PRIMARY: NavItem[] = [
-  NAV[0], // Resumen
-  NAV[1], // Canciones
-  NAV[2], // Agenda
-  NAV[7], // Resultados
-];
-
-export const MOBILE_SECONDARY: NavItem[] = [
-  NAV[5], // Marketing
-  NAV[3], // Contactos
-  NAV[4], // Distribución
-  NAV[6], // Royalties
-];
