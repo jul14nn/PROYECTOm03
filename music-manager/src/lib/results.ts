@@ -182,11 +182,19 @@ export function decimal(n: number, cifras = 1) {
   return n.toFixed(cifras).replace(".", ",");
 }
 
-/** Número compacto: 12.400 → 12,4 k. Las cifras largas no se leen. */
+/**
+ * Número compacto: 12.400 → 12,4 k. Las cifras largas no se leen.
+ *
+ * Separa con espacio fino (U+202F) y no con uno normal: las cifras se pintan
+ * en monoespaciada, donde un espacio corriente ocupa lo mismo que un dígito y
+ * despega la unidad del número.
+ */
 export function compacto(n: number) {
+  const FINO = "\u202f";
   if (n < 1000) return String(n);
-  if (n < 1_000_000) return `${(n / 1000).toFixed(1).replace(".0", "").replace(".", ",")} k`;
-  return `${(n / 1_000_000).toFixed(1).replace(".0", "").replace(".", ",")} M`;
+  if (n < 1_000_000)
+    return `${(n / 1000).toFixed(1).replace(".0", "").replace(".", ",")}${FINO}k`;
+  return `${(n / 1_000_000).toFixed(1).replace(".0", "").replace(".", ",")}${FINO}M`;
 }
 
 /**

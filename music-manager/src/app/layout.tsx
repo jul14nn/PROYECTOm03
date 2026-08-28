@@ -10,6 +10,7 @@ import {
   Bebas_Neue,
   Oswald,
   Roboto,
+  JetBrains_Mono,
 } from "next/font/google";
 import "./globals.css";
 import SplashScreen from "@/components/SplashScreen";
@@ -92,6 +93,20 @@ const roboto = Roboto({
   subsets: ["latin"],
 });
 
+/**
+ * Mono para etiquetas y cifras.
+ *
+ * Los rótulos y los datos técnicos en monoespaciada es lo que da a un panel
+ * aspecto de instrumento y no de folleto. Y resuelve algo real: `.numeral`
+ * pedía cifras tabulares para que los números no bailasen al cambiar, pero
+ * la tipografía de cartel no las tiene. Una mono sí, por definición.
+ */
+const jetbrains = JetBrains_Mono({
+  variable: "--font-tech",
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Music Manager",
   description: "Gestión integral de producción musical: canciones, agenda, distribución, marketing y royalties.",
@@ -124,7 +139,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} ${silkscreen.variable} ${instrumentSerif.variable} ${montserrat.variable} ${poppins.variable} ${bebas.variable} ${oswald.variable} ${roboto.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} ${silkscreen.variable} ${instrumentSerif.variable} ${montserrat.variable} ${poppins.variable} ${bebas.variable} ${oswald.variable} ${roboto.variable} ${jetbrains.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <SplashScreen />
