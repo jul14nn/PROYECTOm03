@@ -74,14 +74,14 @@ export function TodayPanel({ items }: { items: AgendaItem[] }) {
               )}
               <ArrowRight
                 size={15}
-                className="text-neutral-600 group-hover:text-fuchsia-400 shrink-0 transition-colors"
+                className="text-neutral-600 group-hover:text-[var(--accent-soft)] shrink-0 transition-colors"
               />
             </Link>
           ))}
           {rest > 0 && (
             <Link
               href="/songs"
-              className="block text-xs text-fuchsia-400 hover:underline pt-2 pl-1"
+              className="block text-xs text-[var(--accent-soft)] hover:underline pt-2 pl-1"
             >
               y {rest} {rest === 1 ? "canción más" : "canciones más"} con algo pendiente
             </Link>
@@ -102,7 +102,7 @@ export function ReleaseCountdown({ releases }: { releases: UpcomingRelease[] }) 
   return (
     <section className="card p-6 min-w-0">
       <div className="flex items-center gap-2 mb-5">
-        <Rocket size={14} className="text-fuchsia-400 shrink-0" />
+        <Rocket size={14} className="text-[var(--accent-soft)] shrink-0" />
         <h2 className="eyebrow">Próximos lanzamientos</h2>
       </div>
 
@@ -130,7 +130,7 @@ export function ReleaseCountdown({ releases }: { releases: UpcomingRelease[] }) 
                 ~ {formatDate(r.releaseDate)}
               </div>
               <div className="text-xs text-neutral-400 mt-1.5 ml-5 flex items-start gap-1.5">
-                <Music4 size={12} className="text-fuchsia-400 mt-0.5 shrink-0" />
+                <Music4 size={12} className="text-[var(--accent-soft)] mt-0.5 shrink-0" />
                 <span>{r.tiktok.cadence}</span>
               </div>
             </Link>

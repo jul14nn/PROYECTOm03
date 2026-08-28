@@ -155,7 +155,7 @@ export default function SongsBrowser({ songs }: { songs: SongRow[] }) {
                   <span className="font-medium truncate">{song.title}</span>
                   {song.needsCover && (
                     <span title="Falta portada">
-                      <ImageOff size={14} className="text-pink-400 shrink-0" />
+                      <ImageOff size={14} className="text-[var(--accent-soft)] shrink-0" />
                     </span>
                   )}
                 </div>

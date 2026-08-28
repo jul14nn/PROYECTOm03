@@ -77,7 +77,7 @@ export default function SubtitleEditor({
         aria-expanded={open}
         className="flex items-center gap-2 text-sm font-medium w-full text-left"
       >
-        <Captions size={16} className="text-fuchsia-300" />
+        <Captions size={16} className="text-[var(--accent-soft)]" />
         Subtítulos
         <span className="text-xs text-neutral-500 font-normal ml-auto">
           {lines.length > 0 ? `${lines.length} líneas` : "sin subtítulos"}
@@ -111,7 +111,7 @@ export default function SubtitleEditor({
                   className={clsx(
                     "text-left rounded-lg p-2.5 border transition-colors",
                     style === s.id
-                      ? "border-fuchsia-500/60 bg-fuchsia-500/10"
+                      ? "border-[color-mix(in_srgb,var(--accent)_60%,transparent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]"
                       : "border-white/[0.07] hover:bg-white/[0.04]"
                   )}
                 >
@@ -123,7 +123,7 @@ export default function SubtitleEditor({
           </div>
 
           {syncing ? (
-            <div className="rounded-lg p-4 border border-fuchsia-500/40 bg-fuchsia-500/10">
+            <div className="rounded-lg p-4 border border-[color-mix(in_srgb,var(--accent)_40%,transparent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]">
               <p className="text-xs text-neutral-400 mb-2">
                 Línea {syncIndex + 1} de {texts.length} — pulsa cuando deba aparecer
               </p>

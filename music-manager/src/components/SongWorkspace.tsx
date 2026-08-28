@@ -37,13 +37,13 @@ export default function SongWorkspace({
         }}
       >
         <div className="flex-1 min-w-0">
-          <div className="text-[0.65rem] uppercase tracking-wider text-fuchsia-300 font-semibold mb-1">
+          <div className="text-[0.65rem] uppercase tracking-wider text-[var(--accent-soft)] font-semibold mb-1">
             Tu próximo paso
           </div>
           <div className="font-semibold">{nextStep.label}</div>
           <div className="text-sm text-neutral-400 mt-0.5">{nextStep.detail}</div>
         </div>
-        <ArrowRight size={18} className="text-fuchsia-300 shrink-0 mt-1" />
+        <ArrowRight size={18} className="text-[var(--accent-soft)] shrink-0 mt-1" />
       </button>
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">

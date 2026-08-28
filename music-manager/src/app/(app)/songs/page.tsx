@@ -42,7 +42,7 @@ export default async function SongsPage() {
       {rows.length === 0 ? (
         <div className="card p-10 text-center text-neutral-500">
           Todavía no hay canciones.{" "}
-          <Link href="/songs/new" className="text-fuchsia-400 hover:underline">
+          <Link href="/songs/new" className="text-[var(--accent-soft)] hover:underline">
             Crea la primera
           </Link>
           .

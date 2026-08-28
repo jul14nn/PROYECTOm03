@@ -219,7 +219,7 @@ export default async function SongDetailPage({
               </form>
               <p className="text-xs text-neutral-600 mt-2">
                 ¿No existe el contacto?{" "}
-                <Link href="/contacts" className="text-fuchsia-400 hover:underline">
+                <Link href="/contacts" className="text-[var(--accent-soft)] hover:underline">
                   Créalo en Contactos
                 </Link>
                 .
@@ -325,7 +325,7 @@ export default async function SongDetailPage({
                     <div className="font-medium">{v.title}</div>
                     {v.description && <div className="text-neutral-500 text-xs mt-0.5">{v.description}</div>}
                     {v.referenceUrl && (
-                      <a href={v.referenceUrl} target="_blank" className="text-fuchsia-400 text-xs flex items-center gap-1 mt-0.5">
+                      <a href={v.referenceUrl} target="_blank" className="text-[var(--accent-soft)] text-xs flex items-center gap-1 mt-0.5">
                         <Link2 size={10} /> Referencia
                       </a>
                     )}
@@ -504,14 +504,14 @@ export default async function SongDetailPage({
           {tiktokPlan && (
             <div className="card p-6" style={{ borderColor: "color-mix(in srgb, var(--accent-magenta) 30%, transparent)" }}>
               <h2 className="font-semibold flex items-center gap-2 mb-1">
-                <Sparkles size={18} className="text-fuchsia-300" /> Plan de TikTok
+                <Sparkles size={18} className="text-[var(--accent-soft)]" /> Plan de TikTok
               </h2>
               <p className="text-sm text-neutral-400 mb-3">
                 A {formatDateApprox(song.releaseDate)} le quedan{" "}
                 <strong className="text-neutral-200">{days} {days === 1 ? "día" : "días"}</strong>.
               </p>
               <div className="flex flex-wrap items-center gap-3">
-                <span className="badge bg-fuchsia-500/15 text-fuchsia-300 text-sm py-1 px-3">
+                <span className="badge bg-[color-mix(in_srgb,var(--accent)_15%,transparent)] text-[var(--accent-soft)] text-sm py-1 px-3">
                   {tiktokPlan.cadence}
                 </span>
               </div>
@@ -673,7 +673,7 @@ export default async function SongDetailPage({
                   <div>
                     <span className="font-medium">{r.name}</span>
                     {r.role && <span className="text-neutral-500 text-xs ml-2">{r.role}</span>}
-                    <span className="text-fuchsia-300 text-xs ml-2">{r.percentage}%</span>
+                    <span className="text-[var(--accent-soft)] text-xs ml-2">{r.percentage}%</span>
                   </div>
                   <form action={removeRoyalty.bind(null, song.id, r.id)}>
                     <IconSubmit label="Quitar" className="text-neutral-500 hover:text-red-400">
@@ -745,7 +745,7 @@ export default async function SongDetailPage({
           {song.events.length === 0 && (
             <p className="text-neutral-500 text-sm">
               Sin eventos vinculados.{" "}
-              <Link href={`/calendar/new?songId=${song.id}`} className="text-fuchsia-400 hover:underline">
+              <Link href={`/calendar/new?songId=${song.id}`} className="text-[var(--accent-soft)] hover:underline">
                 Crear evento
               </Link>
               .

@@ -30,7 +30,19 @@ export default function TopNav({
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
-    <header className="sticky top-0 z-40 px-4 pt-5 pb-2 flex justify-center relative">
+    <header
+      className="sticky top-0 z-40 px-4 pt-5 pb-6 flex justify-center relative"
+      style={{
+        /* Aquí no vale el velo de color que uso abajo: la cabecera cae justo
+           donde el haz es más brillante y un fondo opaco lo apagaría. Con
+           desenfoque el texto que pasa por detrás se deshace igual, pero el
+           haz solo se suaviza. La máscara evita el corte recto al terminar. */
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        maskImage: "linear-gradient(180deg, black 62%, transparent)",
+        WebkitMaskImage: "linear-gradient(180deg, black 62%, transparent)",
+      }}
+    >
       {/* Cápsula flotante: no ocupa el ancho de la pantalla, se ajusta a su
           contenido y flota sobre el fondo. Es la forma de la referencia. */}
       <div

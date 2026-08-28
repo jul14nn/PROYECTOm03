@@ -26,14 +26,30 @@ export function MobileTabBar() {
         />
       )}
 
+      {/* Cápsula flotante, con la misma materia que el menú de arriba: si
+          abajo hay una barra pegada al borde y arriba una pastilla flotante,
+          parecen dos aplicaciones distintas. */}
       <nav
-        className="md:hidden fixed inset-x-0 bottom-0 z-40 backdrop-blur-xl"
+        className="md:hidden fixed inset-x-0 bottom-0 z-40 px-3 pt-8"
         style={{
-          paddingBottom: "env(safe-area-inset-bottom)",
-          background: "linear-gradient(0deg, rgba(10,9,14,0.96), rgba(16,14,22,0.86))",
-          borderTop: "1px solid var(--edge)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)",
+          /* Velo: al flotar, la barra deja huecos a los lados y el texto que
+             pasa por detrás al hacer scroll asoma por ellos y se lee roto.
+             El degradado lo disuelve antes de llegar. */
+          background:
+            "linear-gradient(180deg, transparent, color-mix(in srgb, var(--background) 88%, transparent) 45%, var(--background) 85%)",
         }}
       >
+        <div
+          className="rounded-[1.75rem] overflow-hidden"
+          style={{
+            background: "rgba(18,18,20,0.86)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            border: "1px solid rgba(255,255,255,0.09)",
+            boxShadow: "0 8px 32px -8px rgba(0,0,0,0.85)",
+          }}
+        >
         {moreOpen && (
           <div className="px-3 pt-3 pb-1" style={{ borderBottom: "1px solid var(--edge)" }}>
             {MOBILE_SECONDARY.map((item) => (
@@ -58,13 +74,14 @@ export function MobileTabBar() {
             aria-expanded={moreOpen}
             className={clsx(
               "relative flex flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] leading-tight transition-colors",
-              moreOpen || secondaryActive ? "text-fuchsia-300" : "text-neutral-500"
+              moreOpen || secondaryActive ? "text-white" : "text-neutral-500"
             )}
           >
             {secondaryActive && !moreOpen && <ActiveMark />}
             <MoreHorizontal size={19} strokeWidth={moreOpen || secondaryActive ? 2.4 : 2} />
             <span>Más</span>
           </button>
+        </div>
         </div>
       </nav>
     </>
@@ -77,8 +94,8 @@ function ActiveMark() {
       aria-hidden
       className="absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-7 rounded-b-full"
       style={{
-        background: "linear-gradient(90deg, var(--accent-violet), var(--accent-magenta))",
-        boxShadow: "0 0 10px color-mix(in srgb, var(--accent-magenta) 90%, transparent)",
+        background: "var(--accent-soft)",
+        boxShadow: "0 0 12px color-mix(in srgb, var(--accent) 85%, transparent)",
       }}
     />
   );
@@ -91,7 +108,7 @@ function TabLink({ item, active }: { item: NavItem; active: boolean }) {
       href={href}
       className={clsx(
         "relative flex flex-col items-center justify-center gap-0.5 py-2.5 text-[10px] leading-tight transition-colors",
-        active ? "text-fuchsia-300" : "text-neutral-500"
+        active ? "text-white" : "text-neutral-500"
       )}
     >
       {active && <ActiveMark />}
@@ -117,7 +134,7 @@ function MoreLink({
       onClick={onNavigate}
       className={clsx(
         "flex items-center gap-3 rounded-lg px-3 py-3 text-sm transition-colors",
-        active ? "text-fuchsia-300" : "text-neutral-300 hover:bg-white/[0.05]"
+        active ? "text-white bg-white/[0.08]" : "text-neutral-300 hover:bg-white/[0.05]"
       )}
     >
       <Icon size={18} />

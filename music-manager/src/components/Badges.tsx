@@ -8,7 +8,7 @@ const STAGE_STYLES: Record<Stage, string> = {
   GRABACION: "bg-purple-500/15 text-purple-300",
   MEZCLA: "bg-amber-500/15 text-amber-300",
   MASTER: "bg-orange-500/15 text-orange-300",
-  PORTADA: "bg-pink-500/15 text-pink-300",
+  PORTADA: "bg-pink-500/15 text-[var(--accent-soft)]",
   DISTRIBUCION: "bg-blue-500/15 text-blue-300",
   LANZADA: "bg-emerald-500/15 text-emerald-300",
 };

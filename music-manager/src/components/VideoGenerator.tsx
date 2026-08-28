@@ -375,7 +375,7 @@ export default function VideoGenerator({
   if (!support.ok) {
     return (
       <div className="tile p-5 flex items-start gap-3">
-        <Monitor size={18} className="text-fuchsia-300 shrink-0 mt-0.5" />
+        <Monitor size={18} className="text-[var(--accent-soft)] shrink-0 mt-0.5" />
         <div>
           <p className="font-medium">El montaje de vídeo se hace desde el ordenador</p>
           <p className="text-sm text-neutral-400 mt-1.5 max-w-lg">
@@ -404,7 +404,7 @@ export default function VideoGenerator({
             onClick={() => setStyleId(s.id)}
             className={clsx(
               "text-left rounded-lg p-3 border transition-colors",
-              styleId === s.id ? "border-fuchsia-500/60 bg-fuchsia-500/10" : "tile"
+              styleId === s.id ? "border-[color-mix(in_srgb,var(--accent)_60%,transparent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]" : "tile"
             )}
           >
             <div className="text-sm font-medium">{s.name}</div>

@@ -51,12 +51,16 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  /* Cuerpo en monoespaciada: es lo que fija el tono técnico de toda la
-     interfaz. La interlínea sube a 1.6 porque la mono, más ancha, necesita
-     más aire entre renglones para no leerse como un bloque. */
-  font-family: var(--font-tech), ui-monospace, monospace;
+  /* Cuerpo en Inter, no en monoespaciada. Poner la mono en todo hacía que
+     un titulo de cancion se leyera como una linea de terminal, y como la
+     mono es mucho mas ancha, frases normales rompian en dos renglones.
+     La mono se reserva para lo tecnico: .label, .eyebrow y .numeral. Ese
+     contraste es justo lo que le da caracter — si esta en todas partes,
+     deja de significar nada. */
+  font-family: var(--font-display), system-ui, sans-serif;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ---------------------------------------------------------------------

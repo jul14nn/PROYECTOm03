@@ -108,7 +108,7 @@ export default async function MarketingPage() {
 
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs">
                       {c.phase && (
-                        <span className="text-fuchsia-300">
+                        <span className="text-[var(--accent-soft)]">
                           {PHASES.find((p) => p.id === c.phase)?.name}
                         </span>
                       )}
@@ -147,7 +147,7 @@ export default async function MarketingPage() {
             Sin plan todavía:{" "}
             {sinPlan.map((s, i) => (
               <span key={s.id}>
-                <Link href={`/songs/${s.id}`} className="text-fuchsia-400 hover:underline">
+                <Link href={`/songs/${s.id}`} className="text-[var(--accent-soft)] hover:underline">
                   {s.title}
                 </Link>
                 {i < sinPlan.length - 1 && ", "}

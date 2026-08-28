@@ -58,7 +58,7 @@ export default async function GuiaSgaePage() {
                 pendingLabel="…"
                 className={
                   estado === o.id
-                    ? "tile p-3 w-full text-left border-fuchsia-500/60 bg-fuchsia-500/10"
+                    ? "tile p-3 w-full text-left border-[color-mix(in_srgb,var(--accent)_60%,transparent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]"
                     : "tile p-3 w-full text-left"
                 }
               >
@@ -77,7 +77,7 @@ export default async function GuiaSgaePage() {
             <p className="text-sm text-neutral-300">
               Tienes {sinRegistrar} {sinRegistrar === 1 ? "canción" : "canciones"} con
               reparto pero sin declarar.{" "}
-              <Link href="/royalties" className="text-fuchsia-400 hover:underline">
+              <Link href="/royalties" className="text-[var(--accent-soft)] hover:underline">
                 Verlas
               </Link>
               .
@@ -159,7 +159,7 @@ export default async function GuiaSgaePage() {
             },
           ].map((p, i) => (
             <li key={i} className="flex gap-3.5">
-              <span className="numeral text-lg text-fuchsia-300 shrink-0 w-6">{i + 1}</span>
+              <span className="numeral text-lg text-[var(--accent-soft)] shrink-0 w-6">{i + 1}</span>
               <div>
                 <div className="font-medium text-sm">{p.t}</div>
                 <p className="text-sm text-neutral-400 mt-0.5">{p.d}</p>
@@ -228,7 +228,7 @@ export default async function GuiaSgaePage() {
                 </p>
                 <Link
                   href={`/songs/${conReparto.id}/contrato`}
-                  className="text-sm text-fuchsia-400 hover:underline mt-1 inline-block"
+                  className="text-sm text-[var(--accent-soft)] hover:underline mt-1 inline-block"
                 >
                   Ver su acuerdo de reparto
                 </Link>

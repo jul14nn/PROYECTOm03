@@ -83,7 +83,7 @@ export default async function ContactsPage() {
                 </div>
                 {c.notes && <div className="text-xs text-neutral-600 mt-1">{c.notes}</div>}
               </div>
-              <Pencil size={14} className="text-neutral-600 group-open/row:text-fuchsia-400 shrink-0" />
+              <Pencil size={14} className="text-neutral-600 group-open/row:text-[var(--accent-soft)] shrink-0" />
             </summary>
 
             <div className="px-5 pb-5 pt-1">

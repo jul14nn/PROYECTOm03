@@ -418,7 +418,7 @@ export default function ClipStudio({
   if (!support.ok) {
     return (
       <div className="tile p-5 flex items-start gap-3">
-        <Monitor size={18} className="text-fuchsia-300 shrink-0 mt-0.5" />
+        <Monitor size={18} className="text-[var(--accent-soft)] shrink-0 mt-0.5" />
         <div>
           <p className="font-medium">El montaje se hace desde el ordenador</p>
           <p className="text-sm text-neutral-400 mt-1.5 max-w-lg">
@@ -541,7 +541,7 @@ export default function ClipStudio({
                       className={clsx(
                         "text-left rounded-lg p-2.5 border transition-colors",
                         subStyle === s.id
-                          ? "border-fuchsia-500/60 bg-fuchsia-500/10"
+                          ? "border-[color-mix(in_srgb,var(--accent)_60%,transparent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]"
                           : "border-white/[0.07] hover:bg-white/[0.04]"
                       )}
                     >
@@ -589,7 +589,7 @@ export default function ClipStudio({
               </div>
 
               {syncing ? (
-                <div className="rounded-lg p-4 border border-fuchsia-500/40 bg-fuchsia-500/10">
+                <div className="rounded-lg p-4 border border-[color-mix(in_srgb,var(--accent)_40%,transparent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]">
                   <p className="text-xs text-neutral-400 mb-2">
                     Línea {syncIndex + 1} de {textLines.length}
                     {audioUrl ? " — pulsa cuando entre en la canción" : " — pulsa cuando deba aparecer"}

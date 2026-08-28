@@ -250,7 +250,7 @@ export default async function ResultadosPage() {
                           href={p.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-fuchsia-400"
+                          className="text-[var(--accent-soft)]"
                           aria-label="Abrir publicación"
                         >
                           <ExternalLink size={12} />
@@ -286,7 +286,7 @@ export default async function ResultadosPage() {
 
       <p className="text-xs text-neutral-600">
         ¿No sabes qué publicar? El{" "}
-        <Link href="/marketing" className="text-fuchsia-400 hover:underline">
+        <Link href="/marketing" className="text-[var(--accent-soft)] hover:underline">
           plan de lanzamiento
         </Link>{" "}
         te dice qué toca cada semana.

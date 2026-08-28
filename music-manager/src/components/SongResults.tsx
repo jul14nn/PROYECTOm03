@@ -88,7 +88,7 @@ export default function SongResults({
           Tus publicaciones de esta canción suman{" "}
           <span className="numeral text-neutral-200">{compacto(alcance)}</span>{" "}
           visitas.{" "}
-          <Link href="/resultados" className="text-fuchsia-400 hover:underline">
+          <Link href="/resultados" className="text-[var(--accent-soft)] hover:underline">
             Ver qué formato funciona
           </Link>
           .

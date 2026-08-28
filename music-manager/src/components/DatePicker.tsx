@@ -159,7 +159,7 @@ export default function DatePicker({
                     isSelected
                       ? "text-white"
                       : isToday
-                        ? "ring-1 ring-inset ring-fuchsia-500/50 hover:bg-white/[0.045]"
+                        ? "ring-1 ring-inset ring-[color-mix(in_srgb,var(--accent)_50%,transparent)] hover:bg-white/[0.045]"
                         : "hover:bg-white/[0.045]"
                   )}
                   style={

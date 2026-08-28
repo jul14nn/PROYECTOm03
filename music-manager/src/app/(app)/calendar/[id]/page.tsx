@@ -51,7 +51,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
             {event.song && (
               <div>
                 Canción:{" "}
-                <Link href={`/songs/${event.song.id}`} className="text-fuchsia-400 hover:underline">
+                <Link href={`/songs/${event.song.id}`} className="text-[var(--accent-soft)] hover:underline">
                   {event.song.title}
                 </Link>
               </div>

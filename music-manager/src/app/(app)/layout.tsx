@@ -23,7 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="skin min-h-full" data-skin={theme}>
       <TopNav userName={session.user.name} userEmail={session.user.email} />
       <main className="min-w-0">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-12 pb-24 lg:pb-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-12 pb-32 md:pb-16">
           {children}
         </div>
       </main>

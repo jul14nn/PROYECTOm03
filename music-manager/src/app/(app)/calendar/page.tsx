@@ -127,7 +127,7 @@ export default async function CalendarPage() {
       {upcoming.length === 0 ? (
         <div className="card p-10 text-center text-neutral-500">
           Nada en el horizonte.{" "}
-          <Link href="/calendar/new" className="text-fuchsia-400 hover:underline">
+          <Link href="/calendar/new" className="text-[var(--accent-soft)] hover:underline">
             Crea un evento
           </Link>{" "}
           o genera el plan de lanzamiento de una canción y sus pasos con fecha
@@ -168,7 +168,7 @@ export default async function CalendarPage() {
                     >
                       {item.kind === "lanzamiento" ? (
                         <span title="Paso del plan de lanzamiento">
-                          <Megaphone size={13} className="text-fuchsia-400/80 shrink-0" />
+                          <Megaphone size={13} className="text-[var(--accent-soft)]/80 shrink-0" />
                         </span>
                       ) : (
                         item.song ? <ColorDot color={item.song.color} /> : <span className="w-2" />

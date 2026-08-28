@@ -177,7 +177,7 @@ export default async function ContratoPage({
                       Sin autores todavía. Añádelos en la{" "}
                       <Link
                         href={`/songs/${song.id}?tab=royalties`}
-                        className="text-fuchsia-400 hover:underline"
+                        className="text-[var(--accent-soft)] hover:underline"
                       >
                         pestaña de Royalties
                       </Link>
@@ -213,7 +213,7 @@ export default async function ContratoPage({
         </p>
         <p className="text-sm text-neutral-500 mt-1">
           ¿No sabes qué poner en «entidad de gestión»?{" "}
-          <Link href="/guias/sgae" className="text-fuchsia-400 hover:underline">
+          <Link href="/guias/sgae" className="text-[var(--accent-soft)] hover:underline">
             Guía para darse de alta en la SGAE
           </Link>
           .
@@ -240,7 +240,7 @@ export default async function ContratoPage({
                     {CAMPOS_PERSONA.map((c) => (
                       <div key={c.key} className={c.key === "address" ? "sm:col-span-2" : ""}>
                         <label className="label" htmlFor={`${p.contacto!.id}-${c.key}`}>
-                          {c.label} {c.required && <span className="text-fuchsia-400">*</span>}
+                          {c.label} {c.required && <span className="text-[var(--accent-soft)]">*</span>}
                         </label>
                         <input
                           id={`${p.contacto!.id}-${c.key}`}
@@ -356,7 +356,7 @@ export default async function ContratoPage({
                 Ya la he declarado
               </SubmitButton>
             </form>
-            <Link href="/guias/sgae" className="text-sm text-fuchsia-400 hover:underline">
+            <Link href="/guias/sgae" className="text-sm text-[var(--accent-soft)] hover:underline">
               Cómo declararla
             </Link>
           </div>

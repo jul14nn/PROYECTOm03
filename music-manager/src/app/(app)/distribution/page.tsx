@@ -30,7 +30,7 @@ export default async function DistributionPage() {
       {steps.length === 0 ? (
         <div className="card p-10 text-center text-neutral-500">
           Sin pasos de distribución todavía.{" "}
-          <Link href="/songs" className="text-fuchsia-400 hover:underline">
+          <Link href="/songs" className="text-[var(--accent-soft)] hover:underline">
             Abre una canción
           </Link>{" "}
           y añádelos desde su pestaña de Producción.
