@@ -11,6 +11,7 @@ import {
   Oswald,
   Roboto,
   JetBrains_Mono,
+  Inter,
 } from "next/font/google";
 import "./globals.css";
 import SplashScreen from "@/components/SplashScreen";
@@ -101,6 +102,15 @@ const roboto = Roboto({
  * pedía cifras tabulares para que los números no bailasen al cambiar, pero
  * la tipografía de cartel no las tiene. Una mono sí, por definición.
  */
+/* Inter para los momentos de display: peso medio e interlínea muy cerrada,
+   que es lo que hace que un título grande se lea como una afirmación y no
+   como un cartel. */
+const inter = Inter({
+  variable: "--font-display",
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+});
+
 const jetbrains = JetBrains_Mono({
   variable: "--font-tech",
   weight: ["400", "500", "600"],
@@ -139,7 +149,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} ${silkscreen.variable} ${instrumentSerif.variable} ${montserrat.variable} ${poppins.variable} ${bebas.variable} ${oswald.variable} ${roboto.variable} ${jetbrains.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} ${silkscreen.variable} ${instrumentSerif.variable} ${montserrat.variable} ${poppins.variable} ${bebas.variable} ${oswald.variable} ${roboto.variable} ${jetbrains.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <SplashScreen />

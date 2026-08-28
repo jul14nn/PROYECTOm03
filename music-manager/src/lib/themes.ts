@@ -23,18 +23,6 @@ export function isTheme(v: string | null | undefined): v is ThemeId {
   return THEMES.some((t) => t.id === v);
 }
 
-export const SIDEBAR_MODES = [
-  {
-    id: "fijo",
-    name: "Fijo",
-    description: "Columna con icono y etiqueta siempre visibles.",
-  },
-  {
-    id: "rail",
-    name: "Raíl",
-    description:
-      "Solo iconos; se despliega al acercar el ratón. Devuelve unos 180 px de ancho al contenido.",
-  },
-] as const;
-
-export type SidebarMode = (typeof SIDEBAR_MODES)[number]["id"];
+/* SIDEBAR_MODES se retiró al pasar a navegación horizontal: ya no hay barra
+   lateral que configurar. La columna sigue en la base de datos por si alguna
+   vez vuelve, pero nada la lee. */

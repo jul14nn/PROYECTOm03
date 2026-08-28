@@ -4,7 +4,6 @@ import { requireUserId } from "@/lib/auth";
 import { formatDateApprox } from "@/lib/constants";
 import { daysUntil } from "@/lib/tiktokPlan";
 import SongsBrowser, { type SongRow } from "@/components/SongsBrowser";
-import { Plus } from "lucide-react";
 
 export default async function SongsPage() {
   const userId = await requireUserId();
@@ -30,7 +29,7 @@ export default async function SongsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
         <div>
           <div className="eyebrow mb-2">Catálogo</div>
           <h1 className="display-title text-5xl sm:text-6xl">Canciones</h1>
@@ -38,9 +37,6 @@ export default async function SongsPage() {
             Todo tu catálogo: tipo, etapa, featuring, productores y portada.
           </p>
         </div>
-        <Link href="/songs/new" className="btn btn-primary">
-          <Plus size={16} /> Nueva canción
-        </Link>
       </div>
 
       {rows.length === 0 ? (

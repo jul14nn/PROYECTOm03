@@ -6,7 +6,7 @@ import { saveBrandKit } from "@/lib/actions/brandKit";
 import { SUBTITLE_STYLES } from "@/lib/subtitleStyles";
 import { VIDEO_STYLES } from "@/lib/videoStyles";
 import { SUGGESTED_COLORS } from "@/lib/constants";
-import { THEMES, SIDEBAR_MODES } from "@/lib/themes";
+import { THEMES } from "@/lib/themes";
 import AssetUploader from "@/components/AssetUploader";
 import AssetList from "@/components/AssetList";
 import { isBlobConfigured } from "@/lib/blob";
@@ -63,31 +63,6 @@ export default async function AjustesPage() {
               </div>
             </div>
 
-            <div>
-              <span className="label">Menú lateral</span>
-              <div className="grid sm:grid-cols-2 gap-2">
-                {SIDEBAR_MODES.map((m) => (
-                  <label key={m.id} className="tile p-3 flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="sidebarMode"
-                      value={m.id}
-                      defaultChecked={(kit?.sidebarMode ?? "fijo") === m.id}
-                      className="mt-1"
-                    />
-                    <span>
-                      <span className="block text-sm">{m.name}</span>
-                      <span className="block text-xs text-neutral-500 mt-0.5">
-                        {m.description}
-                      </span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-              <p className="text-xs text-neutral-600 mt-2">
-                Solo afecta al ordenador. En móvil manda la barra inferior.
-              </p>
-            </div>
           </div>
         </section>
 

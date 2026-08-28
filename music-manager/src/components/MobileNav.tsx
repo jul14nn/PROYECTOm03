@@ -4,45 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { MOBILE_PRIMARY, MOBILE_SECONDARY, type NavItem } from "@/lib/nav";
-import { signOutAction } from "@/lib/actions/auth";
-import { LogOut, Settings2, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import clsx from "clsx";
-
-export function MobileTopBar() {
-  return (
-    <header className="md:hidden sticky top-0 z-40 flex items-center gap-2.5 px-4 backdrop-blur-xl"
-      style={{
-        paddingTop: "calc(env(safe-area-inset-top) + 0.7rem)",
-        paddingBottom: "0.7rem",
-        background: "linear-gradient(180deg, rgba(16,14,22,0.92), rgba(12,10,17,0.78))",
-        borderBottom: "1px solid var(--edge)",
-      }}
-    >
-      <div
-        className="h-8 w-8 rounded-lg flex items-center justify-center poster text-xs text-white shrink-0"
-        style={{
-          background: "linear-gradient(135deg, var(--accent-violet), var(--accent-magenta))",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3), 0 4px 14px -4px color-mix(in srgb, var(--accent-magenta) 80%, transparent)",
-        }}
-      >
-        KR
-      </div>
-      <span className="display text-[0.95rem] flex-1">Music Manager</span>
-      <Link href="/ajustes" aria-label="Ajustes" className="p-1.5 text-neutral-500">
-        <Settings2 size={17} />
-      </Link>
-      <form action={signOutAction}>
-        <button
-          type="submit"
-          aria-label="Cerrar sesión"
-          className="p-1.5 -mr-1.5 text-neutral-500"
-        >
-          <LogOut size={17} />
-        </button>
-      </form>
-    </header>
-  );
-}
 
 export function MobileTabBar() {
   const pathname = usePathname();

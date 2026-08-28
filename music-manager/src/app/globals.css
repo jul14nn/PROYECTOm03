@@ -1,34 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  /* Negro con una pizca de azul: el negro puro aplasta y abarata. */
-  --background: #08070b;
-  --foreground: #f2f0f5;
+  /* Negro casi absoluto: el contraste lo pone la superficie, no el fondo. */
+  --background: #030303;
+  --foreground: #ffffff;
 
-  /* Marca: luces de escenario sobre negro */
-  --accent-violet: #9333ea;
-  --accent-magenta: #e0299e;
-  --accent-amber: #f6a723;
-  --accent: #a855f7;
-  --accent-ink: #7e22ce;
+  /* Verde de señal sobre negro. El rojo es solo para lo que va mal, y por
+     eso no se usa en nada decorativo. */
+  --accent: #10b981;
+  --accent-ink: #059669;
+  --accent-soft: #34d399;
+  --danger: #ef4444;
 
-  /* Sistema de superficies: se apilan por elevación, no por bordes. */
-  --surface-1: #0f0e14;
-  --surface-2: #16141d;
-  --surface-3: #1d1a26;
+  /* Se conservan estos tres nombres porque el color por canción y los temas
+     alternativos cuelgan de ellos. Reapuntados a la escala nueva. */
+  --accent-violet: #10b981;
+  --accent-magenta: #34d399;
+  --accent-amber: #eab308;
 
-  /* El borde es luz de canto, no un contorno gris. */
-  --edge: rgba(255, 255, 255, 0.07);
-  --edge-strong: rgba(255, 255, 255, 0.12);
+  /* Superficies: escala zinc. Planas, definidas por su borde y no por luz. */
+  --surface-1: #18181b;
+  --surface-2: #1f1f23;
+  --surface-3: #27272a;
 
-  --text-dim: #9a96a6;
-  --text-dimmer: #6e6a7a;
+  /* El borde es una línea real, no un reflejo. Es lo que da aspecto de
+     instrumento en vez de aspecto de cristal. */
+  --edge: #27272a;
+  --edge-strong: #3f3f46;
 
-  /* Luz desde arriba + sombra ambiental: lo que da sensación de objeto real. */
-  --lift-1: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.5),
-    0 8px 24px -12px rgba(0, 0, 0, 0.8);
-  --lift-2: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 2px 4px rgba(0, 0, 0, 0.5),
-    0 16px 40px -16px rgba(0, 0, 0, 0.9);
+  --text-dim: #a1a1aa;
+  --text-dimmer: #71717a;
+
+  /* Geometría: un solo radio para todo lo rectangular. */
+  --r-card: 8px;
+  --r-control: 8px;
+
+  /* Sombra contenida: separa del fondo sin fingir volumen. */
+  --lift-1: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --lift-2: 0 4px 16px -4px rgba(0, 0, 0, 0.7);
 }
 
 @theme inline {
@@ -42,6 +51,12 @@
 body {
   background: var(--background);
   color: var(--foreground);
+  /* Cuerpo en monoespaciada: es lo que fija el tono técnico de toda la
+     interfaz. La interlínea sube a 1.6 porque la mono, más ancha, necesita
+     más aire entre renglones para no leerse como un bloque. */
+  font-family: var(--font-tech), ui-monospace, monospace;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 /* ---------------------------------------------------------------------
@@ -112,51 +127,44 @@ body > * {
 
 .card {
   position: relative;
-  background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.045),
-      rgba(255, 255, 255, 0.012) 42%,
-      rgba(255, 255, 255, 0) 100%
-    ),
-    var(--surface-1);
+  /* Superficie plana. El degradado de antes fingía un cristal iluminado;
+     aquí la separación la hace el borde, que es más honesto y más denso. */
+  background: var(--surface-1);
   border: 1px solid var(--edge);
-  border-radius: 1rem;
+  border-radius: var(--r-card);
   box-shadow: var(--lift-1);
-  backdrop-filter: blur(12px);
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 /* Tarjeta principal de cada pantalla: más presencia, sin gritar. */
+/* La tarjeta principal se distingue por el canto encendido, no por brillar
+   más: en una interfaz oscura el color señala mejor que la luz. */
 .card-featured {
-  background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.07),
-      rgba(255, 255, 255, 0.018) 45%,
-      rgba(255, 255, 255, 0) 100%
-    ),
-    var(--surface-2);
-  border-color: var(--edge-strong);
-  box-shadow: var(--lift-2);
+  background: var(--surface-2);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--edge));
+  box-shadow: var(--lift-2), inset 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 /* Filas de contenido dentro de una card (featuring, tareas, presupuesto…).
    Sin esto la ficha de canción se queda plana por dentro por muchas capas
    que tenga la tarjeta que la envuelve. */
 .tile {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.022));
+  background: var(--surface-2);
   border: 1px solid var(--edge);
-  border-radius: 0.7rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: background 0.18s ease, border-color 0.18s ease;
+  border-radius: var(--r-control);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
 
+/* Levantar un píxel al pasar: el gesto de la referencia. Basta uno. */
 .tile:hover {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.032));
+  background: var(--surface-3);
   border-color: var(--edge-strong);
+  transform: translateY(-1px);
 }
 
 /* Filas pulsables dentro de una card. */
 .row-hover {
-  border-radius: 0.7rem;
+  border-radius: var(--r-control);
   transition: background-color 0.18s ease, transform 0.18s ease;
 }
 .row-hover:hover {
@@ -164,9 +172,9 @@ body > * {
 }
 
 .input {
-  background: rgba(0, 0, 0, 0.35);
+  background: #0a0a0b;
   border: 1px solid var(--edge);
-  border-radius: 0.6rem;
+  border-radius: var(--r-control);
   padding: 0.6rem 0.85rem;
   font-size: 0.875rem;
   width: 100%;
@@ -223,11 +231,10 @@ input[type="checkbox"] {
    --------------------------------------------------------------------- */
 
 .display {
-  font-family: var(--font-poster), "Arial Narrow", sans-serif;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.004em;
-  line-height: 0.92;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
   text-wrap: balance;
 }
 
@@ -237,17 +244,11 @@ input[type="checkbox"] {
    DISTRIBUCIÓN) caen fuera de la caja del degradado y desaparecen.
    El margen negativo lo compensa para que no altere la maquetación. */
 .display-title {
-  font-family: var(--font-poster), "Arial Narrow", sans-serif;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.004em;
-  line-height: 0.92;
-  padding-top: 0.18em;
-  margin-top: -0.18em;
-  background: linear-gradient(175deg, #ffffff 25%, #b9b3c9 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  color: var(--foreground);
 }
 
 /* Antetítulo de sección: pequeño y espaciado para que el display mande. */
@@ -273,8 +274,9 @@ input[type="checkbox"] {
 }
 
 .poster {
-  font-family: var(--font-poster), "Arial Narrow", sans-serif;
-  letter-spacing: 0.01em;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   text-wrap: balance;
 }
 
@@ -287,7 +289,7 @@ input[type="checkbox"] {
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  border-radius: 0.6rem;
+  border-radius: var(--r-control);
   padding: 0.6rem 1rem;
   font-size: 0.85rem;
   font-weight: 600;
@@ -302,13 +304,15 @@ input[type="checkbox"] {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-violet), var(--accent-magenta));
-  color: white;
+  background: var(--accent);
+  color: #04170f;
+  font-weight: 600;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
     0 6px 20px -8px color-mix(in srgb, var(--accent-magenta) 75%, transparent);
 }
 .btn-primary:hover {
-  filter: brightness(1.08);
+  background: var(--accent-soft);
+  filter: none;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35),
     0 10px 28px -8px color-mix(in srgb, var(--accent-magenta) 85%, transparent);
 }
