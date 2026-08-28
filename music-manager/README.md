@@ -194,6 +194,27 @@ corre como una tarea programada (`vercel.json` → `crons`), una vez al día:
 Al terminar tendrás una URL pública (`tu-proyecto.vercel.app`) accesible desde cualquier
 dispositivo, incluido tu iPhone.
 
+### Si haces push y la web no cambia
+
+Los tres casos son restos de cuando la app vivía dentro del monorepo `PROYECTOm03`, en
+la carpeta `music-manager/`. Aquí está todo en la raíz, así que cualquier ajuste que
+nombre esa carpeta ya no encaja. Se ven en **Settings → Git** y en **Deployments**:
+
+- **No aparece ningún deployment nuevo.** El *Ignored Build Step* del panel seguía
+  comprobando si había cambios en `music-manager/`. Como esa carpeta no existe en este
+  repositorio, la condición no se cumplía nunca y Vercel se saltaba todos los builds.
+  Este repositorio ya trae `"ignoreCommand": "exit 1"` en `vercel.json`, que fuerza el
+  build en cada push y manda sobre lo que diga el panel (en un `ignoreCommand`, salir
+  con 0 significa *saltar* y con 1 *construir*).
+- **El deployment sale en rojo con un error de carpeta.** El *Root Directory* seguía
+  apuntando a `music-manager`. Hay que dejarlo vacío.
+- **El proyecto no reacciona a nada.** Está conectado a `jul14nn/PROYECTOm03`, que no
+  tiene rama `main`: su trabajo vive en ramas `claude/…`. El proyecto tiene que apuntar
+  a `jul14nn/music-manager-app`, con *Production Branch* en `main`.
+
+Si el deployment sí existe y está verde pero ves la versión antigua, es caché del
+navegador: recarga forzando (en iPhone, Ajustes → Safari → Borrar historial y datos).
+
 ## Instalarla en el iPhone (PWA)
 
 Con la app desplegada y su URL abierta en **Safari** (no en Chrome — en iOS la instalación
