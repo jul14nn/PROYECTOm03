@@ -52,7 +52,7 @@ export default async function MarketingPage() {
   const arrangement = buildCampaigns(songs);
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-4xl mx-auto">
       <header className="pb-10">
         <div className="eyebrow mb-3">Promoción</div>
         <h1 className="display-title text-5xl sm:text-6xl">Marketing</h1>

@@ -144,7 +144,7 @@ export default function Hilo({ data }: { data: DashboardData }) {
   }
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-4xl mx-auto">
       <header className="pb-12">
         <div className="eyebrow mb-3">{today.toUpperCase()}</div>
         <h1 className="display-title text-6xl sm:text-7xl">Hoy</h1>

@@ -58,7 +58,7 @@ export default async function ResultadosPage() {
   const techo = Math.max(1, ...formatos.map((f) => f.mediaVistas));
 
   return (
-    <div className="space-y-6 max-w-4xl pb-16">
+    <div className="space-y-6 max-w-4xl mx-auto pb-16">
       <div>
         <div className="eyebrow mb-2">Aprendizaje</div>
         <h1 className="display-title text-5xl sm:text-6xl">Resultados</h1>

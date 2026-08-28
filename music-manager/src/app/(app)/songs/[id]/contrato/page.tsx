@@ -71,7 +71,7 @@ export default async function ContratoPage({
   const hayMaster = participantes.some((p) => p.kind === "MASTER");
 
   return (
-    <div className="space-y-6 pb-16 max-w-3xl">
+    <div className="space-y-6 pb-16 max-w-3xl mx-auto">
       <div>
         <Link
           href={`/songs/${song.id}?tab=royalties`}
