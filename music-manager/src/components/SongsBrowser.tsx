@@ -23,9 +23,16 @@ export type SongRow = {
   producers: string[];
 };
 
-export default function SongsBrowser({ songs }: { songs: SongRow[] }) {
+export default function SongsBrowser({
+  songs,
+  initialStage = "ALL",
+}: {
+  songs: SongRow[];
+  /** Etapa preseleccionada, para llegar filtrado desde el resumen. */
+  initialStage?: Stage | "ALL";
+}) {
   const [query, setQuery] = useState("");
-  const [stage, setStage] = useState<Stage | "ALL">("ALL");
+  const [stage, setStage] = useState<Stage | "ALL">(initialStage);
   const [view, setView] = useState<"lista" | "fundas">("lista");
 
   // Solo se ofrecen como filtro las etapas que realmente tienen canciones,

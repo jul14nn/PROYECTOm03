@@ -133,7 +133,7 @@ export default async function SongDetailPage({
           <div className="card p-6 space-y-3">
             <h2 className="eyebrow">En otras secciones</h2>
             <div className="grid sm:grid-cols-2 gap-2">
-              <Link href="/calendar" className="tile px-3 py-2.5 text-sm flex items-center justify-between gap-2 hover:bg-white/[0.05] transition-colors">
+              <Link href="/" className="tile px-3 py-2.5 text-sm flex items-center justify-between gap-2 hover:bg-white/[0.05] transition-colors">
                 <span className="flex items-center gap-2">
                   <CalendarDays size={15} className="text-neutral-500" /> Agenda
                 </span>

@@ -4,9 +4,19 @@ import { requireUserId } from "@/lib/auth";
 import { formatDateApprox } from "@/lib/constants";
 import { daysUntil } from "@/lib/tiktokPlan";
 import SongsBrowser, { type SongRow } from "@/components/SongsBrowser";
+import { STAGES, type Stage } from "@/lib/constants";
 
-export default async function SongsPage() {
+export default async function SongsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ stage?: string }>;
+}) {
   const userId = await requireUserId();
+  // El resumen enlaza aquí por etapa: sin esto el enlace llegaría al listado
+  // sin filtrar y la cifra en la que has pulsado no querría decir nada.
+  const { stage } = await searchParams;
+  const initialStage: Stage | "ALL" =
+    stage && (STAGES as readonly string[]).includes(stage) ? (stage as Stage) : "ALL";
   const songs = await prisma.song.findMany({
     where: { userId },
     orderBy: { updatedAt: "desc" },
@@ -48,7 +58,7 @@ export default async function SongsPage() {
           .
         </div>
       ) : (
-        <SongsBrowser songs={rows} />
+        <SongsBrowser songs={rows} initialStage={initialStage} />
       )}
     </div>
   );

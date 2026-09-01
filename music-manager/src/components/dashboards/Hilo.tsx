@@ -1,6 +1,6 @@
 import { LAUNCH_STEPS } from "@/lib/launchPlan";
 import Link from "next/link";
-import { formatDate, formatDateTime, formatMoney } from "@/lib/constants";
+import { formatDate, formatDateTime, formatMoney, STAGE_LABELS } from "@/lib/constants";
 import { daysUntil } from "@/lib/tiktokPlan";
 import { Plus } from "lucide-react";
 import type { DashboardData } from "./types";
@@ -145,10 +145,43 @@ export default function Hilo({ data }: { data: DashboardData }) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <header className="pb-12">
+      <header className="pb-10">
         <div className="eyebrow mb-3">{today.toUpperCase()}</div>
-        <h1 className="display-title text-6xl sm:text-7xl">Hoy</h1>
+        <h1 className="display-title text-6xl sm:text-7xl">Resumen</h1>
       </header>
+
+      {/* El catálogo primero y en grande: es la pregunta que se hace al
+          abrir un resumen. Antes vivía al final, detrás de todo el hilo. */}
+      <section className="border-y border-white/20 py-7 mb-12">
+        <div className="flex flex-wrap items-end gap-x-12 gap-y-6">
+          <Link href="/songs" className="group">
+            <div className="numeral text-6xl sm:text-7xl text-white leading-none group-hover:text-[var(--accent-soft)] transition-colors">
+              {data.totalSongs}
+            </div>
+            <div className="text-xs text-neutral-500 mt-2 group-hover:text-neutral-300 transition-colors">
+              {data.totalSongs === 1 ? "canción en total" : "canciones en total"} →
+            </div>
+          </Link>
+
+          {/* El desglose por etapa se calculaba desde hacía tiempo y no se
+              pintaba en ningún sitio. Dice más que el total solo: cuántas
+              están empezadas y cuántas atascadas. */}
+          <div className="flex flex-wrap gap-x-7 gap-y-3 pb-1">
+            {data.byStage
+              .filter((s) => s.count > 0)
+              .map((s) => (
+                <Link key={s.stage} href={`/songs?stage=${s.stage}`} className="group">
+                  <div className="numeral text-2xl text-neutral-300 leading-none group-hover:text-white transition-colors">
+                    {s.count}
+                  </div>
+                  <div className="text-[0.62rem] uppercase tracking-[0.14em] text-neutral-600 mt-1.5">
+                    {STAGE_LABELS[s.stage]}
+                  </div>
+                </Link>
+              ))}
+          </div>
+        </div>
+      </section>
 
       {groups.length === 0 ? (
         <div className="border-t border-white/[0.09] pt-8">
@@ -206,7 +239,6 @@ export default function Hilo({ data }: { data: DashboardData }) {
       )}
 
       <section className="border-t border-white/20 pt-8 flex flex-wrap gap-x-12 gap-y-6">
-        <Figure value={data.totalSongs} label="canciones" />
         <Figure
           value={data.missingCover}
           label="sin portada"

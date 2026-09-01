@@ -5,6 +5,12 @@ canción hasta su lanzamiento, distribución, marketing y reparto de royalties.
 
 ## Módulos
 
+- **Agenda** (la portada de la app): tus sesiones y citas mezcladas con los pasos de
+  lanzamiento que vencen en los próximos 30 días, agrupados por día. Es lo primero que
+  se ve al abrir, porque la pregunta al entrar es qué toca hoy.
+- **Resumen**: cuántas canciones tienes y en qué etapa está cada una — se pulsa una etapa
+  y el catálogo se abre ya filtrado —, seguido del hilo de lo que viene y de lo que hay
+  sin cerrar (portadas, repartos que no cuadran, gasto del plan).
 - **Canciones**: título, tipo/género, color identificativo, etapa (idea → pre-producción →
   escritura → grabación → mezcla → máster → portada → distribución → lanzada), BPM,
   tonalidad, **fecha aproximada de lanzamiento** (selector propio con calendario y año) y
@@ -16,16 +22,17 @@ canción hasta su lanzamiento, distribución, marketing y reparto de royalties.
 - **Consejo del día**: 20 consejos de marketing musical que rotan sin repetirse hasta
   agotar la ronda.
 - **Colaboradores**: featuring y productores por canción, vinculados a la agenda de contactos.
-- **Ideas de vídeo**: lluvia de ideas para el videoclip/lyric video de cada canción.
 - **Pre-producción**: checklist de gestiones previas (registro en sociedad de autores,
   reserva de estudio, confirmaciones, etc.) con responsable y fecha límite.
-- **Distribución**: pasos con la distribuidora (metadata, fecha de lanzamiento, pitching
-  a playlists...), vista por canción y vista global.
-- **Marketing**: presupuesto planificado vs. gastado por categoría, e ideas de marketing
-  por canal, vista por canción y vista global.
-- **Royalties**: splits por colaborador y canción, con registro de pagos.
-- **Agenda**: calendario de eventos (sesiones, reuniones...) con ubicación, canción
-  relacionada y **envío de invitaciones por correo electrónico** a los contactos deseados.
+- **Plan de lanzamiento**: 32 pasos repartidos en 6 fases, cada uno con su fecha
+  calculada a partir de la fecha aproximada de la canción y con su coste cuando lo tiene.
+  Es el que alimenta la agenda, la vista de Distribución (sus pasos de canal
+  «Distribuidora») y el gasto de marketing.
+- **Royalties**: splits de obra y de máster por colaborador, con registro de pagos, aviso
+  cuando un reparto no suma 100% y el acuerdo listo para firmar. Se editan desde la propia
+  página de Royalties, plegados por canción.
+- **Eventos**: sesiones y reuniones con ubicación, canción relacionada y **envío de
+  invitaciones por correo electrónico** (con adjunto .ics) a los contactos deseados.
 - **Contactos**: directorio único de productores, featuring, distribuidoras, etc.,
   reutilizado en toda la app.
 

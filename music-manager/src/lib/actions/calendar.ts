@@ -45,15 +45,15 @@ export async function createEvent(formData: FormData) {
     },
   });
 
-  revalidatePath("/calendar");
+  revalidatePath("/");
   redirect(`/calendar/${event.id}`);
 }
 
 export async function deleteEvent(id: string) {
   const userId = await requireUserId();
   await prisma.calendarEvent.deleteMany({ where: { id, userId } });
-  revalidatePath("/calendar");
-  redirect("/calendar");
+  revalidatePath("/");
+  redirect("/");
 }
 
 export async function updateEvent(id: string, formData: FormData) {
@@ -96,7 +96,7 @@ export async function updateEvent(id: string, formData: FormData) {
     });
   }
 
-  revalidatePath("/calendar");
+  revalidatePath("/");
   revalidatePath(`/calendar/${id}`);
 }
 
