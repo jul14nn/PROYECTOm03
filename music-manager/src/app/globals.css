@@ -1,0 +1,966 @@
+@import "tailwindcss";
+
+:root {
+  /* Negro casi absoluto: el contraste lo pone la superficie, no el fondo. */
+  --background: #030303;
+  --foreground: #ffffff;
+
+  /* Verde de señal sobre negro. El rojo es solo para lo que va mal, y por
+     eso no se usa en nada decorativo. */
+  --accent: #10b981;
+  --accent-ink: #059669;
+  --accent-soft: #34d399;
+  --danger: #ef4444;
+
+  /* Se conservan estos tres nombres porque el color por canción y los temas
+     alternativos cuelgan de ellos. Reapuntados a la escala nueva. */
+  --accent-violet: #10b981;
+  --accent-magenta: #34d399;
+  --accent-amber: #eab308;
+
+  /* Superficies: escala zinc. Planas, definidas por su borde y no por luz. */
+  --surface-1: #18181b;
+  --surface-2: #1f1f23;
+  --surface-3: #27272a;
+
+  /* El borde es una línea real, no un reflejo. Es lo que da aspecto de
+     instrumento en vez de aspecto de cristal. */
+  --edge: #27272a;
+  --edge-strong: #3f3f46;
+
+  --text-dim: #a1a1aa;
+  --text-dimmer: #71717a;
+
+  /* Geometría: un solo radio para todo lo rectangular. */
+  --r-card: 8px;
+  --r-control: 8px;
+
+  /* Sombra contenida: separa del fondo sin fingir volumen. */
+  --lift-1: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --lift-2: 0 4px 16px -4px rgba(0, 0, 0, 0.7);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  /* Los utilitarios de Tailwind tienen que caer en las mismas dos familias
+     que el sistema de diseño. Apuntaban a Geist, asi que `font-mono` daba
+     Geist Mono mientras .label y .numeral daban JetBrains: dos monoespaciadas
+     distintas conviviendo en la misma pantalla sin que nadie lo pidiera. */
+  --font-sans: var(--font-display);
+  --font-mono: var(--font-tech);
+  --font-poster: var(--font-poster);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  /* Cuerpo en Inter, no en monoespaciada. Poner la mono en todo hacía que
+     un titulo de cancion se leyera como una linea de terminal, y como la
+     mono es mucho mas ancha, frases normales rompian en dos renglones.
+     La mono se reserva para lo tecnico: .label, .eyebrow y .numeral. Ese
+     contraste es justo lo que le da caracter — si esta en todas partes,
+     deja de significar nada. */
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------------------------------------------------------------
+   Atmósfera: bloom ambiental + grano de película en TODA la app.
+   Antes esto solo existía en el login, así que al entrar se perdía
+   todo el carácter y quedaba un panel gris genérico.
+   --------------------------------------------------------------------- */
+
+/* Fondo de la referencia: barras verticales atravesadas por un haz de luz.
+   Va en dos capas porque el orden importa — las barras debajo, el haz
+   encima, para que la luz las ilumine en vez de quedar tapada por ellas. */
+
+/* Capa 1: las barras. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0 3px,
+    transparent 3px 30px
+  );
+  /* Se desvanecen hacia abajo: la luz viene de arriba y no llega al pie. */
+  mask-image: linear-gradient(180deg, black 0%, black 22%, transparent 58%);
+  -webkit-mask-image: linear-gradient(180deg, black 0%, black 22%, transparent 58%);
+}
+
+/* Capa 2: el haz. Núcleo estrecho y muy brillante, halo ancho alrededor.
+   Se apaga antes de llegar al contenido: si el núcleo sigue bajando cruza
+   los renglones y parece una raya suelta encima del texto. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    /* Núcleo */
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      color-mix(in srgb, var(--accent) 92%, white) 4%,
+      color-mix(in srgb, var(--accent) 62%, transparent) 18%,
+      transparent 44%
+    ),
+    /* Halo cercano */
+    radial-gradient(
+      24% 32% at 50% -4%,
+      color-mix(in srgb, var(--accent) 62%, transparent),
+      transparent 70%
+    ),
+    /* Halo lejano, el que tiñe la cabecera */
+    radial-gradient(
+      68% 44% at 50% -8%,
+      color-mix(in srgb, var(--accent) 24%, transparent),
+      transparent 76%
+    );
+  background-repeat: no-repeat;
+  background-size: 3px 100%, 100% 100%, 100% 100%;
+  background-position: 50% 0, 50% 0, 50% 0;
+  animation: latido 7s ease-in-out infinite alternate;
+}
+
+/* El haz respira: sin esto la pantalla parece una captura. */
+@keyframes latido {
+  from { opacity: 0.82; }
+  to { opacity: 1; }
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Superficies
+   --------------------------------------------------------------------- */
+
+.card {
+  position: relative;
+  /* Superficie plana. El degradado de antes fingía un cristal iluminado;
+     aquí la separación la hace el borde, que es más honesto y más denso. */
+  background: var(--surface-1);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-card);
+  box-shadow: var(--lift-1);
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* Tarjeta principal de cada pantalla: más presencia, sin gritar. */
+/* La tarjeta principal se distingue por el canto encendido, no por brillar
+   más: en una interfaz oscura el color señala mejor que la luz. */
+.card-featured {
+  background: var(--surface-2);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--edge));
+  box-shadow: var(--lift-2), inset 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+/* Filas de contenido dentro de una card (featuring, tareas, presupuesto…).
+   Sin esto la ficha de canción se queda plana por dentro por muchas capas
+   que tenga la tarjeta que la envuelve. */
+.tile {
+  background: var(--surface-2);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-control);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+/* Levantar un píxel al pasar: el gesto de la referencia. Basta uno. */
+.tile:hover {
+  background: var(--surface-3);
+  border-color: var(--edge-strong);
+  transform: translateY(-1px);
+}
+
+/* Filas pulsables dentro de una card. */
+.row-hover {
+  border-radius: var(--r-control);
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+.row-hover:hover {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.input {
+  background: #0a0a0b;
+  border: 1px solid var(--edge);
+  border-radius: var(--r-control);
+  padding: 0.6rem 0.85rem;
+  font-size: 0.875rem;
+  width: 100%;
+  color: var(--foreground);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45),
+    0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.input::placeholder {
+  color: var(--text-dimmer);
+}
+
+/* El checkbox por defecto del navegador es azul sistema y rompe la paleta. */
+input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+.label {
+  font-family: var(--font-tech), ui-monospace, monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  /* La mono ya viene ancha de serie: con el espaciado de antes se separaba
+     demasiado y las etiquetas dejaban de leerse como una unidad. */
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-dim);
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+/* Estas clases no están dentro de una capa, así que le ganan a las utilidades
+   de Tailwind: poner `flex` junto a `.label` no hacía nada y el icono caía a
+   su propia línea. Para etiquetas con icono se usa esta variante. */
+.label-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ---------------------------------------------------------------------
+   Tipografía: contraste de escala real.
+   Anton estaba cargada pero solo se usaba en el logo de 7px.
+   --------------------------------------------------------------------- */
+
+.display {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+/* Títulos de página, con un punto de luz por encima.
+   El padding superior NO es decorativo: con background-clip:text y una
+   interlínea tan cerrada, las tildes de las mayúsculas (NEÓN, CANCIÓN,
+   DISTRIBUCIÓN) caen fuera de la caja del degradado y desaparecen.
+   El margen negativo lo compensa para que no altere la maquetación. */
+.display-title {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  color: var(--foreground);
+}
+
+/* Antetítulo de sección: pequeño y espaciado para que el display mande. */
+.eyebrow {
+  font-family: var(--font-tech), ui-monospace, monospace;
+  font-size: 0.67rem;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-dim);
+}
+
+/* Cifras: monoespaciadas, que es la única forma de que no bailen al cambiar.
+   Antes pedían `tabular-nums` sobre la tipografía de cartel, que no tiene
+   cifras tabulares: la intención estaba, el efecto no. */
+.numeral {
+  font-family: var(--font-tech), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.poster {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+/* ---------------------------------------------------------------------
+   Botones
+   --------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: var(--r-control);
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease,
+    filter 0.16s ease;
+  cursor: pointer;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #04170f;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 6px 20px -8px color-mix(in srgb, var(--accent-magenta) 75%, transparent);
+}
+.btn-primary:hover {
+  background: var(--accent-soft);
+  filter: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 10px 28px -8px color-mix(in srgb, var(--accent-magenta) 85%, transparent);
+}
+
+.btn-secondary {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  color: var(--foreground);
+  border: 1px solid var(--edge);
+  box-shadow: var(--lift-1);
+}
+.btn-secondary:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.04));
+  border-color: var(--edge-strong);
+}
+
+.btn-danger {
+  background: transparent;
+  color: #f87171;
+}
+.btn-danger:hover {
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.badge {
+  /* Mayúsculas espaciadas y diminutas: es un rótulo técnico, del mismo
+     grupo que .label y .eyebrow, así que le toca la mono. Antes la heredaba
+     del cuerpo sin declararla, y al pasar el cuerpo a Inter perdió el
+     carácter en toda la app de golpe. */
+  font-family: var(--font-tech), ui-monospace, monospace;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+/* Barra de progreso con degradado de marca y brillo. */
+.meter {
+  height: 0.4rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--accent-violet), var(--accent-magenta));
+  box-shadow: 0 0 12px -2px color-mix(in srgb, var(--accent-magenta) 80%, transparent);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------------------------------------------------------------------
+   Orgánico I: el color de cada canción tiñe su entorno.
+   La tarjeta/fila define `--song` en línea y estas clases hacen el resto.
+   El punto de 8px se queda; esto es la luz que irradia la funda.
+   --------------------------------------------------------------------- */
+
+.song-tint {
+  --song: var(--accent);
+  border-color: color-mix(in srgb, var(--song) 26%, var(--edge));
+  background:
+    radial-gradient(120% 90% at 8% 0%, color-mix(in srgb, var(--song) 13%, transparent), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012) 42%, rgba(255, 255, 255, 0) 100%),
+    var(--surface-1);
+}
+
+/* Filas de lista: en reposo neutras; al pasar, la canción responde. */
+.song-row {
+  --song: var(--accent);
+  transition: background-color 0.2s ease;
+}
+.song-row:hover {
+  background: color-mix(in srgb, var(--song) 7%, transparent);
+}
+
+/* ---------------------------------------------------------------------
+   Orgánico II: entrada escalonada. La interfaz llega, no se imprime.
+   Solo anima los primeros 14 hijos; a partir de ahí entran con el último
+   retardo (listas largas no deben hacerse esperar).
+   El bloque global de prefers-reduced-motion ya la anula.
+   --------------------------------------------------------------------- */
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.stagger > * {
+  animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.42s;
+}
+.stagger > *:nth-child(1) { animation-delay: 0s; }
+.stagger > *:nth-child(2) { animation-delay: 0.035s; }
+.stagger > *:nth-child(3) { animation-delay: 0.07s; }
+.stagger > *:nth-child(4) { animation-delay: 0.105s; }
+.stagger > *:nth-child(5) { animation-delay: 0.14s; }
+.stagger > *:nth-child(6) { animation-delay: 0.175s; }
+.stagger > *:nth-child(7) { animation-delay: 0.21s; }
+.stagger > *:nth-child(8) { animation-delay: 0.245s; }
+.stagger > *:nth-child(9) { animation-delay: 0.28s; }
+.stagger > *:nth-child(10) { animation-delay: 0.315s; }
+.stagger > *:nth-child(11) { animation-delay: 0.35s; }
+.stagger > *:nth-child(12) { animation-delay: 0.385s; }
+.stagger > *:nth-child(13) { animation-delay: 0.42s; }
+
+/* ---------------------------------------------------------------------
+   Orgánico III: medidor VU. Segmentos que se encienden, como la mesa.
+   Hereda --song si la tarjeta lo define; si no, el acento de la marca.
+   --------------------------------------------------------------------- */
+
+.vu {
+  display: flex;
+  gap: 3px;
+  height: 0.55rem;
+}
+.vu > span {
+  flex: 1;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+.vu > span[data-on] {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--song, var(--accent)) 55%, white),
+    var(--song, var(--accent))
+  );
+  box-shadow: 0 0 8px -2px var(--song, var(--accent));
+}
+
+/* ---------------------------------------------------------------------
+   El documento del acuerdo de reparto.
+   En pantalla se ve como papel (fondo claro, serif) porque eso es lo que
+   va a ser: un folio que alguien firma. Al imprimir desaparece todo lo
+   demás — barra lateral, botones, atmósfera — y queda solo el documento.
+   --------------------------------------------------------------------- */
+
+.documento {
+  background: #fdfdfb;
+  color: #16141a;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.6;
+  padding: 3rem 3.2rem;
+  border-radius: 0.6rem;
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.85);
+}
+
+.documento h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.01em;
+  margin-bottom: 1.6rem;
+}
+
+.documento h2 {
+  font-size: 1.02rem;
+  font-weight: 700;
+  margin: 2rem 0 0.5rem;
+}
+
+.documento p {
+  margin-bottom: 0.9rem;
+}
+
+.documento .doc-meta {
+  text-align: center;
+  padding-bottom: 1.2rem;
+  margin-bottom: 1.4rem;
+  border-bottom: 1px solid #d9d5cc;
+}
+
+.documento .doc-nota {
+  font-size: 0.85rem;
+  color: #55505c;
+}
+
+.tabla-scroll {
+  overflow-x: auto;
+  margin: 0.9rem 0;
+}
+
+.documento table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.9rem 0;
+  font-size: 0.88rem;
+}
+
+.documento th,
+.documento td {
+  border: 1px solid #cfcabf;
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+}
+
+.documento th {
+  background: #f0ede6;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.documento .num {
+  text-align: right;
+  white-space: nowrap;
+  /* Columna de porcentajes: sin cifras tabulares no alinean entre filas. */
+  font-variant-numeric: tabular-nums;
+}
+
+.documento tr.total td {
+  font-weight: 700;
+  background: #f6f4ef;
+}
+
+.documento ol {
+  padding-left: 1.3rem;
+  list-style: decimal;
+}
+
+.documento ol li {
+  margin-bottom: 0.5rem;
+}
+
+/* Las firmas no deben partirse entre dos páginas al imprimir. */
+.documento .firmas {
+  break-inside: avoid;
+}
+
+.documento .firma-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 2.4rem 2rem;
+  margin-top: 2.4rem;
+}
+
+.documento .firma {
+  break-inside: avoid;
+}
+
+.documento .firma .linea {
+  border-bottom: 1px solid #16141a;
+  height: 3.2rem;
+  margin-bottom: 0.4rem;
+}
+
+.documento .firma-nombre {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.documento .firma-datos {
+  font-size: 0.78rem;
+  color: #55505c;
+  margin-top: 0.15rem;
+}
+
+.documento .doc-pie {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #d9d5cc;
+  font-size: 0.75rem;
+  color: #6b6674;
+}
+
+@media (max-width: 640px) {
+  .documento {
+    padding: 1.6rem 1.2rem;
+  }
+  .documento h1 {
+    font-size: 1.25rem;
+  }
+}
+
+@media print {
+  /* Fuera la app: queda el folio. */
+  body::before,
+  body::after,
+  aside,
+  nav,
+  header,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .documento {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    max-width: none;
+  }
+
+  .tabla-scroll {
+    overflow-x: visible;
+  }
+
+  @page {
+    margin: 1.8cm;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Cartel / cinemático — splash screen y login
+   --------------------------------------------------------------------- */
+
+.stage-bg {
+  position: relative;
+  isolation: isolate;
+  background: #050308;
+  overflow: hidden;
+}
+
+.stage-bg::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  background:
+    radial-gradient(38% 45% at 18% 15%, color-mix(in srgb, var(--accent-magenta) 55%, transparent), transparent 70%),
+    radial-gradient(45% 50% at 85% 20%, color-mix(in srgb, var(--accent-violet) 60%, transparent), transparent 70%),
+    radial-gradient(50% 55% at 50% 100%, color-mix(in srgb, var(--accent-amber) 40%, transparent), transparent 70%);
+  filter: blur(60px) saturate(130%);
+  animation: stage-drift 18s ease-in-out infinite alternate;
+}
+
+.stage-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 10%, transparent 40%, rgba(0, 0, 0, 0.55) 100%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.025) 0px,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+.stage-bg > * {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes stage-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-2%, 2%, 0) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-bg::before {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   TEMAS OPCIONALES
+   El atributo va en el contenedor de la app, así que basta con redefinir
+   los tokens: las variables CSS heredan hacia abajo y todos los componentes
+   se recolorean solos. Solo hace falta escribir a mano lo que cambia de
+   forma, no de color.
+   --------------------------------------------------------------------- */
+
+.skin {
+  min-height: 100%;
+  /* Sin fondo propio a propósito: el haz vive en body::before/::after, que
+     son fixed y quedan por debajo. Si aquí se pinta un color opaco, el haz
+     desaparece — es exactamente lo que pasaba. Los temas alternativos sí
+     ponen su fondo porque cada uno es un mundo cerrado. */
+  background: transparent;
+}
+
+/* ------------------------------------------------------------- 8 bits */
+
+[data-skin="bits"] {
+  background-color: var(--background);
+  --background: #0d0b1a;
+  --foreground: #e8f7ff;
+  --accent-violet: #7c3aed;
+  --accent-magenta: #ff2e88;
+  --accent-amber: #ffd23f;
+  --accent: #00e5c0;
+  --accent-ink: #0891b2;
+  --surface-1: #151230;
+  --surface-2: #1d1942;
+  --surface-3: #282155;
+  --edge: rgba(0, 229, 192, 0.28);
+  --edge-strong: #00e5c0;
+  --text-dim: #8fa8c4;
+  --text-dimmer: #5d7594;
+  /* Rejilla de barrido: textura de tubo, sin desenfoques. */
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.22) 0 2px,
+    transparent 2px 4px
+  );
+}
+
+/* El píxel es cuadrado: fuera curvas y desenfoques. */
+[data-skin="bits"] .card,
+[data-skin="bits"] .tile,
+[data-skin="bits"] .btn,
+[data-skin="bits"] .input,
+[data-skin="bits"] .badge,
+[data-skin="bits"] .meter,
+[data-skin="bits"] .meter-fill {
+  border-radius: 0;
+}
+
+[data-skin="bits"] .card {
+  border-width: 3px;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.55);
+  backdrop-filter: none;
+  background: var(--surface-1);
+}
+[data-skin="bits"] .card-featured {
+  border-color: var(--accent-magenta);
+  box-shadow: 6px 6px 0 color-mix(in srgb, var(--accent-magenta) 40%, transparent);
+}
+[data-skin="bits"] .tile {
+  border-width: 2px;
+  background: var(--surface-2);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5);
+}
+
+[data-skin="bits"] .display,
+[data-skin="bits"] .poster,
+[data-skin="bits"] .numeral,
+[data-skin="bits"] .eyebrow,
+[data-skin="bits"] .btn,
+[data-skin="bits"] .badge {
+  font-family: var(--font-pixel), monospace;
+  letter-spacing: 0.04em;
+}
+[data-skin="bits"] .display,
+[data-skin="bits"] .poster {
+  font-weight: 700;
+  line-height: 1.25;
+}
+[data-skin="bits"] .display-title {
+  font-family: var(--font-pixel), monospace;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  padding-top: 0;
+  margin-top: 0;
+  background: none;
+  -webkit-text-fill-color: var(--accent-amber);
+  color: var(--accent-amber);
+  text-shadow: 3px 3px 0 var(--accent-magenta), 6px 6px 0 rgba(0, 0, 0, 0.55);
+}
+[data-skin="bits"] .eyebrow {
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+[data-skin="bits"] .btn {
+  text-transform: uppercase;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.6);
+}
+[data-skin="bits"] .btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+[data-skin="bits"] .btn-primary {
+  background: var(--accent-magenta);
+}
+
+/* Medidor a segmentos, como una barra de vida */
+[data-skin="bits"] .stagger > * {
+  animation-timing-function: steps(4, end);
+}
+
+[data-skin="bits"] .vu > span {
+  border-radius: 0;
+}
+
+[data-skin="bits"] .meter {
+  height: 0.85rem;
+  background: #0a0818;
+  border: 2px solid var(--edge);
+  box-shadow: none;
+}
+[data-skin="bits"] .meter-fill {
+  background: var(--accent);
+  box-shadow: none;
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 11px);
+  mask-image: repeating-linear-gradient(90deg, #000 0 8px, transparent 8px 11px);
+}
+
+/* Cursor de consola en el título de la pantalla */
+@keyframes bits-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+[data-skin="bits"] h1.display-title::after {
+  content: "_";
+  margin-left: 0.15em;
+  color: var(--accent);
+  animation: bits-blink 1s steps(1, end) infinite;
+}
+
+/* Las filas entran a saltos: un píxel no interpola. */
+@keyframes bits-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+[data-skin="bits"] main section li {
+  animation: bits-in 0.18s steps(3, end) both;
+}
+[data-skin="bits"] main section li:nth-child(2) { animation-delay: 0.06s; }
+[data-skin="bits"] main section li:nth-child(3) { animation-delay: 0.12s; }
+[data-skin="bits"] main section li:nth-child(4) { animation-delay: 0.18s; }
+[data-skin="bits"] main section li:nth-child(5) { animation-delay: 0.24s; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-skin="bits"] h1.display-title::after,
+  [data-skin="bits"] main section li {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------- Vinilo */
+
+[data-skin="vinilo"] {
+  background-color: var(--background);
+  --background: #12100d;
+  --foreground: #f4ede1;
+  --accent-violet: #b45309;
+  --accent-magenta: #ea7317;
+  --accent-amber: #eab308;
+  --accent: #e0913f;
+  --accent-ink: #92400e;
+  --surface-1: #1a1713;
+  --surface-2: #232019;
+  --surface-3: #2c2820;
+  --edge: rgba(255, 238, 214, 0.1);
+  --edge-strong: rgba(255, 238, 214, 0.19);
+  --text-dim: #b0a189;
+  --text-dimmer: #7d7263;
+}
+[data-skin="vinilo"] .display,
+[data-skin="vinilo"] .poster,
+[data-skin="vinilo"] .numeral {
+  font-family: var(--font-editorial), Georgia, serif;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1.02;
+  font-weight: 400;
+}
+[data-skin="vinilo"] .display-title {
+  font-family: var(--font-editorial), Georgia, serif;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  line-height: 1.02;
+  background: linear-gradient(175deg, #fdf6e9 30%, #c6b294 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+[data-skin="vinilo"] .eyebrow {
+  letter-spacing: 0.22em;
+  font-weight: 500;
+}
+[data-skin="vinilo"] .card { border-radius: 0.4rem; }
+[data-skin="vinilo"] .tile,
+[data-skin="vinilo"] .btn,
+[data-skin="vinilo"] .input { border-radius: 0.35rem; }
+[data-skin="vinilo"] .badge { border-radius: 0.2rem; }
+
+/* ---------------------------------------------------------------------
+   Sidebar en modo raíl: se encoge a iconos y se abre al acercarse.
+   --------------------------------------------------------------------- */
+
+.rail {
+  width: 4.5rem;
+  transition: width 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+  z-index: 50;
+}
+.rail:hover,
+.rail:focus-within {
+  width: 16rem;
+  box-shadow: 24px 0 60px -20px rgba(0, 0, 0, 0.85);
+}
+/* Las etiquetas se desvanecen; si se recortaran, saltarían al abrir. */
+.rail .rail-label {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  white-space: nowrap;
+}
+.rail:hover .rail-label,
+.rail:focus-within .rail-label {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail,
+  .rail .rail-label {
+    transition: none;
+  }
+}

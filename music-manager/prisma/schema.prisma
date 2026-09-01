@@ -1,0 +1,467 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum SongStage {
+  IDEA
+  PREPRODUCCION
+  ESCRITURA
+  GRABACION
+  MEZCLA
+  MASTER
+  PORTADA
+  DISTRIBUCION
+  LANZADA
+}
+
+enum TaskStatus {
+  PENDIENTE
+  EN_PROGRESO
+  HECHO
+}
+
+/// Un reparto de royalties son en realidad dos repartos independientes, y
+/// mezclarlos es el error que invalida estos acuerdos en la práctica:
+/// - OBRA: la composición (autores y editoriales). La gestiona la SGAE.
+/// - MASTER: la grabación (intérpretes y productor). AIE/AGEDI o el sello.
+/// Una misma persona puede tener porcentajes distintos en cada uno.
+enum SplitKind {
+  OBRA
+  MASTER
+}
+
+enum InviteStatus {
+  PENDIENTE
+  ENVIADA
+  ACEPTADA
+  RECHAZADA
+}
+
+// ---------------------------------------------------------------------------
+// Autenticación (Auth.js)
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  accounts Account[]
+  sessions Session[]
+
+  songs    Song[]
+  contacts Contact[]
+  posts    ContentPost[]
+  events   CalendarEvent[]
+  brandKit BrandKit?
+  assets   Asset[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------------------------------------------------------------------------
+// Core catalog
+// ---------------------------------------------------------------------------
+
+model Contact {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  email     String?
+  phone     String?
+  role      String? // productor, featuring, mánager, distribuidora, etc.
+  notes     String?
+
+  // Datos que pide un acuerdo de reparto. Viven en el contacto, no en cada
+  // royalty, para escribirlos una vez y reutilizarlos en todas las canciones.
+  legalName String? // nombre completo tal y como aparece en el DNI
+  taxId     String? // DNI / NIE / NIF
+  address   String?
+  society   String? // SGAE, AIE, AGEDI, otra entidad de gestión
+  ipi       String? // IPI/CAE: identificador de autor en su sociedad
+  publisher String? // editorial, si tiene contrato de edición
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  featurings     SongFeaturing[]
+  producedSongs  SongProducer[]
+  royalties      Royalty[]
+  eventInvites   EventInvite[]
+}
+
+model Song {
+  id            String    @id @default(cuid())
+  userId        String
+  title         String
+  genre         String? // tipo de canción
+  color         String    @default("#6366f1")
+  stage         SongStage @default(IDEA)
+  needsCover    Boolean   @default(true)
+  coverUrl      String?
+  bpm           Int?
+  key           String?
+  notes         String?
+  lyrics        String? // la letra vive en la canción: el estudio y los vídeos la precargan
+  isrc          String? // identificador de la grabación, útil en el reparto de máster
+  agreementPlace String? // lugar de firma del acuerdo de reparto
+  agreementDate  DateTime? // fecha de firma; fija, no "hoy", para que el documento no cambie
+  agreementSentAt DateTime? // cuándo se envió el acuerdo a los firmantes
+  registeredAt   DateTime? // cuándo se declaró la obra en la entidad de gestión
+  releaseDate   DateTime? // fecha aproximada de lanzamiento, no un compromiso exacto
+  lastReminderThreshold Int? // último umbral de días ya avisado por email (30/14/7/3/1)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user             User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  featurings       SongFeaturing[]
+  producers        SongProducer[]
+  videoIdeas       VideoIdea[]
+  tasks            PreProductionTask[]
+  distributionSteps DistributionStep[]
+  marketingBudgets MarketingBudgetItem[]
+  marketingIdeas   MarketingIdea[]
+  royalties        Royalty[]
+  events           CalendarEvent[]
+  references       SongReference[]
+  launchTasks      LaunchTask[]
+  assets           Asset[]
+  posts            ContentPost[]
+  snapshots        SongSnapshot[]
+}
+
+model SongReference {
+  id        String   @id @default(cuid())
+  songId    String
+  url       String
+  caption   String?
+  createdAt DateTime @default(now())
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+}
+
+model SongFeaturing {
+  id        String   @id @default(cuid())
+  songId    String
+  contactId String?
+  artistName String
+  role      String? // voz, rap, coros...
+  confirmed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  song    Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  contact Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+}
+
+model SongProducer {
+  id        String   @id @default(cuid())
+  songId    String
+  contactId String
+  role      String? // productor, mezcla, máster, beatmaker
+  createdAt DateTime @default(now())
+
+  song    Song    @relation(fields: [songId], references: [id], onDelete: Cascade)
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+}
+
+/// Retirados de la interfaz al limpiar la ficha de canción: las ideas de
+/// vídeo y de marketing duplicaban el mismo formulario, y el presupuesto y
+/// los pasos de distribuidora los cubre ya el plan de lanzamiento, que
+/// además trae fechas y coste por paso. Los modelos se conservan para no
+/// borrar lo que hubiera guardado; ningún código los lee ya.
+model VideoIdea {
+  id          String   @id @default(cuid())
+  songId      String
+  title       String
+  description String?
+  referenceUrl String?
+  status      TaskStatus @default(PENDIENTE)
+  createdAt   DateTime @default(now())
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+}
+
+model PreProductionTask {
+  id        String     @id @default(cuid())
+  songId    String
+  title     String
+  status    TaskStatus @default(PENDIENTE)
+  dueDate   DateTime?
+  assignee  String?
+  createdAt DateTime   @default(now())
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+}
+
+model DistributionStep {
+  id          String     @id @default(cuid())
+  songId      String
+  distributor String // ej. DistroKid, Spotify for Artists...
+  step        String // ej. "Enviar metadata", "Aprobar portada"
+  status      TaskStatus @default(PENDIENTE)
+  dueDate     DateTime?
+  notes       String?
+  createdAt   DateTime   @default(now())
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+}
+
+model MarketingBudgetItem {
+  id            String   @id @default(cuid())
+  songId        String
+  category      String // ads, contenido, PR, playlisting...
+  plannedAmount Float    @default(0)
+  actualAmount  Float    @default(0)
+  currency      String   @default("EUR")
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+}
+
+model MarketingIdea {
+  id          String     @id @default(cuid())
+  songId      String
+  title       String
+  description String?
+  channel     String? // TikTok, Instagram, YouTube...
+  status      TaskStatus @default(PENDIENTE)
+  createdAt   DateTime   @default(now())
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+}
+
+model Royalty {
+  id          String   @id @default(cuid())
+  songId      String
+  contactId   String?
+  name        String
+  role        String? // autor, productor, featuring, sello...
+  kind        SplitKind @default(OBRA)
+  percentage  Float    @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  song     Song              @relation(fields: [songId], references: [id], onDelete: Cascade)
+  contact  Contact?          @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  payments RoyaltyPayment[]
+}
+
+model RoyaltyPayment {
+  id        String   @id @default(cuid())
+  royaltyId String
+  amount    Float
+  currency  String   @default("EUR")
+  date      DateTime @default(now())
+  notes     String?
+
+  royalty Royalty @relation(fields: [royaltyId], references: [id], onDelete: Cascade)
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  location    String?
+  startDate   DateTime
+  endDate     DateTime?
+  songId      String?
+  createdAt   DateTime @default(now())
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  song    Song?         @relation(fields: [songId], references: [id], onDelete: SetNull)
+  invites EventInvite[]
+}
+
+model EventInvite {
+  id        String       @id @default(cuid())
+  eventId   String
+  contactId String?
+  email     String
+  status    InviteStatus @default(PENDIENTE)
+  sentAt    DateTime?
+  createdAt DateTime     @default(now())
+
+  event   CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  contact Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+}
+
+/// Paso concreto de la campaña de lanzamiento, anclado a la fecha aproximada.
+model LaunchTask {
+  id        String     @id @default(cuid())
+  songId    String
+  stepKey   String // clave del paso en el playbook, para no duplicarlo al regenerar
+  title     String
+  detail    String?
+  phase     String // FUNDAMENTOS, ACTIVOS, CALENTAMIENTO, CUENTA_ATRAS, SALIDA, SOSTENER
+  channel   String?
+  dayOffset Int // días respecto al lanzamiento; negativo = antes
+  dueDate   DateTime?
+  cost      Float?
+  status    TaskStatus @default(PENDIENTE)
+  createdAt DateTime   @default(now())
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@unique([songId, stepKey])
+  @@index([songId])
+}
+
+/// Preferencias visuales del artista. Se aplican a todo lo que se genere,
+/// para que el contenido salga con su identidad sin reconfigurarla cada vez.
+model BrandKit {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  primaryColor    String   @default("#9333ea")
+  secondaryColor  String   @default("#e0299e")
+  fontFamily      String   @default("montserrat") // id de BUILTIN_FONTS
+  subtitleStyle   String   @default("barra") // limpio | barra | linea | bloque
+  subtitlePosPct  Int      @default(78) // posición vertical, zona segura de TikTok
+  subtitleScale   Float    @default(1)
+  defaultVideoStyle String @default("neon")
+  theme           String   @default("neon") // neon | bits | vinilo
+  sidebarMode     String   @default("fijo") // fijo | rail
+
+  // El alta en la entidad de gestión es de una vez, no por canción: guardarlo
+  // evita que la app siga insistiendo cuando ya está hecho.
+  societyStatus   String   @default("sin_responder") // sin_responder | no | tramite | alta
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Dónde se publicó. Se guarda aparte del formato porque la misma idea
+/// rinde distinto según la plataforma.
+enum Platform {
+  TIKTOK
+  INSTAGRAM
+  YOUTUBE
+  SPOTIFY
+  OTRA
+}
+
+enum AssetKind {
+  AUDIO
+  VIDEO
+  FONT
+}
+
+/// Ficheros que sube el artista: el máster de la canción, clips de vídeo y
+/// tipografías propias. Se suben directamente al almacenamiento desde el
+/// navegador, porque la función de servidor corta el cuerpo a 4,5 MB y un
+/// clip de 30 s pesa bastante más.
+model Asset {
+  id        String    @id @default(cuid())
+  userId    String
+  songId    String? // las fuentes son del artista, no de una canción
+  kind      AssetKind
+  url       String
+  pathname  String // ruta en el almacenamiento, para poder borrarlo
+  name      String
+  size      Int
+  mimeType  String
+  createdAt DateTime  @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  song Song? @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+  @@index([songId])
+}
+
+/// Una publicación ya hecha, con lo que consiguió.
+///
+/// La app planificaba mucho y no medía nada: sin esto, cada lanzamiento
+/// empieza de cero y el playbook nunca aprende de lo que a ti te funciona.
+/// El campo que de verdad importa es `format`: es lo que permite comparar
+/// ideas entre sí ("los clips con letra rinden el triple que los de estudio").
+model ContentPost {
+  id        String   @id @default(cuid())
+  userId    String
+  songId    String?
+  platform  Platform @default(TIKTOK)
+  /// Qué tipo de pieza era: "clip con letra", "detrás de cámaras"...
+  format    String
+  postedAt  DateTime @default(now())
+  url       String?
+  views     Int      @default(0)
+  likes     Int      @default(0)
+  comments  Int      @default(0)
+  shares    Int      @default(0)
+  saves     Int      @default(0)
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  song Song? @relation(fields: [songId], references: [id], onDelete: SetNull)
+
+  @@index([userId, postedAt])
+}
+
+/// Foto del rendimiento de una canción en una fecha.
+///
+/// No se guarda un total acumulado sino instantáneas, porque lo que enseña
+/// no es el número sino la pendiente: comparar la primera semana de un
+/// lanzamiento con la del anterior.
+model SongSnapshot {
+  id        String   @id @default(cuid())
+  songId    String
+  takenAt   DateTime @default(now())
+  streams   Int      @default(0)
+  listeners Int      @default(0)
+  saves     Int      @default(0)
+  playlists Int      @default(0)
+  notes     String?
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@index([songId, takenAt])
+}
