@@ -20,7 +20,7 @@ export default async function MarketingPage() {
   const userId = await requireUserId();
   const songs = await prisma.song.findMany({
     where: { userId },
-    include: { launchTasks: true, marketingBudgets: true },
+    include: { launchTasks: true },
     orderBy: { releaseDate: "asc" },
   });
 
@@ -42,12 +42,14 @@ export default async function MarketingPage() {
     .sort((a, b) => (a.days ?? 9999) - (b.days ?? 9999));
 
   const sinPlan = songs.filter((s) => s.launchTasks.length === 0);
-  const totalPlanned = songs
-    .flatMap((s) => s.marketingBudgets)
-    .reduce((a, b) => a + b.plannedAmount, 0);
-  const totalActual = songs
-    .flatMap((s) => s.marketingBudgets)
-    .reduce((a, b) => a + b.actualAmount, 0);
+  // El coste lo trae ya cada paso del plan: "planificado" es todo el plan y
+  // "gastado" lo que has dado por hecho. Antes salía de partidas que había
+  // que teclear a mano canción por canción.
+  const pasos = songs.flatMap((s) => s.launchTasks);
+  const totalPlanned = pasos.reduce((a, t) => a + (t.cost ?? 0), 0);
+  const totalActual = pasos
+    .filter((t) => t.status === "HECHO")
+    .reduce((a, t) => a + (t.cost ?? 0), 0);
   const adCost = LAUNCH_STEPS.reduce((a, s) => a + (s.cost ?? 0), 0);
   const arrangement = buildCampaigns(songs);
 

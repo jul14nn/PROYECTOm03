@@ -7,17 +7,14 @@ import type { DashboardData } from "@/components/dashboards/types";
 
 export default async function DashboardPage() {
   const userId = await requireUserId();
-  const [songs, upcomingEvents, budgets] = await Promise.all([
+  const [songs, upcomingEvents] = await Promise.all([
     prisma.song.findMany({
       where: { userId },
       orderBy: { updatedAt: "desc" },
       include: {
         tasks: true,
-        distributionSteps: true,
-        marketingIdeas: true,
-        marketingBudgets: true,
+        launchTasks: true,
         royalties: true,
-        videoIdeas: true,
         references: true,
       },
     }),
@@ -27,7 +24,6 @@ export default async function DashboardPage() {
       take: 5,
       include: { song: true },
     }),
-    prisma.marketingBudgetItem.findMany({ where: { song: { userId } } }),
   ]);
 
   const data: DashboardData = {
@@ -40,8 +36,16 @@ export default async function DashboardPage() {
     totalSongs: songs.length,
     brokenRoyalties: songsWithBrokenRoyalties(songs),
     missingCover: songs.filter((s) => s.needsCover).length,
-    totalPlanned: budgets.reduce((a, b) => a + b.plannedAmount, 0),
-    totalActual: budgets.reduce((a, b) => a + b.actualAmount, 0),
+    // El coste sale del plan de lanzamiento: cada paso trae el suyo, y
+    // "gastado" son los que ya has dado por hechos. Antes venía de un
+    // presupuesto que se rellenaba a mano en cada canción.
+    totalPlanned: songs
+      .flatMap((s) => s.launchTasks)
+      .reduce((a, t) => a + (t.cost ?? 0), 0),
+    totalActual: songs
+      .flatMap((s) => s.launchTasks)
+      .filter((t) => t.status === "HECHO")
+      .reduce((a, t) => a + (t.cost ?? 0), 0),
     events: upcomingEvents.map((e) => ({
       id: e.id,
       title: e.title,

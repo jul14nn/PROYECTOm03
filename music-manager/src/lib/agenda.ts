@@ -9,11 +9,8 @@ type AgendaSong = {
   releaseDate: Date | null;
   stage: string;
   tasks: { status: string }[];
-  distributionSteps: { status: string }[];
-  marketingIdeas: { status: string }[];
-  marketingBudgets: unknown[];
+  launchTasks: { status: string; channel: string | null; dayOffset: number }[];
   royalties: { percentage: number }[];
-  videoIdeas: unknown[];
   references: unknown[];
 };
 

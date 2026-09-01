@@ -25,8 +25,14 @@ export default function SongWorkspace({
 }) {
   const [active, setActive] = useState(initialTab ?? nextStep.tabId);
 
+  // El aviso no se enseña cuando ya estás en la pestaña a la que apunta:
+  // ahí no dice nada que no tengas delante, y ocupaba una franja de color
+  // encima de las siete.
+  const mostrarAviso = active !== nextStep.tabId;
+
   return (
     <div className="space-y-6">
+      {mostrarAviso && (
       <button
         type="button"
         onClick={() => setActive(nextStep.tabId)}
@@ -45,6 +51,7 @@ export default function SongWorkspace({
         </div>
         <ArrowRight size={18} className="text-[var(--accent-soft)] shrink-0 mt-1" />
       </button>
+      )}
 
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         {tabs.map((t) => (

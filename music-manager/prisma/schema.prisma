@@ -210,6 +210,11 @@ model SongProducer {
   contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
 }
 
+/// Retirados de la interfaz al limpiar la ficha de canción: las ideas de
+/// vídeo y de marketing duplicaban el mismo formulario, y el presupuesto y
+/// los pasos de distribuidora los cubre ya el plan de lanzamiento, que
+/// además trae fechas y coste por paso. Los modelos se conservan para no
+/// borrar lo que hubiera guardado; ningún código los lee ya.
 model VideoIdea {
   id          String   @id @default(cuid())
   songId      String

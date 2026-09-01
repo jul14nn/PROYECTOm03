@@ -133,33 +133,5 @@ export async function removeProducer(songId: string, songProducerId: string) {
 }
 
 // --- Video ideas ---
-export async function addVideoIdea(songId: string, formData: FormData) {
-  const userId = await requireUserId();
-  const title = str(formData, "title");
-  if (!title) return;
-  await assertSongOwner(songId, userId);
-  await prisma.videoIdea.create({
-    data: {
-      songId,
-      title,
-      description: str(formData, "description"),
-      referenceUrl: str(formData, "referenceUrl"),
-    },
-  });
-  revalidatePath(`/songs/${songId}`);
-}
 
-export async function toggleVideoIdea(songId: string, id: string, status: string) {
-  const userId = await requireUserId();
-  await prisma.videoIdea.updateMany({
-    where: { id, songId, song: { userId } },
-    data: { status: status as never },
-  });
-  revalidatePath(`/songs/${songId}`);
-}
 
-export async function removeVideoIdea(songId: string, id: string) {
-  const userId = await requireUserId();
-  await prisma.videoIdea.deleteMany({ where: { id, songId, song: { userId } } });
-  revalidatePath(`/songs/${songId}`);
-}

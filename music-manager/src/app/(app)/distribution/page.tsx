@@ -3,12 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
 import { formatDate, NEXT_TASK_STATUS } from "@/lib/constants";
 import { TaskStatusBadge, ColorDot } from "@/components/Badges";
-import { cycleDistributionStatus } from "@/lib/actions/tasks";
+import { cycleLaunchTask } from "@/lib/actions/launch";
 
 export default async function DistributionPage() {
   const userId = await requireUserId();
-  const steps = await prisma.distributionStep.findMany({
-    where: { song: { userId } },
+  // Los pasos salen del plan de lanzamiento, no de una lista aparte que
+  // había que escribir a mano en cada canción: el plan ya trae "subir a la
+  // distribuidora", "pitchear" y compañía, y además con fecha calculada.
+  const steps = await prisma.launchTask.findMany({
+    where: { song: { userId }, channel: "Distribuidora" },
     include: { song: true },
     orderBy: [{ status: "asc" }, { dueDate: "asc" }],
   });
@@ -22,8 +25,8 @@ export default async function DistributionPage() {
         <div className="eyebrow mb-2">Publicación</div>
         <h1 className="display-title text-5xl sm:text-6xl">Distribución</h1>
         <p className="text-neutral-400 text-sm mt-1">
-          Todos los pasos con distribuidoras, en todas tus canciones. Pulsa el
-          estado para avanzarlo sin entrar en la canción.
+          Los pasos con distribuidoras de todos tus planes de lanzamiento.
+          Pulsa el estado para avanzarlo sin entrar en la canción.
         </p>
       </div>
 
@@ -33,7 +36,7 @@ export default async function DistributionPage() {
           <Link href="/songs" className="text-[var(--accent-soft)] hover:underline">
             Abre una canción
           </Link>{" "}
-          y añádelos desde su pestaña de Producción.
+          y genera su plan de lanzamiento desde la pestaña de Marketing.
         </div>
       ) : (
         <>
@@ -61,8 +64,8 @@ function StepList({
 }: {
   steps: Array<{
     id: string;
-    step: string;
-    distributor: string;
+    title: string;
+    detail: string | null;
     status: string;
     dueDate: Date | null;
     songId: string;
@@ -84,15 +87,15 @@ function StepList({
           style={{ "--song": d.song.color } as React.CSSProperties}
         >
           <ColorDot color={d.song.color} />
-          <Link href={`/songs/${d.songId}?tab=distribucion`} className="flex-1 min-w-0 group/link">
-            <div className="font-medium group-hover/link:underline">{d.step}</div>
+          <Link href={`/songs/${d.songId}?tab=marketing`} className="flex-1 min-w-0 group/link">
+            <div className="font-medium group-hover/link:underline">{d.title}</div>
             <div className="text-xs text-neutral-500 mt-0.5">
-              {d.distributor} · {d.song.title}
+              {d.song.title}
               {d.dueDate && <span> · vence {formatDate(d.dueDate)}</span>}
             </div>
           </Link>
           <form
-            action={cycleDistributionStatus.bind(
+            action={cycleLaunchTask.bind(
               null,
               d.songId,
               d.id,

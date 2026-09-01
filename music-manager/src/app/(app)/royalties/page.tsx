@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth";
 import { formatMoney } from "@/lib/constants";
 import { ColorDot } from "@/components/Badges";
-import { AlertTriangle, Download, CheckCircle2 } from "lucide-react";
+import RoyaltyEditor from "@/components/RoyaltyEditor";
+import { AlertTriangle, Download, CheckCircle2, ChevronRight } from "lucide-react";
 
 /* Cada persona del reparto recibe un color estable por posición: la barra
    se lee de un vistazo sin leyenda aparte. */
@@ -11,19 +12,29 @@ const SPLIT_COLORS = ["#9333ea", "#e0299e", "#f6a723", "#10b981", "#38bdf8", "#f
 
 export default async function RoyaltiesPage() {
   const userId = await requireUserId();
-  const songs = await prisma.song.findMany({
-    where: { userId, royalties: { some: {} } },
-    include: { royalties: { include: { payments: true }, orderBy: { createdAt: "asc" } } },
-    orderBy: { title: "asc" },
-  });
+  // Todas las canciones, no solo las que ya tienen reparto: el alta se hace
+  // aquí desde que dejó de existir la pestaña de la ficha, y filtrando por
+  // "las que ya tienen" no habría forma de empezar el primero.
+  const [songs, contacts] = await Promise.all([
+    prisma.song.findMany({
+      where: { userId },
+      include: { royalties: { include: { payments: true }, orderBy: { createdAt: "asc" } } },
+      orderBy: { title: "asc" },
+    }),
+    prisma.contact.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+  ]);
 
   const totalPaid = songs
     .flatMap((s) => s.royalties)
     .flatMap((r) => r.payments)
     .reduce((a, p) => a + p.amount, 0);
 
+  // Solo cuentan como roto los repartos empezados: una canción sin reparto
+  // todavía no está mal, simplemente no ha llegado su momento.
   const broken = songs.filter(
-    (s) => s.royalties.reduce((a, r) => a + r.percentage, 0) !== 100
+    (s) =>
+      s.royalties.length > 0 &&
+      s.royalties.reduce((a, r) => a + r.percentage, 0) !== 100
   );
 
   return (
@@ -65,11 +76,11 @@ export default async function RoyaltiesPage() {
 
       {songs.length === 0 && (
         <div className="card p-10 text-center text-neutral-500">
-          Todavía no hay royalties registrados.{" "}
-          <Link href="/songs" className="text-[var(--accent-soft)] hover:underline">
-            Abre una canción
+          Todavía no tienes canciones.{" "}
+          <Link href="/songs/new" className="text-[var(--accent-soft)] hover:underline">
+            Crea la primera
           </Link>{" "}
-          y reparte los porcentajes en su pestaña de Royalties.
+          y podrás repartir sus porcentajes aquí.
         </div>
       )}
 
@@ -77,6 +88,10 @@ export default async function RoyaltiesPage() {
         {songs.map((song) => {
           const total = song.royalties.reduce((a, r) => a + r.percentage, 0);
           const paid = song.royalties.flatMap((r) => r.payments).reduce((a, p) => a + p.amount, 0);
+          // Sin reparto todavía no es un error: la alarma es para el que
+          // está empezado y no cuadra. Antes de sacar el editor a esta
+          // página no había canciones vacías aquí y no se notaba.
+          const vacia = song.royalties.length === 0;
           const ok = total === 100;
           return (
             <div
@@ -85,15 +100,17 @@ export default async function RoyaltiesPage() {
               /* El ámbar de aviso debe ganar al tinte: va en línea. */
               style={{
                 "--song": song.color,
-                ...(ok ? {} : { borderColor: "rgba(245, 158, 11, 0.35)" }),
+                ...(ok || vacia ? {} : { borderColor: "rgba(245, 158, 11, 0.35)" }),
               } as React.CSSProperties}
             >
               <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-                <Link href={`/songs/${song.id}?tab=royalties`} className="flex items-center gap-2 font-medium hover:underline">
+                <Link href={`/songs/${song.id}`} className="flex items-center gap-2 font-medium hover:underline">
                   <ColorDot color={song.color} /> {song.title}
                 </Link>
                 <div className="flex items-center gap-3 text-xs">
-                  {ok ? (
+                  {vacia ? (
+                    <span className="text-neutral-500">sin reparto</span>
+                  ) : ok ? (
                     <span className="flex items-center gap-1 text-emerald-300">
                       <CheckCircle2 size={13} /> 100% cerrado
                     </span>
@@ -103,7 +120,7 @@ export default async function RoyaltiesPage() {
                       {total < 100 ? `Faltan ${100 - total}%` : `Sobran ${total - 100}%`}
                     </span>
                   )}
-                  <span className="text-neutral-500">{formatMoney(paid)} pagado</span>
+                  {!vacia && <span className="text-neutral-500">{formatMoney(paid)} pagado</span>}
                 </div>
               </div>
 
@@ -137,6 +154,23 @@ export default async function RoyaltiesPage() {
                   </div>
                 ))}
               </div>
+
+              {/* El editor va plegado: esta página se usa sobre todo para
+                  mirar si los repartos cuadran, y con ocho formularios
+                  abiertos a la vez eso deja de verse. */}
+              <details className="group mt-4">
+                <summary className="cursor-pointer select-none text-sm text-neutral-500 hover:text-neutral-200 transition-colors list-none [&::-webkit-details-marker]:hidden flex items-center gap-1.5">
+                  <ChevronRight size={14} className="transition-transform group-open:rotate-90" />
+                  {song.royalties.length === 0 ? "Repartir esta canción" : "Editar el reparto y los pagos"}
+                </summary>
+                <div className="mt-3 pt-3 border-t border-white/[0.06]">
+                  <RoyaltyEditor
+                    songId={song.id}
+                    royalties={song.royalties}
+                    contacts={contacts}
+                  />
+                </div>
+              </details>
             </div>
           );
         })}

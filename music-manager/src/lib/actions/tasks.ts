@@ -43,36 +43,5 @@ export async function removeTask(songId: string, id: string) {
 }
 
 // --- Distribution steps ---
-export async function addDistributionStep(songId: string, formData: FormData) {
-  const userId = await requireUserId();
-  const distributor = str(formData, "distributor");
-  const step = str(formData, "step");
-  if (!distributor || !step) return;
-  await assertSongOwner(songId, userId);
-  await prisma.distributionStep.create({
-    data: {
-      songId,
-      distributor,
-      step,
-      dueDate: str(formData, "dueDate") ? new Date(str(formData, "dueDate")!) : null,
-      notes: str(formData, "notes"),
-    },
-  });
-  revalidatePath(`/songs/${songId}`);
-}
 
-export async function cycleDistributionStatus(songId: string, id: string, next: string) {
-  const userId = await requireUserId();
-  await prisma.distributionStep.updateMany({
-    where: { id, songId, song: { userId } },
-    data: { status: next as never },
-  });
-  revalidatePath(`/songs/${songId}`);
-  revalidatePath("/distribution");
-}
 
-export async function removeDistributionStep(songId: string, id: string) {
-  const userId = await requireUserId();
-  await prisma.distributionStep.deleteMany({ where: { id, songId, song: { userId } } });
-  revalidatePath(`/songs/${songId}`);
-}

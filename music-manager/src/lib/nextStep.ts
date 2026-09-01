@@ -5,12 +5,9 @@ type NextStepInput = {
   releaseDate: Date | string | null;
   stage: string;
   tasks: { status: string }[];
-  distributionSteps: { status: string }[];
-  marketingIdeas: { status: string }[];
-  marketingBudgets: unknown[];
+  launchTasks: { status: string; channel: string | null; dayOffset: number }[];
   royalties: { percentage: number }[];
   registeredAt?: Date | string | null;
-  videoIdeas: unknown[];
   references: unknown[];
 };
 
@@ -18,6 +15,8 @@ export type NextStep = {
   label: string;
   detail: string;
   tabId: string;
+  /** Si el paso se hace fuera de la ficha, a dónde lleva. */
+  href?: string;
   /** Mayor = más urgente. Permite ordenar pasos de canciones distintas entre sí. */
   priority: number;
   /** Días hasta la fecha aproximada (negativo si ya pasó, null si no hay fecha). */
@@ -71,11 +70,13 @@ export function getNextStep(song: NextStepInput): NextStep {
     severity: number,
     label: string,
     detail: string,
-    tabId: string
+    tabId: string,
+    href?: string
   ): NextStep => ({
     label,
     detail,
     tabId,
+    href,
     priority: severity + boost,
     daysToRelease,
     done: false,
@@ -109,23 +110,26 @@ export function getNextStep(song: NextStepInput): NextStep {
     );
   }
 
-  const hasMarketing = song.marketingIdeas.length > 0 || song.marketingBudgets.length > 0;
-  if (!hasMarketing) {
+  if (song.launchTasks.length === 0) {
     return step(
       SEVERITY.noMarketing,
-      "No tienes plan de marketing todavía",
-      "Genera uno automático según tu fecha — se rellena solo con ideas y presupuesto de partida.",
+      "No tienes plan de lanzamiento todavía",
+      "Genéralo desde tu fecha: 32 pasos con fecha propia, del máster al balance del mes siguiente.",
       "marketing"
     );
   }
 
-  const pendingDistribution = song.distributionSteps.find((d) => d.status !== "HECHO");
+  // Los pasos de distribuidora ya no son una lista aparte: son los del plan
+  // de lanzamiento con ese canal, que además vienen con fecha calculada.
+  const pendingDistribution = song.launchTasks.find(
+    (t) => t.channel === "Distribuidora" && t.status !== "HECHO"
+  );
   if (pendingDistribution) {
     return step(
       SEVERITY.distribution,
       "Quedan pasos con la distribuidora",
-      "Revisa qué falta antes del lanzamiento en la pestaña de Producción.",
-      "produccion"
+      "Revisa qué falta antes del lanzamiento en la pestaña de Marketing.",
+      "marketing"
     );
   }
 
@@ -134,7 +138,8 @@ export function getNextStep(song: NextStepInput): NextStep {
       SEVERITY.royaltiesMissing,
       "Sin reparto de royalties definido",
       "Deja anotado quién cobra qué porcentaje antes de que se te olvide.",
-      "royalties"
+      "info",
+      "/royalties"
     );
   }
 
@@ -144,7 +149,8 @@ export function getNextStep(song: NextStepInput): NextStep {
       SEVERITY.royaltiesWrong,
       `El reparto de royalties suma ${royaltyTotal}%, no 100%`,
       "Ajusta los porcentajes para que cuadren.",
-      "royalties"
+      "info",
+      "/royalties"
     );
   }
 
@@ -156,15 +162,16 @@ export function getNextStep(song: NextStepInput): NextStep {
       SEVERITY.notRegistered,
       "La obra no está declarada en tu entidad de gestión",
       "El reparto ya cuadra, así que puedes registrarla. Lo que suena sin registrar no lo cobra nadie.",
-      "royalties"
+      "info",
+      "/guias/sgae"
     );
   }
 
-  if (song.videoIdeas.length === 0 && song.references.length === 0) {
+  if (song.references.length === 0) {
     return step(
       SEVERITY.noVisuals,
-      "Sin ideas visuales todavía",
-      "Apunta una idea de vídeo o sube una imagen de referencia para la sesión de brainstorming.",
+      "Sin referencias visuales todavía",
+      "Sube una imagen que te sirva de guía: portadas que te gusten, paletas, fotogramas.",
       "contenido"
     );
   }
